@@ -1,10 +1,14 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          2.4.1
-Last Modified:    2007-03-12
+Version:          2.4.2
+Last Modified:    2007-03-13
 
 CHANGES
+
+2007-03-13  * 2.4.2
+    * Modified MyMinimapButton.lua to allow the radius to be changed with Alt-Click-Drag.
+    * Fixed the problem of dueling on the boat.
 
 2007-03-12  * 2.4.1
     * Added PvPLog2 for the per character savedvariables (so the file has a different name).
