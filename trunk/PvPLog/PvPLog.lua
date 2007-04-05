@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.4.1
-    Last Modified:    2007-03-12
+    Version:          2.4.2
+    Last Modified:    2007-03-13
 ]]
 
 -- Local variables
@@ -25,6 +25,7 @@ local bg_found = false;
 local bg_indx = 0;
 
 local isDuel = false;
+local duelInbounds = true;
 local rank = "";
 local fullrank = "";
 local est_honor = 0;
@@ -117,12 +118,14 @@ function PvPLogOnLoad()
     this:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE");
 
     -- enters/leaves combat (for DPS)
---  this:RegisterEvent("PLAYER_REGEN_ENABLED");
+    this:RegisterEvent("PLAYER_REGEN_ENABLED");
     this:RegisterEvent("PLAYER_REGEN_DISABLED");
     this:RegisterEvent("UNIT_HEALTH");
-
-    -- testing
-    --this:RegisterEvent("PLAYER_PVP_KILLS_CHANGED");
+    -- this:RegisterEvent("DUEL_REQUESTED"); -- Worthless one-sided event. Wish it was DUEL_STARTED.
+    this:RegisterEvent("DUEL_FINISHED");
+    this:RegisterEvent("DUEL_INBOUNDS");
+    this:RegisterEvent("DUEL_OUTOFBOUNDS");
+    
 end
 
 function PvPLog_MiniMap_LeftClick()
@@ -208,6 +211,7 @@ end  -- PvPLog_RegisterWithAddonManagers()
 
 function PvPLogMinimapButtonInit()
     local info = { };
+    info.radius = 80; -- default only. after first use, SavedVariables used
     info.position = -45; -- default only. after first use, SavedVariables used
     info.drag = "CIRCLE"; -- default only. after first use, SavedVariables used
     info.tooltip = PVPLOG.UI_RIGHT_CLICK .. PVPLOG.UI_TOGGLE .."\n".. PVPLOG.UI_LEFT_CLICK .. PVPLOG.UI_TOGGLE2;
@@ -517,10 +521,6 @@ function PvPLogOnEvent()
                 PvPLog_damageBoth(arg1);
             end
         end
-    elseif (event == "PLAYER_REGEN_DISABLED") then
-        PvPLogStatsFrame:Hide();
-        PvPLogConfigHide();
---  elseif (event == "PLAYER_REGEN_ENABLED") then
     elseif (event == "UNIT_HEALTH") then
         if (not UnitAffectingCombat("player") and UnitHealth("player") == UnitHealthMax("player")) then
             if ((recentDamager and table.getn(recentDamager) > 0) or lastDamagerToMe ~= "") then
@@ -534,6 +534,30 @@ function PvPLogOnEvent()
                 lastRecent = GetTime();
             end
         end
+    elseif (event == "PLAYER_REGEN_DISABLED") then
+        -- PvPLogDebugMsg("Event: "..event, GREEN);
+        PvPLogStatsFrame:Hide();
+        PvPLogConfigHide();
+    elseif (event == "PLAYER_REGEN_ENABLED") then
+        -- PvPLogDebugMsg("Event: "..event, GREEN);
+--[[
+    elseif (event == "DUEL_REQUESTED") then -- Worthless one-sided event. Wish it was DUEL_STARTED.
+        PvPLogDebugMsg("Event: "..event, GREEN);
+        if (arg1) then
+            PvPLogDebugMsg("Msg: "..arg1, FIRE);
+        end
+]]--
+    elseif (event == "DUEL_FINISHED") then
+        PvPLogDebugMsg("Event: "..event, GREEN);
+        if (not duelInbounds) then
+            isDuel = false;
+        end
+    elseif (event == "DUEL_INBOUNDS") then
+        PvPLogDebugMsg("Event: "..event, GREEN);
+        duelInbounds = true;
+    elseif (event == "DUEL_OUTOFBOUNDS") then
+        PvPLogDebugMsg("Event: "..event, GREEN);
+        duelInbounds = false;
     end
 end
 
@@ -649,6 +673,7 @@ end
 function PvPLogDuelStart(seconds)
     PvPLogDebugMsg("Starting duel", ORANGE);
     isDuel = true;
+    duelInbounds = true;
 end
 
 function PvPLogDuel(parseWinner, parseLoser)

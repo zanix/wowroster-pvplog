@@ -1,4 +1,4 @@
---[[ MyMinimapButton v0.8
+--[[ MyMinimapButton
 
     This is an embedded library intended to be used by other mods.
     It's not a standalone mod.
@@ -6,7 +6,7 @@
     See MyMinimapButton_API_readme.txt for more info.
 ]]
 
-local version = 2.0
+local version = 2.1
 
 if not MyMinimapButton or MyMinimapButton.Version<version then
 
@@ -67,12 +67,18 @@ if not MyMinimapButton or MyMinimapButton.Version<version then
             firstUse = nil -- modSettings has been populated before
         end
         if firstUse then
-            -- define modSettings from initSettings or default
-            modSettings.drag = initSettings.drag or "CIRCLE"
-            modSettings.enabled = initSettings.enabled or 1
-            modSettings.position = initSettings.position or self:GetDefaultPosition()
-            modSettings.locked = initSettings.locked or nil
+            -- define modSettings from initSettings
+            modSettings.drag = initSettings.drag
+            modSettings.enabled = initSettings.enabled
+            modSettings.position = initSettings.position
+            modSettings.radius = initSettings.radius
+            modSettings.locked = initSettings.locked
         end
+        -- define modSettings from defaults
+        if not modSettings.drag then modSettings.drag = "CIRCLE" end
+        if not modSettings.enabled then modSettings.enabled = 1 end
+        if not modSettings.position then modSettings.position = self:GetDefaultPosition() end
+        if not modSettings.radius then modSettings.radius = 80 end
         frame.modSettings = modSettings
 
         table.insert(self.Buttons,modName)
@@ -174,8 +180,8 @@ if not MyMinimapButton or MyMinimapButton.Version<version then
                     xpos = math.max(-82,math.min(xpos,84))
                     ypos = math.max(-86,math.min(ypos,82))
                 else
-                    xpos = 80 * cos(angle)
-                    ypos = 80 * sin(angle)
+                    xpos = button.modSettings.radius * cos(angle)
+                    ypos = button.modSettings.radius * sin(angle)
                 end
                 button:SetPoint("TOPLEFT","Minimap","TOPLEFT",54-xpos,ypos-54)
             end
@@ -254,12 +260,22 @@ if not MyMinimapButton or MyMinimapButton.Version<version then
         MyMinimapButton:OnMouseUp()
     end,
 
-    OnUpdate = function()
+OnUpdate = function()
         local xpos,ypos = GetCursorPosition()
         local xmin,ymin = Minimap:GetLeft(), Minimap:GetBottom()
         xpos = xmin-xpos/Minimap:GetEffectiveScale()+70
         ypos = ypos/Minimap:GetEffectiveScale()-ymin-70
         this.modSettings.position = math.deg(math.atan2(ypos,xpos))
+        if (IsAltKeyDown()) then
+            local radius = (xpos^2 + ypos^2)^0.5
+            if (radius < 80) then
+                radius = 80
+            end
+            if (radius > 140) then
+                radius = 140
+            end
+            this.modSettings.radius = radius
+        end
         local modName = string.gsub(this:GetName() or "","MinimapButton$","")
         MyMinimapButton:Move(modName)
     end,
