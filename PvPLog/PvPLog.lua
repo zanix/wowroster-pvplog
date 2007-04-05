@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.4.2
-    Last Modified:    2007-03-13
+    Version:          2.4.3
+    Last Modified:    2007-03-18
 ]]
 
 -- Local variables
@@ -2169,7 +2169,11 @@ function PvPLogChatMsgCyan(msg)
 end
 
 function PvPLogSendChatMessage(msg, chan, lang, num)
-    chan = string.upper(chan);
+
+    if (chan == PVPLOG.PARTY) then chan = "PARTY"; end
+    if (chan == PVPLOG.GUILD) then chan = "GUILD"; end
+    if (chan == PVPLOG.RAID) then chan = "RAID"; end
+    if (chan == PVPLOG.BG) then chan = "BATTLEGROUND"; end
 
     if (num ~= nil or num == '') then
 -- PvPLogDebugMsg('4 PvPLogSendChatMessage("' .. msg .. '", "' .. chan .. '", "' .. num .. '")');   
