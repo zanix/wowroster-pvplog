@@ -6,7 +6,7 @@
     See MyMinimapButton_API_readme.txt for more info.
 ]]
 
-local version = 2.1
+local version = 2.2
 
 if not MyMinimapButton or MyMinimapButton.Version<version then
 
@@ -133,10 +133,9 @@ if not MyMinimapButton or MyMinimapButton.Version<version then
     --    value = 0/nil/false or 1/non-nil/true
     SetEnable = function(self,modName,value)
         local button = getglobal(modName.."MinimapButton")
-        if value==0 then value = nil end
         if button then
-            button.modSettings.enabled = (value and 1) or nil
-            if value then
+            button.modSettings.enabled = value
+            if (value and (value == 1 or value == true)) then
                 button:Show()
                 self:Move(modName,nil,1)
             else
