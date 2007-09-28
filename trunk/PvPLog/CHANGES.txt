@@ -1,11 +1,14 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          2.4.4
-Last Modified:    2007-05-29
+Version:          2.4.5
+Last Modified:    2007-09-28
 
 CHANGES
 
+2007-09-28  * 2.4.5
+    * Changed TOC to 20200.
+    
 2007-05-29  * 2.4.4
     * Modified MyMinimapButton.lua to preserve the state of enabled.
     
