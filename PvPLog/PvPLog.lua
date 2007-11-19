@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.4.3
-    Last Modified:    2007-03-18
+    Version:          2.4.6
+    Last Modified:    2007-11-17
 ]]
 
 -- Local variables
@@ -31,6 +31,7 @@ local fullrank = "";
 local est_honor = 0;
 
 local debug_flag = false;   -- Overridden by PvPLogDebugFlag after VARIABLES_LOADED event.
+local debug_comm = false;   -- Overridden by PvPLogDebugComm after VARIABLES_LOADED event.
 local debug_ignore = true;  -- Overridden by PvPLogDebugIgnore after VARIABLES_LOADED event.
 
 local lastDamagerToMe = "";
@@ -238,6 +239,11 @@ function PvPLogOnEvent()
             PvPLogDebugFlag = false;
         else
             debug_flag = PvPLogDebugFlag; -- Manually set to true if you want to always debug.
+        end
+        if (PvPLogDebugComm == nil) then
+            PvPLogDebugComm = false;
+        else
+            debug_comm = PvPLogDebugComm; -- Manually set to true if you want to always debug communications.
         end
         if (PvPLogDebugIgnore == nil) then
             PvPLogDebugIgnore = true;
@@ -626,6 +632,16 @@ function PvPLogDebugAdd(msg)
         table.insert(PvPLogDebug,date()..": "..msg);
         if (table.getn(PvPLogDebug) > MAXDEBUG) then
             table.remove(PvPLogDebug,1);
+        end
+    end
+end
+
+function PvPLogCommMsg(msg, color)
+    if (debug_comm) then
+        if (color) then
+            PvPLogChatMsg('PvPLog: ' .. color .. msg);
+        else
+            PvPLogChatMsg('PvPLog: ' .. msg);
         end
     end
 end
@@ -1720,6 +1736,7 @@ function PvPLogUpdateTarget(dueling)
     local targetGuild = GetGuildInfo("target");
     local targetRank = UnitPVPName("target");
     local targetIsPlayer = UnitIsPlayer("target");
+    local targetIsControlled = UnitPlayerControlled("target");
     local targetIsEnemy = UnitIsEnemy("player", "target");
     local targetName2 = UnitName("target");
     if (targetName and targetName2 and targetName ~= targetName2) then
@@ -1758,6 +1775,8 @@ function PvPLogUpdateTarget(dueling)
                     targetRecords[targetName].level = targetLevel;
                 end
             end
+--	elseif (targetIsControlled and targetIsEnemy) then
+--	    PvPLogDebugMsg('Target is an enemy pet ');
         elseif (debug_ignore) then
             -- Its not a player or its not an enemy
             if (not ignoreRecords[targetName]) then
@@ -1936,6 +1955,14 @@ function PvPLogSlashHandler(msg)
                 table.insert(PvPLogDebugSave,v);
             end
         end
+    elseif (command == "comm") then
+        if (value == "on") then
+            debug_comm = true;
+        elseif (value == "off") then
+            debug_comm = false;
+        end
+    elseif (command == "notify") then
+        PvPLogSendMessageOnChannel("PvPLog test message", value);
     elseif (command == "ignore") then
         if (value == "on") then
             debug_ignore = true;
@@ -2051,15 +2078,15 @@ function PvPLogDisplayUsage()
 
     text = CYAN .. PVPLOG.USAGE .. ":\n  /pl <";
     if (PvPLogData[realm][player].enabled) then
-        text = text .. WHITE .. PVPLOG.ENABLE .. CYAN .. " | " .. PVPLOG.DISABLE .. ">\n";
+        text = text .. WHITE .. PVPLOG.ENABLE .. CYAN .. " | " .. PVPLOG.DISABLE .. ">";
     else
-        text = text .. PVPLOG.ENABLE.." | " .. WHITE .. PVPLOG.DISABLE .. CYAN .. ">\n";
+        text = text .. PVPLOG.ENABLE.." | " .. WHITE .. PVPLOG.DISABLE .. CYAN .. ">";
     end
     PvPLogChatMsg(text);
 
-    PvPLogChatMsgPl(PVPLOG.RESET .. " " .. PVPLOG.CONFIRM .. "\n");
-    PvPLogChatMsgPl(PVPLOG.ST .. "\n");
-    PvPLogChatMsgPl(PVPLOG.DMG .. "\n");
+    PvPLogChatMsgPl(PVPLOG.RESET .. " " .. PVPLOG.CONFIRM);
+    PvPLogChatMsgPl(PVPLOG.ST);
+    PvPLogChatMsgPl(PVPLOG.DMG);
 
     text = PVPLOG.NOTIFYKILL.." <";
     if (PvPLogData[realm][player].notifyKill == PVPLOG.NONE) then
@@ -2096,14 +2123,14 @@ function PvPLogDisplayUsage()
         PvPLogData[realm][player].notifyKill ~= PVPLOG.PARTY and
         PvPLogData[realm][player].notifyKill ~= PVPLOG.GUILD and
         PvPLogData[realm][player].notifyKill ~= PVPLOG.RAID) then
-        text = text .." | " .. WHITE .. PvPLogData[realm][player].notifyKill .. CYAN .. ">\n";
+        text = text .." | " .. WHITE .. PvPLogData[realm][player].notifyKill .. CYAN .. ">";
     else
-        text = text .. ">\n";
+        text = text .. ">";
     end
     PvPLogChatMsgPl(text);
 
     text = PVPLOG.NOTIFYKILLTEXT.." <";
-    text = text .. WHITE .. PvPLogData[realm][player].notifyKillText .. CYAN .. ">\n";
+    text = text .. WHITE .. PvPLogData[realm][player].notifyKillText .. CYAN .. ">";
     PvPLogChatMsgPl(text);
 
     text = PVPLOG.NOTIFYDEATH.." <";
@@ -2141,23 +2168,23 @@ function PvPLogDisplayUsage()
         PvPLogData[realm][player].notifyDeath ~= PVPLOG.PARTY and
         PvPLogData[realm][player].notifyDeath ~= PVPLOG.GUILD and
         PvPLogData[realm][player].notifyDeath ~= PVPLOG.RAID) then
-        text = text .. " | " .. WHITE .. PvPLogData[realm][player].notifyDeath .. CYAN .. ">\n";
+        text = text .. " | " .. WHITE .. PvPLogData[realm][player].notifyDeath .. CYAN .. ">";
     else
-        text = text .. ">\n";
+        text = text .. ">";
     end
     PvPLogChatMsgPl(text);
 
     text = PVPLOG.NOTIFYDEATHTEXT.." <";
-    text = text .. WHITE .. PvPLogData[realm][player].notifyDeathText .. CYAN .. ">\n";
+    text = text .. WHITE .. PvPLogData[realm][player].notifyDeathText .. CYAN .. ">";
     PvPLogChatMsgPl(text);
 
-    PvPLogChatMsgPl(PVPLOG.NOSPAM.."\n");
-    PvPLogChatMsgPl(PVPLOG.VER.."\n");
-    PvPLogChatMsgPl(PVPLOG.VEN.."\n");
+    PvPLogChatMsgPl(PVPLOG.NOSPAM);
+    PvPLogChatMsgPl(PVPLOG.VER);
+    PvPLogChatMsgPl(PVPLOG.VEN);
 
-    PvPLogChatMsgPl(string.lower(PVPLOG.UI_PVP).."\n");
-    PvPLogChatMsgPl(string.lower(PVPLOG.DUEL).."\n");
-    PvPLogChatMsgPl(PVPLOG.UI_CONFIG.."\n");
+    PvPLogChatMsgPl(string.lower(PVPLOG.UI_PVP));
+    PvPLogChatMsgPl(string.lower(PVPLOG.DUEL));
+    PvPLogChatMsgPl(PVPLOG.UI_CONFIG);
 end
 
 function PvPLogChatMsgPl(msg)
@@ -2168,6 +2195,11 @@ function PvPLogChatMsgCyan(msg)
     PvPLogChatMsg(CYAN .. msg);
 end
 
+--
+--  Functions which send notify messages to a soecified channel.
+--    Debugging messages are under the control of the 
+--    "/pvplog comm on" and "/pvplog comm off" commands.
+--
 function PvPLogSendChatMessage(msg, chan, lang, num)
 
     if (chan == PVPLOG.PARTY) then chan = "PARTY"; end
@@ -2176,21 +2208,20 @@ function PvPLogSendChatMessage(msg, chan, lang, num)
     if (chan == PVPLOG.BG) then chan = "BATTLEGROUND"; end
 
     if (num ~= nil or num == '') then
--- PvPLogDebugMsg('4 PvPLogSendChatMessage("' .. msg .. '", "' .. chan .. '", "' .. num .. '")');   
+        PvPLogCommMsg('4 PvPLogSendChatMessage("' .. msg .. '", "' .. chan .. '", "' .. num .. '")');   
         SendChatMessage(msg, chan, lang, num);
     else
--- PvPLogDebugMsg('2 PvPLogSendChatMessage("' .. msg .. '", ' .. chan .. ')');
+        PvPLogCommMsg('2 PvPLogSendChatMessage("' .. msg .. '", ' .. chan .. ')');
         SendChatMessage(msg, chan);
     end
 end
 
 function PvPLogSendMessageOnChannel(message, channelName)
---  PvPLogDebugMsg('PvPLogSendMessageOnChannel("' .. message .. '", ' .. channelName .. ')');
+    PvPLogCommMsg('PvPLogSendMessageOnChannel("' .. message .. '", ' .. channelName .. ')');
     local channelNum = PvPLogGetChannelNumber(channelName);
 
     if (not channelNum or channelNum == 0) then
-        PvPLogJoinChannel(channelName);
-        channelNum = PvPLogGetChannelNumber(channelName);
+        channelNum = PvPLogJoinChannel(channelName);
     end
 
     if (not channelNum or channelNum == 0) then
@@ -2201,48 +2232,22 @@ function PvPLogSendMessageOnChannel(message, channelName)
     PvPLogSendChatMessage(message, "CHANNEL", GetLanguageByIndex(0), channelNum);
 end
 
-
 function PvPLogGetChannelNumber(channel)
---  PvPLogDebugMsg('PvPLogGetChannelNumber(' .. channel .. ')');
+    PvPLogCommMsg('PvPLogGetChannelNumber(' .. channel .. ')');
     local num = 0;
     if (string.len(channel) == 1 and channel >= "1" and channel <= "9") then
         num = channel;
         return num;
     end
-    for i = 1, 200, 1 do
-        local channelNum, channelName = GetChannelName(i);
-
-        if ((channelNum > 0) and channelName and (string.lower(channelName) == string.lower(channel))) then
-            num = channelNum;
-            break;
-        end
-    end
---  PvPLogDebugMsg('channelNum: ' .. num);
+    num = GetChannelName(channel);
+    PvPLogCommMsg('channelNum: ' .. tostring(num));
     return num;
 end
 
 function PvPLogJoinChannel(channelName)
---  PvPLogDebugMsg('PvPLogJoinChannel(' .. channelName .. ')');
-    
-    local channelNumber = PvPLogGetChannelNumber(channelName);
-    local needToJoin = (channelNumber ~= nil and channelNumber <= 0);
-
-    if( needToJoin ) then
-        local i = 1;
-        while ( DEFAULT_CHAT_FRAME.channelList[i] ) do
-            local zoneValue = "nil";
-            if (DEFAULT_CHAT_FRAME.zoneChannelList[i]) then
-                zoneValue = DEFAULT_CHAT_FRAME.zoneChannelList[i];
-            end
-            if ( string.lower(DEFAULT_CHAT_FRAME.channelList[i]) == string.lower(channelName) and 
-                DEFAULT_CHAT_FRAME.zoneChannelList[i] and DEFAULT_CHAT_FRAME.zoneChannelList[i] > 0) then
-                needToJoin = false;
-                break;
-            end
-            i = i + 1;
-        end
-        JoinChannelByName(channelName, "", DEFAULT_CHAT_FRAME:GetID());
-        DEFAULT_CHAT_FRAME.channelList[i] = channelName;
-        DEFAULT_CHAT_FRAME.zoneChannelList[i] = 0;
-    end
+    PvPLogCommMsg('PvPLogJoinChannel(' .. channelName .. ')');
+    JoinChannelByName(channelName, "", DEFAULT_CHAT_FRAME:GetID());
+    local num = GetChannelName(channelName);
+    PvPLogCommMsg('channelNum: ' .. tostring(num));
+    return num;
 end

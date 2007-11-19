@@ -1,10 +1,15 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          2.4.5
-Last Modified:    2007-09-28
+Version:          2.4.6
+Last Modified:    2007-11-17
 
 CHANGES
+
+2007-11-17  * 2.4.6
+    * Changed TOC to 20300.
+    * Added more debugging.
+    * Fixed the problem with displaying the message that caused a channel join.
 
 2007-09-28  * 2.4.5
     * Changed TOC to 20200.
