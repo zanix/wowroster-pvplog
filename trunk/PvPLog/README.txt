@@ -1,9 +1,8 @@
 PvPLog 
-Author:            Andrzej Gorski
-Maintainer:        Matthew Musgrove, Brad Morgan
-Based on Work by:  Josh Estelle, Daniel S. Reichenbach
-Version:           2.0.0
-Last Modified:     2006-12-21
+Author:           Brad Morgan
+Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
+Version:          2.4.7
+Last Modified:    2007-12-03
 
 README
 
@@ -22,6 +21,9 @@ Installation:
         PvPLog/localization.lua
         PvPLog/MarsMessageParser.lua
         PvPLog/MyMinimapButton.lua
+        PvPLog/nopatch
+        PvPLog2/PvPLog2.toc
+
 
     Place the entire PvPLog directory in your 
     WoW/Interface/AddOns directory.
@@ -92,6 +94,29 @@ Use:
     You may reset your PvPLog settings using:
         /pvplog reset confirm
     Be careful as this will erase all your records!
+
+    Debugging commands:
+    	/pvplog debug [on|off]
+    	    Turns debugging messages on or off. When debugging messages
+    	    are on, they are sent to chat and to a per character array
+    	    along with combat log messages.
+
+    	/pvplog debug save
+	    Copies the array of debug/combat messages into another array.
+
+    	/pvplog vars
+    	    Send some internal variables to chat.
+
+	/pvplog ignore [on|off]
+	    Turns the recording of targets to ignore on or off. Ignored
+	    targets provide a performance optimization and should be 
+	    left on (off provides some debugging with mobs).
+
+    	/pvplog comm [on|off]
+	    Turns channel communication debugging messages on or off.
+
+    	/pvplog notify <channelname>
+	    Sends a test message to indicated channel for debugging.
 
     Updates for PvPLog are available from these AddOn sites:
     * http://www.wowroster.net
