@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.4.6
-    Last Modified:    2007-11-17
+    Version:          2.4.7
+    Last Modified:    2007-12-03
 ]]
 
 -- Local variables
@@ -1962,7 +1962,7 @@ function PvPLogSlashHandler(msg)
             debug_comm = false;
         end
     elseif (command == "notify") then
-        PvPLogSendMessageOnChannel("PvPLog test message", value);
+        PvPLogSendMessageOnChannel("PvPLog test", value);
     elseif (command == "ignore") then
         if (value == "on") then
             debug_ignore = true;
@@ -2200,24 +2200,24 @@ end
 --    Debugging messages are under the control of the 
 --    "/pvplog comm on" and "/pvplog comm off" commands.
 --
-function PvPLogSendChatMessage(msg, chan, lang, num)
+function PvPLogSendChatMessage(msg, chan, num)
 
     if (chan == PVPLOG.PARTY) then chan = "PARTY"; end
     if (chan == PVPLOG.GUILD) then chan = "GUILD"; end
     if (chan == PVPLOG.RAID) then chan = "RAID"; end
     if (chan == PVPLOG.BG) then chan = "BATTLEGROUND"; end
 
-    if (num ~= nil or num == '') then
-        PvPLogCommMsg('4 PvPLogSendChatMessage("' .. msg .. '", "' .. chan .. '", "' .. num .. '")');   
-        SendChatMessage(msg, chan, lang, num);
+    if (num) then
+        PvPLogCommMsg('PvPLogSendChatMessage("' .. msg .. '", "' .. chan .. '", ' .. num .. ')');   
+        SendChatMessage(msg, chan, nil, tostring(num));
     else
-        PvPLogCommMsg('2 PvPLogSendChatMessage("' .. msg .. '", ' .. chan .. ')');
+        PvPLogCommMsg('PvPLogSendChatMessage("' .. msg .. '", "' .. chan .. '")');
         SendChatMessage(msg, chan);
     end
 end
 
 function PvPLogSendMessageOnChannel(message, channelName)
-    PvPLogCommMsg('PvPLogSendMessageOnChannel("' .. message .. '", ' .. channelName .. ')');
+    PvPLogCommMsg('PvPLogSendMessageOnChannel("' .. message .. '", "' .. channelName .. '")');
     local channelNum = PvPLogGetChannelNumber(channelName);
 
     if (not channelNum or channelNum == 0) then
@@ -2225,15 +2225,15 @@ function PvPLogSendMessageOnChannel(message, channelName)
     end
 
     if (not channelNum or channelNum == 0) then
-        PvPLogChatMsg(MAGENTA.."PvPLog Error: Not in notification channel \""..channelName.."\".");
+        PvPLogChatMsg(MAGENTA .. 'PvPLog: Not in notification channel "' .. channelName .. '".');
         return;
     end
 
-    PvPLogSendChatMessage(message, "CHANNEL", GetLanguageByIndex(0), channelNum);
+    PvPLogSendChatMessage(message, "CHANNEL", channelNum);
 end
 
 function PvPLogGetChannelNumber(channel)
-    PvPLogCommMsg('PvPLogGetChannelNumber(' .. channel .. ')');
+    PvPLogCommMsg('PvPLogGetChannelNumber("' .. channel .. '")');
     local num = 0;
     if (string.len(channel) == 1 and channel >= "1" and channel <= "9") then
         num = channel;
@@ -2245,7 +2245,7 @@ function PvPLogGetChannelNumber(channel)
 end
 
 function PvPLogJoinChannel(channelName)
-    PvPLogCommMsg('PvPLogJoinChannel(' .. channelName .. ')');
+    PvPLogCommMsg('PvPLogJoinChannel("' .. channelName .. '")');
     JoinChannelByName(channelName, "", DEFAULT_CHAT_FRAME:GetID());
     local num = GetChannelName(channelName);
     PvPLogCommMsg('channelNum: ' .. tostring(num));
