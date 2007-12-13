@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.4.1
-    Last Modified:    2007-03-12
+    Version:          2.4.8
+    Last Modified:    2007-12-13
 ]]
 
 PVPLOG = {};
@@ -47,6 +47,7 @@ PVPLOG = {};
     PVPLOG.USAGE = "Usage";
     
     PVPLOG.STATS = "Statistics";
+    PVPLOG.RECORDS = "Records";
     PVPLOG.COMP = "completely";
     
     PVPLOG.SELF = "Self";
@@ -71,9 +72,9 @@ PVPLOG = {};
     
     PVPLOG.PLAYER = "Player";
     PVPLOG.RECENT = "Recent";
+    PVPLOG.TARGET = "Target";
     PVPLOG.DUEL = "Duel";
     PVPLOG.TOTAL = "Total";
-    PVPLOG.STATS = "Statistics";
     PVPLOG.ALD = "Avg Level Diff";
     
     PVPLOG.DLKB = "Death logged, killed by: ";
@@ -98,6 +99,10 @@ PVPLOG = {};
     PVPLOG.UI_DING_TIP = "When you mouse-over a player you\nhave fought before a sound will play.";
     PVPLOG.UI_PVP = "PvP";
     PVPLOG.UI_NAME = "Name";
+    PVPLOG.UI_RACE = "Race";
+    PVPLOG.UI_CLASS = "Class";
+    PVPLOG.UI_LDIFF = "L Diff"
+    PVPLOG.UI_LEVEL = "Level"
     PVPLOG.UI_WINS = "Wins";
     PVPLOG.UI_LOSSES = "Losses";
     PVPLOG.UI_TOGGLE = "Toggles " .. PVPLOG.UI_CONFIG;
@@ -148,6 +153,7 @@ if (GetLocale() == "deDE") then
     PVPLOG.USAGE = "Usage";      -- verwenden?
     
     PVPLOG.STATS = "Statistik";
+    PVPLOG.RECORDS = "Records";
     PVPLOG.COMP = "komplett";
     
     PVPLOG.SELF = "Self";
@@ -171,9 +177,9 @@ if (GetLocale() == "deDE") then
     
     PVPLOG.PLAYER = "Player";
     PVPLOG.RECENT = "Recent";
+    PVPLOG.TARGET = "Target";
     PVPLOG.DUEL = "Duell";
     PVPLOG.TOTAL = "Summe";
-    PVPLOG.STATS = "Statistik";
     PVPLOG.ALD = "Durchschnittlicher Levelunterschied";
         
     PVPLOG.DLKB = "Tod geloggt, getötet von: ";
@@ -198,6 +204,10 @@ if (GetLocale() == "deDE") then
     PVPLOG.UI_DING_TIP = "When you mouse-over a player you\nhave fought before a sound will play.";
     PVPLOG.UI_PVP = "PvP";
     PVPLOG.UI_NAME = "Name";
+    PVPLOG.UI_RACE = "Race";
+    PVPLOG.UI_CLASS = "Class";
+    PVPLOG.UI_LDIFF = "L Diff"
+    PVPLOG.UI_LEVEL = "Level"
     PVPLOG.UI_WINS = "Siege";
     PVPLOG.UI_LOSSES = "Verloren";
     PVPLOG.UI_TOGGLE = PVPLOG.UI_CONFIG .. " anzeigen/verbergen";
@@ -245,6 +255,7 @@ elseif (GetLocale() == "frFR") then
     PVPLOG.USAGE = "Utilisation";      -- utilisation?
     
     PVPLOG.STATS = "Statistiques";
+    PVPLOG.RECORDS = "Records";
     PVPLOG.COMP = "completement";
     
     PVPLOG.SELF = "Soi";
@@ -272,9 +283,9 @@ elseif (GetLocale() == "frFR") then
     
     PVPLOG.PLAYER = "Player";
     PVPLOG.RECENT = "Recent";
+    PVPLOG.TARGET = "Target";
     PVPLOG.DUEL = "Duel";
     PVPLOG.TOTAL = "Total";
-    PVPLOG.STATS = "Statistiques";
     PVPLOG.ALD = "différence moyenne de niveaux";
     
     PVPLOG.DLKB = "Mort enregistrée, tué par : ";
@@ -299,6 +310,10 @@ elseif (GetLocale() == "frFR") then
     PVPLOG.UI_DING_TIP = "Quand vous passez avec la souris au dessus d'un joueur\nque vous avez combattu, vous entendrez un son.";
     PVPLOG.UI_PVP = "JcJ";
     PVPLOG.UI_NAME = "Nom";
+    PVPLOG.UI_RACE = "Race";
+    PVPLOG.UI_CLASS = "Class";
+    PVPLOG.UI_LDIFF = "L Diff"
+    PVPLOG.UI_LEVEL = "Level"
     PVPLOG.UI_WINS = "Victoires";
     PVPLOG.UI_LOSSES = "Défaites";   
     PVPLOG.UI_TOGGLE = "Montre " .. PVPLOG.UI_CONFIG;
@@ -346,6 +361,7 @@ elseif (GetLocale() == "esES") then
     PVPLOG.USAGE = "Uso";
     
     PVPLOG.STATS = "Estad\195\173sticas";
+    PVPLOG.RECORDS = "Records";
     PVPLOG.COMP = "Completamente";
     
     PVPLOG.SELF = "M\195\173";
@@ -368,9 +384,9 @@ elseif (GetLocale() == "esES") then
     
     PVPLOG.PLAYER = "Jugador";
     PVPLOG.RECENT = "Reciente";
+    PVPLOG.TARGET = "Target";
     PVPLOG.DUEL = "Duelo";
     PVPLOG.TOTAL = "Total";
-    PVPLOG.STATS = "Estad\195\173sticas";
     PVPLOG.ALD = "Diferencia de Nivel";
     
     PVPLOG.DLKB = "Muerte grabada, asesinado por: ";
@@ -395,6 +411,10 @@ elseif (GetLocale() == "esES") then
     PVPLOG.UI_DING_TIP = "Cuando pases el rat\195\179n sobre un jugador contra \nquien hayas luchado sonar\195\161 una se\195\177al.";
     PVPLOG.UI_PVP = "JcJ";
     PVPLOG.UI_NAME = "Nombre";
+    PVPLOG.UI_RACE = "Race";
+    PVPLOG.UI_CLASS = "Class";
+    PVPLOG.UI_LDIFF = "L Diff"
+    PVPLOG.UI_LEVEL = "Level"
     PVPLOG.UI_WINS = "Victorias";
     PVPLOG.UI_LOSSES = "Derrotas";
     PVPLOG.UI_RIGHT_CLICK = "Clic derecho: ";

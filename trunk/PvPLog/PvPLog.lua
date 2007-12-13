@@ -2,13 +2,17 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.4.7
-    Last Modified:    2007-12-03
+    Version:          2.4.8
+    Last Modified:    2007-12-13
 ]]
 
 -- Local variables
 local variablesLoaded = false;
 local initialized = false;
+
+local notifyQueued = false;
+local queuedMessage = "";
+local queuedChannel = "";
 
 local realm = "";
 local player = "";
@@ -84,6 +88,9 @@ function PvPLogOnLoad()
 
     -- respond to player entering the world
     this:RegisterEvent("PLAYER_ENTERING_WORLD");
+
+    -- channel stuff
+    this:RegisterEvent("CHAT_MSG_CHANNEL_NOTICE");
 
     -- respond to player name update
     this:RegisterEvent("UNIT_NAME_UPDATE");
@@ -283,6 +290,13 @@ function PvPLogOnEvent()
     elseif (event == "PLAYER_LEVEL_UP") then
         plevel = UnitLevel("player");
 
+    -- send the queued message now that we are in the channel.
+    elseif (event == "CHAT_MSG_CHANNEL_NOTICE") then
+        if (notifyQueued) then
+            PvPLogSendMessageOnChannel(queuedMessage, queuedChannel);
+            notifyQueued = false;
+        end
+       
     elseif (event == "PLAYER_DEAD") then
         -- initialize if we're not for some reason
         if (not initialized) then
@@ -1775,8 +1789,8 @@ function PvPLogUpdateTarget(dueling)
                     targetRecords[targetName].level = targetLevel;
                 end
             end
---	elseif (targetIsControlled and targetIsEnemy) then
---	    PvPLogDebugMsg('Target is an enemy pet ');
+--  elseif (targetIsControlled and targetIsEnemy) then
+--      PvPLogDebugMsg('Target is an enemy pet ');
         elseif (debug_ignore) then
             -- Its not a player or its not an enemy
             if (not ignoreRecords[targetName]) then
@@ -2200,54 +2214,47 @@ end
 --    Debugging messages are under the control of the 
 --    "/pvplog comm on" and "/pvplog comm off" commands.
 --
-function PvPLogSendChatMessage(msg, chan, num)
-
+function PvPLogSendChatMessage(message, channel)
     if (chan == PVPLOG.PARTY) then chan = "PARTY"; end
     if (chan == PVPLOG.GUILD) then chan = "GUILD"; end
     if (chan == PVPLOG.RAID) then chan = "RAID"; end
     if (chan == PVPLOG.BG) then chan = "BATTLEGROUND"; end
-
-    if (num) then
-        PvPLogCommMsg('PvPLogSendChatMessage("' .. msg .. '", "' .. chan .. '", ' .. num .. ')');   
-        SendChatMessage(msg, chan, nil, tostring(num));
-    else
-        PvPLogCommMsg('PvPLogSendChatMessage("' .. msg .. '", "' .. chan .. '")');
-        SendChatMessage(msg, chan);
-    end
+    PvPLogCommMsg('PvPLogSendChatMessage("' .. message .. '", "' .. channel .. '")');
+    SendChatMessage(message, channel);
 end
 
-function PvPLogSendMessageOnChannel(message, channelName)
-    PvPLogCommMsg('PvPLogSendMessageOnChannel("' .. message .. '", "' .. channelName .. '")');
-    local channelNum = PvPLogGetChannelNumber(channelName);
-
-    if (not channelNum or channelNum == 0) then
-        channelNum = PvPLogJoinChannel(channelName);
+function PvPLogSendMessageOnChannel(message, channel)
+    local number = 0;
+    number = PvPLogGetChannelNumber(channel);
+    PvPLogCommMsg('PvPLogSendMessageOnChannel("' .. message .. '", "' .. channel .. '", ' .. number ..')');
+    if (not number or number == 0) then
+        PvPLogJoinChannel(channel);
+        queuedMessage = message;
+        queuedChannel = channel;
+        notifyQueued = true;
+    else
+        SendChatMessage(message, "CHANNEL", nil, tostring(number));
     end
-
-    if (not channelNum or channelNum == 0) then
-        PvPLogChatMsg(MAGENTA .. 'PvPLog: Not in notification channel "' .. channelName .. '".');
-        return;
-    end
-
-    PvPLogSendChatMessage(message, "CHANNEL", channelNum);
 end
 
 function PvPLogGetChannelNumber(channel)
     PvPLogCommMsg('PvPLogGetChannelNumber("' .. channel .. '")');
-    local num = 0;
+    local number = 0;
     if (string.len(channel) == 1 and channel >= "1" and channel <= "9") then
-        num = channel;
-        return num;
+        number = channel;
+    else
+        number = GetChannelName(channel);
     end
-    num = GetChannelName(channel);
-    PvPLogCommMsg('channelNum: ' .. tostring(num));
-    return num;
+    PvPLogCommMsg('channelNum: ' .. tostring(number));
+    return number;
 end
 
-function PvPLogJoinChannel(channelName)
-    PvPLogCommMsg('PvPLogJoinChannel("' .. channelName .. '")');
-    JoinChannelByName(channelName, "", DEFAULT_CHAT_FRAME:GetID());
-    local num = GetChannelName(channelName);
-    PvPLogCommMsg('channelNum: ' .. tostring(num));
-    return num;
+function PvPLogJoinChannel(channel)
+    PvPLogCommMsg('PvPLogJoinChannel("' .. channel .. '")');
+    local number = 0;
+    JoinChannelByName(channel, nil, DEFAULT_CHAT_FRAME:GetID());
+    ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channel);
+    number = GetChannelName(channel);
+    PvPLogCommMsg('channelNum: ' .. tostring(number));
+    return number;
 end

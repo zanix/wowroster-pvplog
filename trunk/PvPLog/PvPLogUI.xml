@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          2.3.7
-    Last Modified:    2007-02-01
+    Version:          2.4.8
+    Last Modified:    2007-12-13
 -->
 
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
@@ -719,7 +719,34 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="30" y="-30"/>
+                                <AbsDimension x="40" y="-30"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </FontString>
+                <FontString name="txtPvPLogStats_RaceHeader" inherits="SystemFont">
+                    <Anchors>
+                        <Anchor point="TOPLEFT">
+                            <Offset>
+                                <AbsDimension x="130" y="-30"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </FontString>
+                <FontString name="txtPvPLogStats_ClassHeader" inherits="SystemFont">
+                    <Anchors>
+                        <Anchor point="TOPLEFT">
+                            <Offset>
+                                <AbsDimension x="190" y="-30"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </FontString>
+                <FontString name="txtPvPLogStats_LevelHeader" inherits="SystemFont">
+                    <Anchors>
+                        <Anchor point="TOPLEFT">
+                            <Offset>
+                                <AbsDimension x="250" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -728,7 +755,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="180" y="-30"/>
+                                <AbsDimension x="340" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -737,7 +764,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="330" y="-30"/>
+                                <AbsDimension x="450" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -746,7 +773,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="450" y="-30"/>
+                                <AbsDimension x="530" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -755,7 +782,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="530" y="-30"/>
+                                <AbsDimension x="580" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -766,7 +793,34 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT" relativeTo = "txtPvPLogStats_PlayersHeader">
                             <Offset>
+                                <AbsDimension x="-20" y="-30"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </FontString>
+                <FontString name="txtPvPLogStats_RaceList" inherits="NumberFontNormal">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeTo = "txtPvPLogStats_RaceHeader">
+                            <Offset>
                                 <AbsDimension x="-10" y="-30"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </FontString>
+                <FontString name="txtPvPLogStats_ClassList" inherits="NumberFontNormal">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeTo = "txtPvPLogStats_ClassHeader">
+                            <Offset>
+                                <AbsDimension x="-5" y="-30"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </FontString>
+                <FontString name="txtPvPLogStats_LevelList" inherits="NumberFontNormal">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeTo = "txtPvPLogStats_LevelHeader">
+                            <Offset>
+                                <AbsDimension x="10" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -793,7 +847,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT" relativeTo = "txtPvPLogStats_WinsHeader">
                             <Offset>
-                                <AbsDimension x="10" y="-30"/>
+                                <AbsDimension x="15" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -833,6 +887,16 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
              <Button name="$parentRecentTab" inherits="PvPLogTabTemplate" text="Recent">
                 <Anchors>
                    <Anchor point="BOTTOMRIGHT" relativeTo="$parentDuelTab">
+                      <Offset>
+                         <AbsDimension x="58" y="0"/>
+                      </Offset>
+                   </Anchor>
+                </Anchors>
+             </Button>
+
+             <Button name="$parentTargetTab" inherits="PvPLogTabTemplate" text="Target">
+                <Anchors>
+                   <Anchor point="BOTTOMRIGHT" relativeTo="$parentRecentTab">
                       <Offset>
                          <AbsDimension x="58" y="0"/>
                       </Offset>
