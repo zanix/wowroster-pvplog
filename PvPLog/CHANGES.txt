@@ -1,10 +1,17 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          2.4.7
-Last Modified:    2007-12-03
+Version:          2.4.8
+Last Modified:    2007-12-13
 
 CHANGES
+
+2007-12-13  * 2.4.8
+    * Fixed displaying the message on a channel again. More than one "named" channel
+      will lose messages. It will catch up eventually.
+    * Added a Targets tab to the statistics frame containing the targetRecords in
+      targetList order.
+    * Added additional fields to the other statistics frames.
 
 2007-12-03  * 2.4.7
     * Fixed displaying the message on a channel.
