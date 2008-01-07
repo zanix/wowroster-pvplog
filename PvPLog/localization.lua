@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.4.8
-    Last Modified:    2007-12-13
+    Version:          2.4.9
+    Last Modified:    2008-01-07
 ]]
 
 PVPLOG = {};
@@ -52,6 +52,7 @@ PVPLOG = {};
     
     PVPLOG.SELF = "Self";
     PVPLOG.PARTY = "Party";
+    PVPLOG.SAY = "Say";
     PVPLOG.GUILD = "Guild";
     PVPLOG.RAID = "Raid";
     PVPLOG.RACE = "race";
@@ -157,6 +158,7 @@ if (GetLocale() == "deDE") then
     PVPLOG.COMP = "komplett";
     
     PVPLOG.SELF = "Self";
+    PVPLOG.SAY = "Say"; --translation needed
     PVPLOG.PARTY = "Gruppe";
     PVPLOG.GUILD = "Gilde";
     PVPLOG.RAID = "Schlachtzug";
@@ -259,6 +261,7 @@ elseif (GetLocale() == "frFR") then
     PVPLOG.COMP = "completement";
     
     PVPLOG.SELF = "Soi";
+    PVPLOG.SAY = "Say"; --translation needed
     PVPLOG.PARTY = "Groupe";
     PVPLOG.GUILD = "Guilde";
     PVPLOG.RAID = "Raid";
@@ -365,6 +368,7 @@ elseif (GetLocale() == "esES") then
     PVPLOG.COMP = "Completamente";
     
     PVPLOG.SELF = "M\195\173";
+    PVPLOG.SAY = "Say"; --translation needed
     PVPLOG.PARTY = "Grupo";
     PVPLOG.GUILD = "Hermandad";
     PVPLOG.RAID = "Banda";

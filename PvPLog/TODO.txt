@@ -1,12 +1,12 @@
 PvPLog 
-Author:            Andrzej Gorski
-Maintainer:        Matthew Musgrove, Brad Morgan
-Based on Work by:  Josh Estelle, Daniel S. Reichenbach
-Version:           2.3.0
-Last Modified:     2007-01-03
+Author:           Brad Morgan
+Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
+Version:           2.4.9
+Last Modified:     2008-01-07
 
 TODO
 
-1. Fix Feign Death bug.
+1. Translations for Recent (tab)
+2. Translations for PVPLOG.SAY
 
 

@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.4.8
-    Last Modified:    2007-12-13
+    Version:          2.4.9
+    Last Modified:    2008-01-07
 ]]
 
 -- Local variables
@@ -1725,14 +1725,15 @@ function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, 
             elseif( venemy and
               ((notifyChan == PVPLOG.PARTY and GetNumPartyMembers() > 0) or 
               (notifyChan == PVPLOG.GUILD and GetGuildInfo("player") )  or 
+              (notifyChan == PVPLOG.SAY )  or 
               (notifyChan == PVPLOG.RAID  and GetNumRaidMembers() > 0)) ) then
                 if (notifyChan == PVPLOG.RAID and bg_found) then
                     notifyChan = PVPLOG.BG;
                 end
                 PvPLogSendChatMessage(notifyMsg, notifyChan);
             elseif( venemy and notifyChan ~= PVPLOG.NONE and notifyChan ~= PVPLOG.SELF and
-              notifyChan ~= PVPLOG.PARTY and notifyChan ~= PVPLOG.GUILD
-              and notifyChan ~= PVPLOG.RAID and notifyChan ~= PVPLOG.BG) then
+              notifyChan ~= PVPLOG.PARTY and notifyChan ~= PVPLOG.GUILD and 
+              notifyChan ~= PVPLOG.SAY and notifyChan ~= PVPLOG.RAID and notifyChan ~= PVPLOG.BG) then
                 PvPLogSendMessageOnChannel(notifyMsg, notifyChan);
             end
         end
@@ -2126,6 +2127,13 @@ function PvPLogDisplayUsage()
     else
         text = text .. PVPLOG.GUILD;
     end
+    
+    if (PvPLogData[realm][player].notifyKill == PVPLOG.SAY) then
+        text = text .. WHITE .. PVPLOG.SAY .. CYAN;
+    else
+        text = text .. PVPLOG.SAY;
+    end
+    
     text = text .." | ";
     if (PvPLogData[realm][player].notifyKill == PVPLOG.RAID) then
         text = text .. WHITE .. PVPLOG.RAID .. CYAN;
@@ -2218,6 +2226,7 @@ function PvPLogSendChatMessage(message, channel)
     if (chan == PVPLOG.PARTY) then chan = "PARTY"; end
     if (chan == PVPLOG.GUILD) then chan = "GUILD"; end
     if (chan == PVPLOG.RAID) then chan = "RAID"; end
+    if (chan == PVPLOG.SAY) then chan = "SAY"; end
     if (chan == PVPLOG.BG) then chan = "BATTLEGROUND"; end
     PvPLogCommMsg('PvPLogSendChatMessage("' .. message .. '", "' .. channel .. '")');
     SendChatMessage(message, channel);
