@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          2.4.8
-    Last Modified:    2007-12-13
+    Version:          2.4.9
+    Last Modified:    2008-01-07
 -->
 
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
@@ -15,7 +15,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 -->
     <Frame name="PvPLogConfigFrame" parent="UIParent" enableMouse="true" movable="true" frameStrata="DIALOG" hidden="true" toplevel="true">
         <Size>
-            <AbsDimension x="320" y="388"/>
+            <AbsDimension x="320" y="420"/>
         </Size>
         <Anchors>
             <Anchor point="CENTER"/>
@@ -78,7 +78,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT" relativeTo="txtPvPLogConfig_NotifyKillsToggle_Header">
                             <Offset>
-                                <AbsDimension x="20" y="-125"/>
+                                <AbsDimension x="20" y="-150"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -87,7 +87,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT" relativeTo="txtPvPLogConfig_NotifyDeathsToggle_Header">
                             <Offset>
-                                <AbsDimension x="20" y="-125"/>
+                                <AbsDimension x="20" y="-150"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -362,12 +362,32 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     </OnClick>
                 </Scripts>
             </CheckButton>
-            <CheckButton name="cbxPvPLogConfig_NotifyKillsRaid" inherits="OptionsCheckButtonTemplate">
+	    <CheckButton name="cbxPvPLogConfig_NotifyKillsSay" inherits="OptionsCheckButtonTemplate">
                 <Size>
                     <AbsDimension x="24" y="24"/>
                 </Size>
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_NotifyKillsGuild">
+                        <Offset>
+                            <AbsDimension x="0" y="-20"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnLoad>
+                        getglobal(this:GetName().."Text"):SetText(PVPLOG.SAY);
+                    </OnLoad>
+                    <OnClick>
+                        PvPLogNotifyKills_Toggle_OnClick(PVPLOG.SAY);
+                    </OnClick>
+                </Scripts>
+            </CheckButton>
+            <CheckButton name="cbxPvPLogConfig_NotifyKillsRaid" inherits="OptionsCheckButtonTemplate">
+                <Size>
+                    <AbsDimension x="24" y="24"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_NotifyKillsSay">
                         <Offset>
                             <AbsDimension x="0" y="-20"/>
                         </Offset>
