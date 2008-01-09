@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          2.4.9
-    Last Modified:    2008-01-07
+    Version:          2.5.0
+    Last Modified:    2008-01-09
 ]]
 
 local realm = "";
@@ -155,6 +155,13 @@ function PvPLogConfig_SetValues()
         ebxPvPLogConfig_NotifyDeathsChannel:SetText(PVPLOG.GUILD);
     else
         cbxPvPLogConfig_NotifyDeathsGuild:SetChecked(false);
+    end
+    
+    if (PvPLogData[realm][player].notifyDeath == PVPLOG.SAY) then
+        cbxPvPLogConfig_NotifyDeathsSay:SetChecked(true);
+        ebxPvPLogConfig_NotifyDeathsChannel:SetText(PVPLOG.SAY);
+    else
+        cbxPvPLogConfig_NotifyDeathsSay:SetChecked(false);
     end
     
     if (PvPLogData[realm][player].notifyDeath == PVPLOG.RAID) then
