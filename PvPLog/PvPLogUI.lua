@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          2.5.0
-    Last Modified:    2008-01-09
+    Version:          2.5.1
+    Last Modified:    2008-01-29
 ]]
 
 local realm = "";
@@ -500,36 +500,75 @@ function PvPLogStats_SetValues(statsValue)
             if ((statCount >= startCount) and (statCount <= endCount) and (v1.enemy == isEnemy)) then
                 pvpPlayerList = pvpPlayerList..name.."\n";
 
-                local GuildNotFound = true;
-                local RealmNotFound = true;
                 local ClassNotFound = true;
+                local RaceNotFound = true;
+                local RealmNotFound = true;
+                local GuildNotFound = true;
+                if (v1.class) then
+                    pvpClassList = pvpClassList..v1.class.."\n";
+                    ClassNotFound = false;
+                end    
+                if (v1.race) then
+                    pvpRaceList = pvpRaceList..v1.race.."\n";
+                    RaceNotFound = false;
+                end    
+                if (v1.realm) then
+                    pvpRealmList = pvpRealmList..v1.realm.."\n";
+                    RealmNotFound = false;
+                end    
+                if (v1.guild) then
+                    pvpGuildList = pvpGuildList..v1.guild.."\n";
+                    GuildNotFound = false;
+                end    
+
+-- After a while this code could be removed.
                 table.foreach(PurgeLogData[realm][player].battles, function( counter, v2 )
                     if (name == v2.name) then
                         if (ClassNotFound and v2.class) then
                             pvpClassList = pvpClassList..v2.class.."\n";
                             ClassNotFound = false;
+                            if (not v1.class) then
+                                v1.class = v2.class;
+                            end
                         end
-                        if (GuildNotFound and v2.guild) then
-                            pvpGuildList = pvpGuildList..v2.guild.."\n";
-                            GuildNotFound = false;
+                        if (RaceNotFound and v2.race) then
+                            pvpRaceList = pvpRaceList..v2.race.."\n";
+                            RaceNotFound = false;
+                            if (not v1.race) then
+                                v1.race = v2.race;
+                            end
                         end
                         if (RealmNotFound and v2.realm) then
                             pvpRealmList = pvpRealmList..v2.realm.."\n";
                             RealmNotFound = false;
+                            if (not v1.realm) then
+                                v1.realm = v2.realm;
+                            end
+                        end
+                        if (GuildNotFound and v2.guild) then
+                            pvpGuildList = pvpGuildList..v2.guild.."\n";
+                            GuildNotFound = false;
+                            if (not v1.guild) then
+                                v1.guild = v2.guild;
+                            end
                         end
                     end
                 end);
-                pvpRaceList = pvpRaceList.." \n";
+-- End of code that could be removed.
+
+                if (RaceNotFound) then
+                    pvpRaceList = pvpRaceList.." \n";
+                end
                 if (ClassNotFound) then
                     pvpClassList = pvpClassList.." \n";
-                end
-                pvpLevelList = pvpLevelList.." \n";
-                if (GuildNotFound) then
-                    pvpGuildList = pvpGuildList.." \n";
                 end
                 if (RealmNotFound) then
                     pvpRealmList = pvpRealmList.." \n";
                 end
+                if (GuildNotFound) then
+                    pvpGuildList = pvpGuildList.." \n";
+                end
+                pvpLevelList = pvpLevelList.." \n";
                 pvpWinsList = pvpWinsList..v1.wins.."\n";
                 pvpLossList = pvpLossList..v1.loss.."\n";
             end

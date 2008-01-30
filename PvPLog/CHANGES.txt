@@ -1,10 +1,17 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          2.5.0
-Last Modified:    2008-01-09
+Version:          2.5.1
+Last Modified:    2008-01-29
 
 CHANGES
+
+2008-01-29  * 2.5.1
+    * Added code to use race, realm, class, and guild data from PvPLogData (if it exists).
+    * Added code to copy race, realm, class, and guild from PurgeLogData to PvPLogData
+      when statistics frame is displayed.
+    * Added "/pl keep <n>" command to keep the most recent n PurgeLogData records.
+    * Removed "/pl fixguild" command.
 
 2008-01-09  * 2.5.0
     * Added cbxPvPLogConfig_NotifyDeathsSay
