@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.4.9
-    Last Modified:    2008-01-07
+    Version:          2.5.1
+    Last Modified:    2008-01-29
 ]]
 
 -- Local variables
@@ -1452,27 +1452,20 @@ function PvPLogGetGuildTotals(guild)
     return total;
 end
 
-function PvPLogFixGuild()
-    if (not initialized) then
-        PvPLogInitialize();
-    end
-    if (PvPLogData[realm][player].guilds["Unguilded"]) then
-        if(not PvPLogData[realm][player].guilds[""]) then
-            PvPLogData[realm][player].guilds[""] = { };
-            PvPLogData[realm][player].guilds[""].wins = 0;
-            PvPLogData[realm][player].guilds[""].loss = 0;
+function PvPLogKeepPurge(value)
+    if (tonumber(value)) then
+        -- PvPLogDebugMsg('value = '..tostring(value)..', PurgeCounter = '..tostring(PurgeLogData[realm][player].PurgeCounter));
+        local keep = PurgeLogData[realm][player].PurgeCounter - tonumber(value);
+        -- PvPLogDebugMsg('keep = '..tostring(keep));
+        if (keep > 5000) then
+            table.foreach(PurgeLogData[realm][player].battles, function( counter, v2 )
+                if (counter < keep) then
+                    -- PvPLogDebugMsg('counter = '..tostring(counter));
+                    PurgeLogData[realm][player].battles[counter] = nil;
+                end               
+            end);
         end
-        PvPLogData[realm][player].guilds[""].wins = PvPLogData[realm][player].guilds[""].wins + PvPLogData[realm][player].guilds["Unguilded"].wins;
-        PvPLogData[realm][player].guilds[""].loss = PvPLogData[realm][player].guilds[""].loss + PvPLogData[realm][player].guilds["Unguilded"].loss;
-        PvPLogData[realm][player].guilds["Unguilded"] = nil;
     end
-    table.foreach(PurgeLogData[realm][player].battles,
-        function(target,v1)
-            if (v1.guild and v1.guild == "Unguilded") then
-                v1.guild = "";
-            end
-        end
-    );
 end
 
 function PvPLogGetStats()
@@ -1604,11 +1597,13 @@ function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, 
         PvPLogData[realm][player].battles[vname].wins = 0;
         PvPLogData[realm][player].battles[vname].loss = 0;
         PvPLogData[realm][player].battles[vname].class = vclass;
+        PvPLogData[realm][player].battles[vname].race = vrace;
         PvPLogData[realm][player].battles[vname].enemy = venemy;
         PvPLogData[realm][player].battles[vname].realm = vrealm;
     end
-    -- update zone as it could change
+    -- update zone and guild as they could change with every new encounter.
     PvPLogData[realm][player].battles[vname].zone = ZoneName;
+    PvPLogData[realm][player].battles[vname].guild = vguild;
 
     if (not vguild) then
         vguild = "";
@@ -2013,8 +2008,8 @@ function PvPLogSlashHandler(msg)
         else
             PvPLogDebugMsg("isDuel = FALSE");
         end
-    elseif (command == "fixguild") then
-            PvPLogFixGuild();
+    elseif (command == PVPLOG.KEEP) then
+            PvPLogKeepPurge(value);
     elseif (command == PVPLOG.RESET) then
         if (value == PVPLOG.CONFIRM) then
             PvPLogInitPvP();
@@ -2207,6 +2202,7 @@ function PvPLogDisplayUsage()
     PvPLogChatMsgPl(string.lower(PVPLOG.UI_PVP));
     PvPLogChatMsgPl(string.lower(PVPLOG.DUEL));
     PvPLogChatMsgPl(PVPLOG.UI_CONFIG);
+    PvPLogChatMsgPl(PVPLOG.KEEP);
 end
 
 function PvPLogChatMsgPl(msg)

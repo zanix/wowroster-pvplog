@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.4.9
-    Last Modified:    2008-01-07
+    Version:          2.5.1
+    Last Modified:    2008-01-29
 ]]
 
 PVPLOG = {};
@@ -37,6 +37,7 @@ PVPLOG = {};
     PVPLOG.NOTIFYDEATH = "notifydeath";
     PVPLOG.NOTIFYDEATHTEXT = "deathtext";
     PVPLOG.UI_CONFIG = "config";
+    PVPLOG.KEEP = "keep";
         
     -- Other needed phrases
     PVPLOG.TO = " to ";
@@ -144,6 +145,7 @@ if (GetLocale() == "deDE") then
     PVPLOG.NOTIFYDEATH = "todesanzeige";
     PVPLOG.NOTIFYDEATHTEXT = "deathtext";
     PVPLOG.UI_CONFIG = "konfiguration";
+    PVPLOG.KEEP = "keep";
     
     -- Other needed phrases
     PVPLOG.TO = " to ";
@@ -247,6 +249,7 @@ elseif (GetLocale() == "frFR") then
     PVPLOG.NOTIFYDEATH = "notifierdefaites";
     PVPLOG.NOTIFYDEATHTEXT = "textededefaite";
     PVPLOG.UI_CONFIG = "configuration";
+    PVPLOG.KEEP = "keep";
 
     -- Other needed phrases
     PVPLOG.TO = " à ";          -- ?
@@ -352,6 +355,7 @@ elseif (GetLocale() == "esES") then
     PVPLOG.NOTIFYDEATH = "notificar muerte"; -- "Aviso de Muertes"
     PVPLOG.NOTIFYDEATHTEXT = "texto muerte";
     PVPLOG.UI_CONFIG = "configuraci\195\179n";
+    PVPLOG.KEEP = "keep";
 
     -- Other needed phrases
     PVPLOG.TO = " a ";
