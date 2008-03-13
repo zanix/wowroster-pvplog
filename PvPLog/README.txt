@@ -1,8 +1,8 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          2.4.7
-Last Modified:    2007-12-03
+Version:          3.0.0
+Last Modified:    2008-02-12
 
 README
 
@@ -91,11 +91,18 @@ Use:
     You may get the vendor tag of PvPLog with:
         /pvplog vendor
 
+    You may keep only the lastest N PurgeLogData records with:
+        /pvplog keep <n>
+
     You may reset your PvPLog settings using:
         /pvplog reset confirm
     Be careful as this will erase all your records!
 
     Debugging commands:
+    
+    Use of these commands could cause the permanent loss of accumulated
+    data. Use at your own risk. These commands are english only.
+    
     	/pvplog debug [on|off]
     	    Turns debugging messages on or off. When debugging messages
     	    are on, they are sent to chat and to a per character array
@@ -104,6 +111,9 @@ Use:
     	/pvplog debug save
 	    Copies the array of debug/combat messages into another array.
 
+    	/pvplog debug clear
+	    Clears the array of debug/combat messages.
+
     	/pvplog vars
     	    Send some internal variables to chat.
 
@@ -111,6 +121,25 @@ Use:
 	    Turns the recording of targets to ignore on or off. Ignored
 	    targets provide a performance optimization and should be 
 	    left on (off provides some debugging with mobs).
+
+    	/pvplog pve [on|off]
+	    Turns debugging with hostile NPCs (mobs) on or off.
+	    (/pvplog ignore off required).
+
+	/pvplog ignore clear
+	    Clears the ignore variables.
+
+	/pvplog target clear
+	    Clears the target variables.
+
+    	/pvplog event1 [on|off]
+	    Turns event to chat debugging messages on or off.
+
+    	/pvplog event2 [on|off]
+	    Turns event to array debugging messages on or off.
+
+    	/pvplog combat [on|off]
+	    Turns combat to chat debugging messages on or off.
 
     	/pvplog comm [on|off]
 	    Turns channel communication debugging messages on or off.

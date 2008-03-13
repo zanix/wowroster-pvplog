@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          2.5.1
-    Last Modified:    2008-01-29
+    Version:          3.0.0
+    Last Modified:    2008-02-11
 ]]
 
 local realm = "";
@@ -437,9 +437,17 @@ function PvPLogStats_SetValues(statsValue)
                 if (v2.bg and v2.bg == 0 and v2.time and v2.time > dayago and v2.enemy == isEnemy) then
                     if (statCount >= startCount and statCount <= endCount) then
                         pvpPlayerList = pvpPlayerList..v2.name.."\n";
-                        pvpRaceList = pvpRaceList..v2.race.."\n";
-                        pvpClassList = pvpClassList..v2.class.."\n";
                         pvpLevelList = pvpLevelList..v2.lvlDiff.."\n";
+                        if (v2.race) then
+                            pvpRaceList = pvpRaceList..v2.race.."\n";
+                        else
+                            pvpRaceList = pvpRaceList.." \n";
+                        end
+                        if (v2.class) then
+                            pvpClassList = pvpClassList..v2.class.."\n";
+                        else
+                            pvpClassList = pvpClassList.." \n";
+                        end
                         if (v2.guild) then
                             pvpGuildList = pvpGuildList..v2.guild.."\n";
                         else
