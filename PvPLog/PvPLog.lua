@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-02-15
+    Last Modified:    2008-03-15
 ]]
 
 -- Local variables
@@ -31,13 +31,14 @@ local bg_indx = 0;
 local isDuel = false;
 local duelInbounds = true;
 
-local debug_flag = false;     -- Overridden by PvPLogDebugFlag after VARIABLES_LOADED event.
-local debug_comm = false;     -- Overridden by PvPLogDebugComm after VARIABLES_LOADED event.
-local debug_ignore = true;    -- Overridden by PvPLogDebugIgnore after VARIABLES_LOADED event.
-local debug_event1 = false;   -- Overridden by PvPLogDebugEvent1 after VARIABLES_LOADED event.
-local debug_event2 = false;   -- Overridden by PvPLogDebugEvent2 after VARIABLES_LOADED event.
-local debug_combat = false;   -- Overridden by PvPLogDebugCombat after VARIABLES_LOADED event.
-local debug_pve = false;      -- Overridden by PvPLogDebugPvE after VARIABLES_LOADED event.
+local debug_flag = false;     -- Overridden by PvPLogDebug.flag after VARIABLES_LOADED event.
+local debug_comm = false;     -- Overridden by PvPLogDebug.comm after VARIABLES_LOADED event.
+local debug_ignore = true;    -- Overridden by PvPLogDebug.ignore after VARIABLES_LOADED event.
+local debug_event1 = false;   -- Overridden by PvPLogDebug.event1 after VARIABLES_LOADED event.
+local debug_event2 = false;   -- Overridden by PvPLogDebug.event2 after VARIABLES_LOADED event.
+local debug_combat = false;   -- Overridden by PvPLogDebug.combat after VARIABLES_LOADED event.
+local debug_pve = false;      -- Overridden by PvPLogDebug.pve after VARIABLES_LOADED event.
+local debug_ui = false;       -- Overridden by PvPLogDebug.ui after VARIABLES_LOADED event.
 
 local lastDamagerToMe = "";
 local foundDamaged = false;
@@ -264,6 +265,11 @@ function PvPLogOnEvent()
         else
             debug_pve = PvPLogDebugFlags.pve; -- Manually set to true if you want to record pve (for debugging).
         end
+        if (PvPLogDebugFlags.ui == nil) then
+            PvPLogDebugFlags.ui = false;
+        else
+            debug_ui = PvPLogDebugFlags.ui; -- Manually set to true if you want to record pve (for debugging).
+        end
         PvPLog_RegisterWithAddonManagers();
         
     -- initialize when entering world
@@ -471,14 +477,14 @@ function PvPLogOnEvent()
             end
             if (dstName ~= player) then
                 -- Don't keep track of damage to self (Life Tap)
-                PvPLogMyDamage(dstName);
+                PvPLogMyDamage(dstName, dstGUID);
             end
         elseif (dstName == player) then
             if (debug_combat) then
                 PvPLogDebugMsg(message, YELLOW);
             end
             -- I'll bet heals pass this test.
-            PvPLogDamageMe(srcName);
+            PvPLogDamageMe(srcName, srcGUID);
         else
             if (debug_combat) then
                 PvPLogDebugMsg(message, WHITE);
@@ -556,8 +562,18 @@ function PvPLogDebugAdd(msg)
     end
 end
 
-function PvPLogCommMsg(msg, color)
+function PvPLogDebugComm(msg, color)
     if (debug_comm) then
+        if (color) then
+            PvPLogChatMsg('PvPLog: ' .. color .. msg);
+        else
+            PvPLogChatMsg('PvPLog: ' .. msg);
+        end
+    end
+end
+
+function PvPLogDebugUI(msg, color)
+    if (debug_ui) then
         if (color) then
             PvPLogChatMsg('PvPLog: ' .. color .. msg);
         else
@@ -643,6 +659,59 @@ function PvPLogPlayerDeath(parseName)
     end
 end
 
+function PvPLogGetTooltipText(table, name, guid)
+    local m = 0;
+    local l = 0;
+    local hide = false;
+    local text = { };
+    local level;
+
+    if (guid) then
+        -- PvPLogDebugMsg("name = '"..name.."', guid = '"..tostring(guid).."'");
+        GameTooltip:SetHyperlink("unit:" .. guid);
+        hide = true;
+        table.guid = guid;
+    end
+    m = GameTooltip:NumLines();
+    -- PvPLogDebugMsg("m = "..tostring(m));
+    for n = 1, m do
+        text[n] = getglobal('GameTooltipTextLeft'..n):GetText();
+        -- PvPLogDebugMsg("text["..n.."] = "..tostring(text[n]));
+        if (string.find(text[n], "Level ")) then
+            l = n;
+        end    
+    end
+    if (hide) then
+        GameTooltip:Hide();
+    end
+    if (l > 0) then
+        _, _, level, table.race, table.class =
+            string.find(text[l], "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)");
+        if (level == "??") then
+            table.level = -1;
+        else
+            table.level = tonumber(level);
+        end
+    end
+    if (l == 3) then
+        if (string.find(text[2], "'s Pet") or string.find(text[2], "'s Minion")) then
+            _, _, table.owner = string.find(text[2], "(%w+)'s "); 
+            _, _, level = string.find(text[3], "Level ([%d%?]+)");
+            if (level == "??") then
+                table.level = -1;
+            else
+                table.level = tonumber(level);
+            end
+        else
+            table.guild = text[2];
+        end
+    end
+    if (m > 0) then
+        table.rank = PvPLogFindRank(text[1], name);
+    end
+    -- return m, text;
+end
+
 function PvPLogPutInTable(tab, nam)
     local exists = false;
     table.foreach(tab,
@@ -662,7 +731,7 @@ function PvPLogPutInTable(tab, nam)
     return exists;
 end
 
-function PvPLogMyDamage(res1)
+function PvPLogMyDamage(res1,guid)
     if (res1) then
         if ((isDuel or not ignoreRecords[res1]) and not targetRecords[res1]) then
             PvPLogDebugMsg("Damaged Target Addition: "..res1, RED);
@@ -673,6 +742,7 @@ function PvPLogMyDamage(res1)
                 targetRecords[targetList[1]] = nil;
                 table.remove(targetList,1);
             end
+            PvPLogGetTooltipText(targetRecords[res1], res1, guid);
         end
         if (isDuel or not ignoreRecords[res1]) then
             if (not PvPLogPutInTable(recentDamaged, res1)) then
@@ -683,7 +753,7 @@ function PvPLogMyDamage(res1)
     end
 end
 
-function PvPLogDamageMe(res1)
+function PvPLogDamageMe(res1, guid)
     if (res1) then
         if ((isDuel or not ignoreRecords[res1]) and not targetRecords[res1]) then
             PvPLogDebugMsg("Damager Target Addition: "..res1, RED);
@@ -694,6 +764,7 @@ function PvPLogDamageMe(res1)
                 targetRecords[targetList[1]] = nil;
                 table.remove(targetList,1);
             end
+            PvPLogGetTooltipText(targetRecords[res1], res1, guid);
         end
         if (isDuel or not ignoreRecords[res1]) then
             if (not PvPLogPutInTable(recentDamager, res1)) then
@@ -1254,6 +1325,20 @@ function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, 
     end
 end
 
+function PvPLogFindRank(full, name)
+    local rank;
+    local left, found = string.gsub(full, " "..name, "");
+    if (found == 1) then
+        rank = left;
+    else
+        left, found = string.gsub(full, name..", ", "");
+        if (found == 1) then
+            rank = left;
+        end
+    end
+    return rank;
+end
+
 -- This function is called whenever the player's target has changed.
 -- In WoW V2, this is about the only place where we can be sure of capturing
 -- information about our target.
@@ -1294,11 +1379,7 @@ function PvPLogUpdateTarget(dueling)
                 targetRecords[targetName].race = targetRace;
                 targetRecords[targetName].class = targetClass;
                 targetRecords[targetName].guild = targetGuild;
-                targetRecords[targetName].rank = "";
-                local fullrank = string.gsub(targetRank," "..targetName,"");
-                if (fullrank ~= targetName) then
-                    targetRecords[targetName].rank = fullrank;
-                end
+                targetRecords[targetName].rank = PvPLogFindRank(targetRank, targetName);
             else
                 if (targetLevel > targetRecords[targetName].level) then
                     PvPLogDebugMsg('Target updated: ' .. targetName);
@@ -1546,10 +1627,22 @@ function PvPLogSlashHandler(msg)
     elseif (command == "pve") then
         if (value == "on") then
             debug_pve = true;
+            debug_ignore = false;
+            ignoreList = { };
+            ignoreRecords = { };
         elseif (value == "off") then
             debug_pve = false;
         else
             PvPLogDebugMsg("debug_pve = "..tostring(debug_pve));
+            PvPLogDebugMsg("debug_ignore = "..tostring(debug_ignore));
+        end
+    elseif (command == "ui") then
+        if (value == "on") then
+            debug_ui = true;
+        elseif (value == "off") then
+            debug_ui = false;
+        else
+            PvPLogDebugMsg("debug_ui = "..tostring(debug_ui));
         end
     elseif (command == "vars") then
         if (softPL) then
@@ -1792,14 +1885,14 @@ function PvPLogSendChatMessage(message, channel)
     if (chan == PVPLOG.RAID) then chan = "RAID"; end
     if (chan == PVPLOG.SAY) then chan = "SAY"; end
     if (chan == PVPLOG.BG) then chan = "BATTLEGROUND"; end
-    PvPLogCommMsg('PvPLogSendChatMessage("' .. message .. '", "' .. channel .. '")');
+    PvPLogDebugComm('PvPLogSendChatMessage("' .. message .. '", "' .. channel .. '")');
     SendChatMessage(message, channel);
 end
 
 function PvPLogSendMessageOnChannel(message, channel)
     local number = 0;
     number = PvPLogGetChannelNumber(channel);
-    PvPLogCommMsg('PvPLogSendMessageOnChannel("' .. message .. '", "' .. channel .. '", ' .. number ..')');
+    PvPLogDebugComm('PvPLogSendMessageOnChannel("' .. message .. '", "' .. channel .. '", ' .. number ..')');
     if (not number or number == 0) then
         PvPLogJoinChannel(channel);
         queuedMessage = message;
@@ -1811,23 +1904,23 @@ function PvPLogSendMessageOnChannel(message, channel)
 end
 
 function PvPLogGetChannelNumber(channel)
-    PvPLogCommMsg('PvPLogGetChannelNumber("' .. channel .. '")');
+    PvPLogDebugComm('PvPLogGetChannelNumber("' .. channel .. '")');
     local number = 0;
     if (string.len(channel) == 1 and channel >= "1" and channel <= "9") then
         number = channel;
     else
         number = GetChannelName(channel);
     end
-    PvPLogCommMsg('channelNum: ' .. tostring(number));
+    PvPLogDebugComm('channelNum: ' .. tostring(number));
     return number;
 end
 
 function PvPLogJoinChannel(channel)
-    PvPLogCommMsg('PvPLogJoinChannel("' .. channel .. '")');
+    PvPLogDebugComm('PvPLogJoinChannel("' .. channel .. '")');
     local number = 0;
     JoinChannelByName(channel, nil, DEFAULT_CHAT_FRAME:GetID());
     ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channel);
     number = GetChannelName(channel);
-    PvPLogCommMsg('channelNum: ' .. tostring(number));
+    PvPLogDebugComm('channelNum: ' .. tostring(number));
     return number;
 end

@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-02-11
+    Last Modified:    2008-03-15
 ]]
 
 local realm = "";
@@ -430,9 +430,9 @@ function PvPLogStats_SetValues(statsValue)
     if (PVPLOG.STATS_TYPE == PVPLOG.RECENT) then
         local now = time();
         local dayago = now - 24 * 60 * 60;
-        PvPLogDebugMsg('now = '..tostring(now)..', dayago = '..tostring(dayago));
+        PvPLogDebugUI('now = '..tostring(now)..', dayago = '..tostring(dayago));
         table.foreach(PurgeLogData[realm], function( character, v1 )
-            PvPLogDebugMsg('character = '..tostring(character));
+            PvPLogDebugUI('character = '..tostring(character));
             table.foreach(PurgeLogData[realm][character].battles, function( counter, v2 )
                 if (v2.bg and v2.bg == 0 and v2.time and v2.time > dayago and v2.enemy == isEnemy) then
                     if (statCount >= startCount and statCount <= endCount) then
@@ -463,13 +463,15 @@ function PvPLogStats_SetValues(statsValue)
             end);
         end);
     elseif (PVPLOG.STATS_TYPE == PVPLOG.TARGET) then
-        PvPLogDebugMsg('startCount = '..tostring(startCount)..', endCount = '..tostring(endCount));
+        PvPLogDebugUI('startCount = '..tostring(startCount)..', endCount = '..tostring(endCount));
         for i = table.getn(targetList),1,-1 do
             if (statCount >= startCount and statCount <= endCount) then
-                PvPLogDebugMsg('character = '..tostring(targetList[i])..", statCount = "..tostring(statCount));
+                PvPLogDebugUI('character = '..tostring(targetList[i])..", statCount = "..tostring(statCount));
                 v2 = targetRecords[targetList[i]];
-                PvPLogDebugMsg('     Race = '..tostring(v2.race)..', Class = '..tostring(v2.class)..', Level = '..tostring(v2.level));
-                PvPLogDebugMsg('    Guild = '..tostring(v2.guild)..', Realm = '..tostring(v2.realm));
+                PvPLogDebugUI('    Race = '..tostring(v2.race)..', Class = '..tostring(v2.class));
+                PvPLogDebugUI('    Level = '..tostring(v2.level)..', Rank = '..tostring(v2.rank));
+                PvPLogDebugUI('    Guild = '..tostring(v2.guild)..', Realm = '..tostring(v2.realm));
+                PvPLogDebugUI('    GUID = '..tostring(v2.guid)..', Owner = '..tostring(v2.owner));
                 pvpPlayerList = pvpPlayerList..targetList[i].."\n";
                 if (v2.race) then
                     pvpRaceList = pvpRaceList..v2.race.."\n";
@@ -502,7 +504,7 @@ function PvPLogStats_SetValues(statsValue)
             statCount = statCount + 1;
             statsTotal = statsTotal + 1;
         end
-        PvPLogDebugMsg('statCount = '..tostring(statCount)..', statsTotal = '..tostring(statsTotal));
+        PvPLogDebugUI('statCount = '..tostring(statCount)..', statsTotal = '..tostring(statsTotal));
     else
         table.foreach( PvPLogData[realm][player].battles, function( name, v1 )
             if ((statCount >= startCount) and (statCount <= endCount) and (v1.enemy == isEnemy)) then

@@ -2,7 +2,7 @@ PvPLog
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
 Version:          3.0.0
-Last Modified:    2008-02-12
+Last Modified:    2008-03-14
 
 README
 
@@ -140,6 +140,9 @@ Use:
 
     	/pvplog combat [on|off]
 	    Turns combat to chat debugging messages on or off.
+
+    	/pvplog ui [on|off]
+	    Turns ui to chat debugging messages on or off.
 
     	/pvplog comm [on|off]
 	    Turns channel communication debugging messages on or off.
