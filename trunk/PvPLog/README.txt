@@ -2,7 +2,7 @@ PvPLog
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
 Version:          3.0.0
-Last Modified:    2008-03-14
+Last Modified:    2008-03-16
 
 README
 
@@ -19,13 +19,12 @@ Installation:
         PvPLog/PvPLogUI.xml
         PvPLog/PvPLogUI.lua
         PvPLog/localization.lua
-        PvPLog/MarsMessageParser.lua
         PvPLog/MyMinimapButton.lua
         PvPLog/nopatch
         PvPLog2/PvPLog2.toc
 
 
-    Place the entire PvPLog directory in your 
+    Place the entire zip contents into your 
     WoW/Interface/AddOns directory.
 
     
@@ -143,6 +142,9 @@ Use:
 
     	/pvplog ui [on|off]
 	    Turns ui to chat debugging messages on or off.
+
+    	/pvplog ttm [on|off]
+	    Turns tooltip to chat debugging messages on or off.
 
     	/pvplog comm [on|off]
 	    Turns channel communication debugging messages on or off.
