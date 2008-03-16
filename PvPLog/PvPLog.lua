@@ -39,6 +39,7 @@ local debug_event2 = false;   -- Overridden by PvPLogDebug.event2 after VARIABLE
 local debug_combat = false;   -- Overridden by PvPLogDebug.combat after VARIABLES_LOADED event.
 local debug_pve = false;      -- Overridden by PvPLogDebug.pve after VARIABLES_LOADED event.
 local debug_ui = false;       -- Overridden by PvPLogDebug.ui after VARIABLES_LOADED event.
+local debug_ttm = false;
 
 local lastDamagerToMe = "";
 local foundDamaged = false;
@@ -320,6 +321,18 @@ function PvPLogOnEvent()
         if (PvPLogData[realm][player].mouseover) then
 
             if (UnitExists("mouseover")) then
+--***
+-- Code for debugging the tooltip stuff
+                if (debug_ttm) then
+                    local v2 = { };
+                    PvPLogGetTooltipText(v2, UnitName("mouseover"));
+                    PvPLogChatMsg("character = '"..UnitName("mouseover").."'");
+                    PvPLogChatMsg('    Race = '..tostring(v2.race)..', Class = '..tostring(v2.class));
+                    PvPLogChatMsg('    Level = '..tostring(v2.level)..', Rank = '..tostring(v2.rank));
+                    PvPLogChatMsg('    Guild = '..tostring(v2.guild)..', Realm = '..tostring(v2.realm));
+                    PvPLogChatMsg('    GUID = '..tostring(v2.guid)..', Owner = '..tostring(v2.owner));
+                end
+--***
                 local total = PvPLogGetPvPTotals(UnitName("mouseover"));
                 local guildTotal = PvPLogGetGuildTotals(GetGuildInfo("mouseover"));
 
@@ -659,6 +672,20 @@ function PvPLogPlayerDeath(parseName)
     end
 end
 
+function PvPLogFindRank(full, name)
+    local rank;
+    local left, found = string.gsub(full, " "..name, "");
+    if (found == 1) then
+        rank = left;
+    else
+        left, found = string.gsub(full, name..", ", "");
+        if (found == 1) then
+            rank = left;
+        end
+    end
+    return rank;
+end
+
 function PvPLogGetTooltipText(table, name, guid)
     local m = 0;
     local l = 0;
@@ -677,7 +704,7 @@ function PvPLogGetTooltipText(table, name, guid)
     for n = 1, m do
         text[n] = getglobal('GameTooltipTextLeft'..n):GetText();
         -- PvPLogDebugMsg("text["..n.."] = "..tostring(text[n]));
-        if (string.find(text[n], "Level ")) then
+        if (string.find(text[n], PVPLOG.TT_LEVEL)) then
             l = n;
         end    
     end
@@ -686,7 +713,7 @@ function PvPLogGetTooltipText(table, name, guid)
     end
     if (l > 0) then
         _, _, level, table.race, table.class =
-            string.find(text[l], "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)");
+            string.find(text[l], PVPLOG.TT_PLAYER);
         if (level == "??") then
             table.level = -1;
         else
@@ -694,9 +721,9 @@ function PvPLogGetTooltipText(table, name, guid)
         end
     end
     if (l == 3) then
-        if (string.find(text[2], "'s Pet") or string.find(text[2], "'s Minion")) then
-            _, _, table.owner = string.find(text[2], "(%w+)'s "); 
-            _, _, level = string.find(text[3], "Level ([%d%?]+)");
+        if (string.find(text[2], PVPLOG.TT_PET) or string.find(text[2], PVPLOG.TT_MINION)) then
+            _, _, table.owner = string.find(text[2], PVPLOG.TT_OWNER);
+            _, _, level = string.find(text[3], PVPLOG.TT_LEVEL2);
             if (level == "??") then
                 table.level = -1;
             else
@@ -1325,20 +1352,6 @@ function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, 
     end
 end
 
-function PvPLogFindRank(full, name)
-    local rank;
-    local left, found = string.gsub(full, " "..name, "");
-    if (found == 1) then
-        rank = left;
-    else
-        left, found = string.gsub(full, name..", ", "");
-        if (found == 1) then
-            rank = left;
-        end
-    end
-    return rank;
-end
-
 -- This function is called whenever the player's target has changed.
 -- In WoW V2, this is about the only place where we can be sure of capturing
 -- information about our target.
@@ -1643,6 +1656,14 @@ function PvPLogSlashHandler(msg)
             debug_ui = false;
         else
             PvPLogDebugMsg("debug_ui = "..tostring(debug_ui));
+        end
+    elseif (command == "ttm") then
+        if (value == "on") then
+            debug_ttm = true;
+        elseif (value == "off") then
+            debug_ttm = false;
+        else
+            PvPLogDebugMsg("debug_ttm = "..tostring(debug_ttm));
         end
     elseif (command == "vars") then
         if (softPL) then

@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          2.5.1
-    Last Modified:    2008-01-29
+    Version:          3.0.0
+    Last Modified:    2008-03-16
 ]]
 
 PVPLOG = {};
@@ -117,6 +117,13 @@ PVPLOG = {};
     PVPLOG.UI_NOTIFY_BG = "Notify in Battlegrounds";
     PVPLOG.UI_NOTIFY_DUEL = "Notify Duels";
 
+    PVPLOG.TT_LEVEL = "Level "
+    PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
+    PVPLOG.TT_PET = "'s Pet"
+    PVPLOG.TT_MINION = "'s Minion"
+    PVPLOG.TT_OWNER = "(%w+)'s "
+    PVPLOG.TT_LEVEL2 = "Level ([%d%?]+)"
+
 --***********
 -- GERMAN
 --***********
@@ -223,6 +230,13 @@ if (GetLocale() == "deDE") then
     PVPLOG.UI_RECORD_DUEL = "Record Duels";
     PVPLOG.UI_NOTIFY_BG = "Notify in Battlegrounds";
     PVPLOG.UI_NOTIFY_DUEL = "Notify Duels";
+
+    PVPLOG.TT_LEVEL = "Level "
+    PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
+    PVPLOG.TT_PET = "'s Pet"
+    PVPLOG.TT_MINION = "'s Minion"
+    PVPLOG.TT_OWNER = "(%w+)'s "
+    PVPLOG.TT_LEVEL2 = "Level ([%d%?]+)"
 
 elseif (GetLocale() == "frFR") then
     -- Translated by (): Exerladan
@@ -332,6 +346,13 @@ elseif (GetLocale() == "frFR") then
     PVPLOG.UI_NOTIFY_BG = "Notifier sur les champs de bataille";
     PVPLOG.UI_NOTIFY_DUEL = "Notifier les duels";
     
+    PVPLOG.TT_LEVEL = "Level "
+    PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
+    PVPLOG.TT_PET = "'s Pet"
+    PVPLOG.TT_MINION = "'s Minion"
+    PVPLOG.TT_OWNER = "(%w+)'s "
+    PVPLOG.TT_LEVEL2 = "Level ([%d%?]+)"
+
 elseif (GetLocale() == "esES") then
 -- Translated by (traducido por): NeKRoMaNT
 
@@ -434,5 +455,12 @@ elseif (GetLocale() == "esES") then
     PVPLOG.UI_RECORD_DUEL = "Historial de Duelos";
     PVPLOG.UI_NOTIFY_BG = "Notificar en Campos de Batalla";
     PVPLOG.UI_NOTIFY_DUEL = "Notificar Duelos";
+
+    PVPLOG.TT_LEVEL = "Level "
+    PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
+    PVPLOG.TT_PET = "'s Pet"
+    PVPLOG.TT_MINION = "'s Minion"
+    PVPLOG.TT_OWNER = "(%w+)'s "
+    PVPLOG.TT_LEVEL2 = "Level ([%d%?]+)"
 
 end
