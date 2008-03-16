@@ -325,7 +325,7 @@ function PvPLogOnEvent()
 -- Code for debugging the tooltip stuff
                 if (debug_ttm) then
                     local v2 = { };
-                    PvPLogGetTooltipText(v2, UnitName("mouseover"));
+                    PvPLogGetTooltipText(v2, (UnitName("mouseover")), nil);
                     PvPLogChatMsg("character = '"..UnitName("mouseover").."'");
                     PvPLogChatMsg('    Race = '..tostring(v2.race)..', Class = '..tostring(v2.class));
                     PvPLogChatMsg('    Level = '..tostring(v2.level)..', Rank = '..tostring(v2.rank));
@@ -672,6 +672,15 @@ function PvPLogPlayerDeath(parseName)
     end
 end
 
+function PvPLogFindRealm(full)
+    local left;
+    local realm;
+    _, _, left, realm = string.find(full,"(.*) %- (.*)");
+    -- PvPLogDebugMsg("full = '"..tostring(full).."'");
+    -- PvPLogDebugMsg("left = '"..tostring(left).."', realm = '"..tostring(realm).."'");
+    return left, realm;
+end
+
 function PvPLogFindRank(full, name)
     local rank;
     local left, found = string.gsub(full, " "..name, "");
@@ -734,9 +743,14 @@ function PvPLogGetTooltipText(table, name, guid)
         end
     end
     if (m > 0) then
-        table.rank = PvPLogFindRank(text[1], name);
+        local left;
+        left, table.realm = PvPLogFindRealm(text[1]);
+        if (left) then
+            table.rank = PvPLogFindRank(left, name);
+        else
+            table.rank = PvPLogFindRank(text[1], name);
+        end
     end
-    -- return m, text;
 end
 
 function PvPLogPutInTable(tab, nam)
