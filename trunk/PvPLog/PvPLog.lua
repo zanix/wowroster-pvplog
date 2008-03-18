@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-03-15
+    Last Modified:    2008-03-18
 ]]
 
 -- Local variables
@@ -721,8 +721,7 @@ function PvPLogGetTooltipText(table, name, guid)
         GameTooltip:Hide();
     end
     if (l > 0) then
-        _, _, level, table.race, table.class =
-            string.find(text[l], PVPLOG.TT_PLAYER);
+        _, _, level, table.race, table.class = string.find(text[l], PVPLOG.TT_PLAYER);
         if (level == "??") then
             table.level = -1;
         else
@@ -730,8 +729,16 @@ function PvPLogGetTooltipText(table, name, guid)
         end
     end
     if (l == 3) then
-        if (string.find(text[2], PVPLOG.TT_PET) or string.find(text[2], PVPLOG.TT_MINION)) then
-            _, _, table.owner = string.find(text[2], PVPLOG.TT_OWNER);
+        local left, found = string.gsub(text[2], PVPLOG.TT_PET, "");
+        if (found == 1) then
+            table.owner = left;
+        else
+            left, found = string.gsub(text[2], PVPLOG.TT_MINION, "");
+            if (found == 1) then
+                table.owner = left;
+            end
+        end
+        if (found == 1) then
             _, _, level = string.find(text[3], PVPLOG.TT_LEVEL2);
             if (level == "??") then
                 table.level = -1;
