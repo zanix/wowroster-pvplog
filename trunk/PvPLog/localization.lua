@@ -136,25 +136,25 @@ if (GetLocale() == "deDE") then
 
     -- Commands (must be one word and string.lower)
     PVPLOG.RESET = "zurücksetzen";
-    PVPLOG.ENABLE = "einschalten";    
-    PVPLOG.DISABLE = "ausschalten";  
+    PVPLOG.ENABLE = "aktivieren"; -- "einschalten"    
+    PVPLOG.DISABLE = "deaktivieren"; -- "ausschalten"  
     PVPLOG.VER = "version";      -- version? versionsnummer?
-    PVPLOG.VEN = "vendor";       -- verkufer?
+    PVPLOG.VEN = "verk\195\164ufer"; -- verkufer?
     PVPLOG.DISPLAY = "anzeige";  
     PVPLOG.DING = "ding";
-    PVPLOG.MOUSEOVER = "mouseover";
+    PVPLOG.MOUSEOVER = ""maus\195\188ber"";
     PVPLOG.NOSPAM = "nospam";
     PVPLOG.DMG = "schaden";
     PVPLOG.ST = "stats";
     PVPLOG.NOTIFYKILL = "killanzeige";
     PVPLOG.NOTIFYKILLTEXT = "killtext";
     PVPLOG.NOTIFYDEATH = "todesanzeige";
-    PVPLOG.NOTIFYDEATHTEXT = "deathtext";
+    PVPLOG.NOTIFYDEATHTEXT = "todestext";
     PVPLOG.UI_CONFIG = "konfiguration";
-    PVPLOG.KEEP = "keep";
+    PVPLOG.KEEP = "behalten";
     
     -- Other needed phrases
-    PVPLOG.TO = " to ";
+    PVPLOG.TO = " zu ";
     PVPLOG.ON = "an";
     PVPLOG.OFF = "aus";
     PVPLOG.NONE = "keine";        
@@ -162,11 +162,11 @@ if (GetLocale() == "deDE") then
     PVPLOG.USAGE = "Usage";      -- verwenden?
     
     PVPLOG.STATS = "Statistik";
-    PVPLOG.RECORDS = "Records";
+    PVPLOG.RECORDS = "Aufzeichnungen";
     PVPLOG.COMP = "komplett";
     
-    PVPLOG.SELF = "Self";
-    PVPLOG.SAY = "Say"; --translation needed
+    PVPLOG.SELF = "Selbst";
+    PVPLOG.SAY = "Sagen";
     PVPLOG.PARTY = "Gruppe";
     PVPLOG.GUILD = "Gilde";
     PVPLOG.RAID = "Schlachtzug";
@@ -178,17 +178,17 @@ if (GetLocale() == "deDE") then
 --  PVPLOG.AB = "Arathibecken";
 --  PVPLOG.AV = "Alteractal";
 --  PVPLOG.WSG = "Warsongschlucht";
+--  PVPLOG.EOS = "Auge des Sturms";
 
-    
     PVPLOG.WIN = "sieg";
-    PVPLOG.LOSS = "verlor";
+    PVPLOG.LOSS = "niederlage"; -- "verlor"
     PVPLOG.WINS = "siege";
-    PVPLOG.LOSSES = "verloren";
+    PVPLOG.LOSSES = "niederlagen"; -- "verloren"
     
-    PVPLOG.PLAYER = "Player";
-    PVPLOG.RECENT = "Recent";
-    PVPLOG.TARGET = "Target";
-    PVPLOG.DUEL = "Duell";
+    PVPLOG.PLAYER = "Spieler";
+    PVPLOG.RECENT = "Bekannt";
+    PVPLOG.TARGET = "Ziel";
+    PVPLOG.DUEL = "Duelle"; -- "Duell"
     PVPLOG.TOTAL = "Summe";
     PVPLOG.ALD = "Durchschnittlicher Levelunterschied";
         
@@ -211,24 +211,24 @@ if (GetLocale() == "deDE") then
     PVPLOG.UI_DING = "Audio Ding-Sound";
     PVPLOG.UI_DISPLAY = "Floating text messages";
     PVPLOG.UI_NOTIFY_NONE = "Keine";
-    PVPLOG.UI_DING_TIP = "When you mouse-over a player you\nhave fought before a sound will play.";
+    PVPLOG.UI_DING_TIP = "Wenn Du mit der Maus \195\182ber einen Gegner f\195\164hrst\n, den Du vorher bek\195\164mpft hast, dann ert\195\182nt ein Signalton.";
     PVPLOG.UI_PVP = "PvP";
     PVPLOG.UI_NAME = "Name";
-    PVPLOG.UI_RACE = "Race";
-    PVPLOG.UI_CLASS = "Class";
+    PVPLOG.UI_RACE = "Rasse";
+    PVPLOG.UI_CLASS = "Klasse";
     PVPLOG.UI_LDIFF = "L Diff"
     PVPLOG.UI_LEVEL = "Level"
     PVPLOG.UI_WINS = "Siege";
-    PVPLOG.UI_LOSSES = "Verloren";
+    PVPLOG.UI_LOSSES = "Niederlagen"; == "Verloren"
     PVPLOG.UI_TOGGLE = PVPLOG.UI_CONFIG .. " anzeigen/verbergen";
     PVPLOG.UI_TOGGLE2 = PVPLOG.STATS .. " anzeigen/verbergen";
     PVPLOG.UI_RIGHT_CLICK = "Rechtsklick: ";
     PVPLOG.UI_LEFT_CLICK = "Linksklick: ";
     PVPLOG.UI_MINIMAP_BUTTON = "Minimap Button";
-    PVPLOG.UI_RECORD_BG = "Record in Battlegrounds";
-    PVPLOG.UI_RECORD_DUEL = "Record Duels";
-    PVPLOG.UI_NOTIFY_BG = "Notify in Battlegrounds";
-    PVPLOG.UI_NOTIFY_DUEL = "Notify Duels";
+    PVPLOG.UI_RECORD_BG = "Schlachtfelder\naufzeichnen";
+    PVPLOG.UI_RECORD_DUEL = "Duelle aufzeichnen";
+    PVPLOG.UI_NOTIFY_BG = "BG-Benachrichtigung";
+    PVPLOG.UI_NOTIFY_DUEL = "Duellbenachrichtigung";
 
     PVPLOG.TT_LEVEL = "Level "
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
