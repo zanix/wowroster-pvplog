@@ -142,7 +142,7 @@ if (GetLocale() == "deDE") then
     PVPLOG.VEN = "verk\195\164ufer"; -- verkufer?
     PVPLOG.DISPLAY = "anzeige";  
     PVPLOG.DING = "ding";
-    PVPLOG.MOUSEOVER = ""maus\195\188ber"";
+    PVPLOG.MOUSEOVER = "maus\195\188ber";
     PVPLOG.NOSPAM = "nospam";
     PVPLOG.DMG = "schaden";
     PVPLOG.ST = "stats";
