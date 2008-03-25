@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-03-16
+    Last Modified:    2008-03-25
 ]]
 
 PVPLOG = {};
@@ -219,7 +219,7 @@ if (GetLocale() == "deDE") then
     PVPLOG.UI_LDIFF = "L Diff"
     PVPLOG.UI_LEVEL = "Level"
     PVPLOG.UI_WINS = "Siege";
-    PVPLOG.UI_LOSSES = "Niederlagen"; == "Verloren"
+    PVPLOG.UI_LOSSES = "Niederlagen"; -- "Verloren"
     PVPLOG.UI_TOGGLE = PVPLOG.UI_CONFIG .. " anzeigen/verbergen";
     PVPLOG.UI_TOGGLE2 = PVPLOG.STATS .. " anzeigen/verbergen";
     PVPLOG.UI_RIGHT_CLICK = "Rechtsklick: ";
@@ -232,7 +232,7 @@ if (GetLocale() == "deDE") then
 
     PVPLOG.TT_LEVEL = "Level "
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
-    PVPLOG.TT_PET = "Begleiter von " ---Begleiter von Name
+    PVPLOG.TT_PET = "Begleiter von " --- Begleiter von Name
     PVPLOG.TT_MINION = "Diener von " --- Diener von Name
     PVPLOG.TT_LEVEL2 = "Level ([%d%?]+)"
 
