@@ -2,7 +2,7 @@ PvPLog
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
 Version:          3.0.0
-Last Modified:    2008-03-16
+Last Modified:    2008-03-26
 
 README
 
@@ -145,6 +145,9 @@ Use:
 
     	/pvplog ttm [on|off]
 	    Turns tooltip to chat debugging messages on or off.
+
+    	/pvplog ptc [on|off]
+	    Turns the recording of targets when PLAYER_TARGET_CHANGED on or off.
 
     	/pvplog comm [on|off]
 	    Turns channel communication debugging messages on or off.
