@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-03-18
+    Last Modified:    2008-03-26
 ]]
 
 -- Local variables
@@ -40,12 +40,13 @@ local debug_combat = false;   -- Overridden by PvPLogDebug.combat after VARIABLE
 local debug_pve = false;      -- Overridden by PvPLogDebug.pve after VARIABLES_LOADED event.
 local debug_ui = false;       -- Overridden by PvPLogDebug.ui after VARIABLES_LOADED event.
 local debug_ttm = false;
+local debug_ptc = true;       -- Overridden by PvPLogDebug.ptc after VARIABLES_LOADED event.
 
 local lastDamagerToMe = "";
 local foundDamaged = false;
 local foundDamager = false;
 
-local NUMTARGETS = 45;
+local NUMTARGETS = 60;
 local NUMRECENTS = 10;
 local recentDamager = { };
 local recentDamaged = { };
@@ -271,6 +272,11 @@ function PvPLogOnEvent()
         else
             debug_ui = PvPLogDebugFlags.ui; -- Manually set to true if you want to record pve (for debugging).
         end
+        if (PvPLogDebugFlags.ptc == nil) then
+            PvPLogDebugFlags.ptc = true;
+        else
+            debug_ptc = PvPLogDebugFlags.ptc; -- Manually set to false if you want not use PLAYER_TARGET_CHANGED (for debugging).
+        end
         PvPLog_RegisterWithAddonManagers();
         
     -- initialize when entering world
@@ -325,7 +331,7 @@ function PvPLogOnEvent()
 -- Code for debugging the tooltip stuff
                 if (debug_ttm) then
                     local v2 = { };
-                    PvPLogGetTooltipText(v2, (UnitName("mouseover")), nil);
+                    PvPLogGetTooltipText(v2, (UnitName("mouseover")), nil, nil);
                     PvPLogChatMsg("character = '"..UnitName("mouseover").."'");
                     PvPLogChatMsg('    Race = '..tostring(v2.race)..', Class = '..tostring(v2.class));
                     PvPLogChatMsg('    Level = '..tostring(v2.level)..', Rank = '..tostring(v2.rank));
@@ -451,53 +457,90 @@ function PvPLogOnEvent()
         recentDamager = { };
         lastDamagerToMe = "";
 
-    -- Combat Events now all come here (register for one or the other but not both
+    -- Combat Events now all come here
     elseif ( event == "COMBAT_LOG_EVENT_UNFILTERED") then
+
         CombatLogSetCurrentEntry(-1,true);
         local timestamp, type, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, u1, u2, u3, u4, u5, u6, u7, u8 = CombatLogGetCurrentEntry(); 
-        local message = string.format("%s, %s, %s, 0x%x, %s, %s, 0x%x; %s, %s, %s, %s, %s, %s, %s, %s",
-               tostring(type),
-               tostring(srcGUID), srcName or "nil", srcFlags or 0,
-               tostring(dstGUID), dstName or "nil", dstFlags or 0,
-               tostring(u1), tostring(u2), tostring(u3), tostring(u4),
-               tostring(u5), tostring(u6), tostring(u7), tostring(u8));
+
+        local message = "";
+        if (debug_flag) then
+            message = string.format("%s, %s, %s, 0x%x, %s, %s, 0x%x; %s, %s, %s, %s, %s, %s, %s, %s",
+                tostring(type),
+                tostring(srcGUID), srcName or "nil", srcFlags or 0,
+                tostring(dstGUID), dstName or "nil", dstFlags or 0,
+                tostring(u1), tostring(u2), tostring(u3), tostring(u4),
+                tostring(u5), tostring(u6), tostring(u7), tostring(u8));
+        end
 --
 -- This is where the fun begins. 
 -- Decoding the combat events (type) into what damaged me and what I damaged.
--- This is pretty simple at the moment meaning its probably wrong.
 --
-        if (not debug_combat) then
-            PvPLogDebugAdd(message);
-        end
+
         if (type == "PARTY_KILL") then
             if (debug_combat) then
                 PvPLogDebugMsg(message, RED);
+            else
+                PvPLogDebugAdd(message);
             end
-            PvPLogPlayerDeath(dstName);
+            if (debug_pve or bit.band(dstFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~= 0) then
+                PvPLogPlayerDeath(dstName);
+            end
         elseif (type == "UNIT_DIED") then
-            if (debug_combat) then
-                PvPLogDebugMsg(message, ORANGE);
-            end
             if (dstName ~= player) then
                 -- The death of the player will be handled by the PLAYER_DEAD event.
-                -- We need to have damaged to claim credit but the function should handle that.
-                -- Do we need to check for hostile?
-                PvPLogPlayerDeath(dstName); 
+                if (debug_combat) then
+                    PvPLogDebugMsg(message, ORANGE);
+                else
+                    PvPLogDebugAdd(message);
+                end
+                if (debug_pve or bit.band(dstFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~= 0) then
+                    PvPLogPlayerDeath(dstName);
+                end
             end
         elseif (srcName == player) then
             if (debug_combat) then
                 PvPLogDebugMsg(message, GREEN);
+            else
+                PvPLogDebugAdd(message);
             end
+            -- Don't keep track of damage to self (Life Tap)
             if (dstName ~= player) then
-                -- Don't keep track of damage to self (Life Tap)
-                PvPLogMyDamage(dstName, dstGUID);
+                if (bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0) then
+                    if (debug_pve or bit.band(dstFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~= 0) then
+                        PvPLogMyDamage(dstName, dstGUID);
+                    elseif (debug_ignore) then
+                        if (not ignoreRecords[dstName]) then
+                            PvPLogDebugMsg('Ignore added (damaged): ' .. dstName);
+                            PvPLogAddIgnore(dstName)
+                        end
+                        if (targetRecords[dstName]) then
+                            -- It got into targetRecords, remove it.
+                            PvPLogRemTarget(dstName);
+                        end
+                    end
+                end
             end
         elseif (dstName == player) then
             if (debug_combat) then
                 PvPLogDebugMsg(message, YELLOW);
+            else
+                PvPLogDebugAdd(message);
             end
-            -- I'll bet heals pass this test.
-            PvPLogDamageMe(srcName, srcGUID);
+            if (bit.band(srcFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0) then
+                if (debug_pve or bit.band(srcFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~= 0) then
+                    PvPLogDamageMe(srcName, srcGUID);
+                elseif (debug_ignore) then
+                    if (not ignoreRecords[srcName]) then
+                        PvPLogDebugMsg('Ignore added (damager): ' .. srcName);
+                        PvPLogAddIgnore(srcName)
+                    end
+                    if (targetRecords[srcName]) then
+                        -- It got into targetRecords, remove it.
+                        PvPLogRemTarget(srcName);
+                    end
+                end
+            end
         else
             if (debug_combat) then
                 PvPLogDebugMsg(message, WHITE);
@@ -695,7 +738,7 @@ function PvPLogFindRank(full, name)
     return rank;
 end
 
-function PvPLogGetTooltipText(table, name, guid)
+function PvPLogGetTooltipText(table, name, guid, addpet)
     local m = 0;
     local l = 0;
     local hide = false;
@@ -732,10 +775,24 @@ function PvPLogGetTooltipText(table, name, guid)
         local left, found = string.gsub(text[2], PVPLOG.TT_PET, "");
         if (found == 1) then
             table.owner = left;
+            if (addpet) then
+                if (not targetRecords[left]) then
+                    PvPLogDebugMsg("Owner Target Addition: "..left, RED);
+                    PvPLogAddTarget(left);
+                end
+                targetRecords[left].pet = name;
+            end
         else
             left, found = string.gsub(text[2], PVPLOG.TT_MINION, "");
             if (found == 1) then
                 table.owner = left;
+                if (addpet) then
+                    if (not targetRecords[left]) then
+                        PvPLogDebugMsg("Owner Target Addition: "..left, RED);
+                        PvPLogAddTarget(left);
+                    end
+                    targetRecords[left].pet = name;
+                end
             end
         end
         if (found == 1) then
@@ -760,6 +817,7 @@ function PvPLogGetTooltipText(table, name, guid)
     end
 end
 
+-- Add to recentDamaged or recentDamager Lists (if not already there).
 function PvPLogPutInTable(tab, nam)
     local exists = false;
     table.foreach(tab,
@@ -779,18 +837,54 @@ function PvPLogPutInTable(tab, nam)
     return exists;
 end
 
+-- Add to ignoreRecords and ignoreList.
+function PvPLogAddIgnore(name)
+    ignoreRecords[name] = true;
+    table.insert(ignoreList, name);
+    if (table.getn(ignoreList) > NUMTARGETS) then
+        PvPLogDebugMsg('Ignore removed: ' .. ignoreList[1]);
+        ignoreRecords[ignoreList[1]] = nil;
+        table.remove(ignoreList,1);
+    end
+end
+
+-- Add to targetRecords and targetList.
+function PvPLogAddTarget(name)
+    targetRecords[name] = { };
+    table.insert(targetList, name);
+    if (table.getn(targetList) > NUMTARGETS) then
+        PvPLogDebugMsg('Target removed: ' .. targetList[1]);
+        targetRecords[targetList[1]] = nil;
+        table.remove(targetList,1);
+    end
+end
+
+-- Remove from targetRecords and targetList.
+function PvPLogRemTarget(name)
+    local index = -1;
+    table.foreach(targetList,
+        function(i,t)
+            if(t == name) then
+                index = i;
+                return;
+            end
+        end
+    );
+    if (index ~= -1) then
+        PvPLogDebugMsg('Target removed: ' .. targetList[index]);
+        targetRecords[name] = nil;
+        table.remove(targetList,index);
+    else
+        PvPLogDebugMsg('TargetRecord not found in TargetList for: '..targetName);
+    end
+end
+
 function PvPLogMyDamage(res1,guid)
     if (res1) then
         if ((isDuel or not ignoreRecords[res1]) and not targetRecords[res1]) then
             PvPLogDebugMsg("Damaged Target Addition: "..res1, RED);
-            targetRecords[res1] = { };
-            table.insert(targetList, res1);
-            if (table.getn(targetList) > NUMTARGETS) then
-                PvPLogDebugMsg('Target removed: ' .. targetList[1]);
-                targetRecords[targetList[1]] = nil;
-                table.remove(targetList,1);
-            end
-            PvPLogGetTooltipText(targetRecords[res1], res1, guid);
+            PvPLogAddTarget(res1);
+            PvPLogGetTooltipText(targetRecords[res1], res1, guid, true);
         end
         if (isDuel or not ignoreRecords[res1]) then
             if (not PvPLogPutInTable(recentDamaged, res1)) then
@@ -805,14 +899,8 @@ function PvPLogDamageMe(res1, guid)
     if (res1) then
         if ((isDuel or not ignoreRecords[res1]) and not targetRecords[res1]) then
             PvPLogDebugMsg("Damager Target Addition: "..res1, RED);
-            targetRecords[res1] = { };
-            table.insert(targetList, res1);
-            if (table.getn(targetList) > NUMTARGETS) then
-                PvPLogDebugMsg('Target removed: ' .. targetList[1]);
-                targetRecords[targetList[1]] = nil;
-                table.remove(targetList,1);
-            end
-            PvPLogGetTooltipText(targetRecords[res1], res1, guid);
+            PvPLogAddTarget(res1);
+            PvPLogGetTooltipText(targetRecords[res1], res1, guid, true);
         end
         if (isDuel or not ignoreRecords[res1]) then
             if (not PvPLogPutInTable(recentDamager, res1)) then
@@ -820,6 +908,93 @@ function PvPLogDamageMe(res1, guid)
             end
             lastDamagerToMe = res1;
             foundDamager = true;
+        end
+    end
+end
+
+-- This function is called whenever the player's target has changed.
+-- In WoW V2, this is about the only place where we can be sure of capturing
+-- information about our target.
+-- In WoW 2.4, The GUID in the combat log gives us another method to collect target info.
+function PvPLogUpdateTarget(dueling)
+    local targetName, targetRealm = UnitName("target"); 
+    local targetLevel = UnitLevel("target");
+    local targetRace = UnitRace("target");
+    local targetClass = UnitClass("target");
+    local targetGuild = GetGuildInfo("target");
+    local targetRank = UnitPVPName("target");
+    local targetIsPlayer = UnitIsPlayer("target");
+    local targetIsControlled = UnitPlayerControlled("target");
+    local targetIsEnemy = UnitIsEnemy("player", "target");
+    local targetName2 = UnitName("target");
+    if (targetName and targetName2 and targetName ~= targetName2) then
+        PvPLogDebugMsg('Target changed from '.. targetName ..' to ' .. targetName2);
+        return;
+    end
+    if (targetName) then
+        -- We have a valid target
+        if (dueling or ((targetIsPlayer or debug_pve) and targetIsEnemy)) then 
+            -- Its a player and its an enemy
+            -- (debug_pve only includes hostile NPCs, not neutral NPCs)
+            -- for debugging purposes, we may not want to add records via targeting
+            if (debug_ptc) then 
+                if (not targetRecords[targetName]) then
+                    PvPLogDebugMsg('Target added: ' .. targetName);
+                    PvPLogAddTarget(targetName);
+                end
+                if (not targetRecords[targetName].level) then
+                    PvPLogDebugMsg('Target populated: ' .. targetName);
+                    targetRecords[targetName].realm = targetRealm;
+                    targetRecords[targetName].level = targetLevel;
+                    targetRecords[targetName].race = targetRace;
+                    targetRecords[targetName].class = targetClass;
+                    targetRecords[targetName].guild = targetGuild;
+                    targetRecords[targetName].rank = PvPLogFindRank(targetRank, targetName);
+                else
+                    if (targetLevel > targetRecords[targetName].level) then
+                        PvPLogDebugMsg('Target updated: ' .. targetName);
+                        targetRecords[targetName].level = targetLevel;
+                    end
+                end
+            end
+        elseif (targetIsControlled and targetIsEnemy) then
+            PvPLogDebugMsg('Target is an enemy pet ');
+            -- If we could figure out who owned this pet then we could
+            -- credit them with the damage instead of the pet.
+        elseif (not debug_pve and debug_ignore) then
+            -- Its not a player or its not an enemy
+            if (not ignoreRecords[targetName]) then
+                PvPLogDebugMsg('Ignore added (targeted): ' .. targetName);
+                PvPLogAddIgnore(targetName)
+            end
+            if (targetRecords[targetName]) then
+                -- It got into targetRecords, remove it.
+                PvPLogRemTarget(targetName);
+            end
+        end
+
+        local total = PvPLogGetPvPTotals(targetName);
+        local guildTotal = PvPLogGetGuildTotals(targetGuild);
+        local msg = "";
+        local show = false;
+        if (total and (total.wins > 0 or total.loss > 0)) then
+            msg = msg .. CYAN .. PVPLOG.UI_PVP .. ": " .. GREEN .. total.wins.. CYAN .. 
+            " / " .. RED .. total.loss;
+            show = true;
+        end
+        if (guildTotal and (guildTotal.wins > 0 or guildTotal.loss > 0)) then
+            if (show) then
+                msg = msg .. CYAN .. " - ";
+            end
+            msg = msg .. CYAN .. PVPLOG.GUILD .. ": ";
+            msg = msg .. GREEN .. guildTotal.wins.. CYAN .. " / ".. RED .. 
+            guildTotal.loss;
+            show = true;
+        end
+        local field = getglobal("PvPLogTargetText");
+        if (show and PvPLogData[realm][player].display) then
+            field:SetText(msg);
+            field:Show();
         end
     end
 end
@@ -1090,22 +1265,6 @@ function PvPLogGetGuildTotals(guild)
     return total;
 end
 
-function PvPLogKeepPurge(value)
-    if (tonumber(value)) then
-        -- PvPLogDebugMsg('value = '..tostring(value)..', PurgeCounter = '..tostring(PurgeLogData[realm][player].PurgeCounter));
-        local keep = PurgeLogData[realm][player].PurgeCounter - tonumber(value);
-        -- PvPLogDebugMsg('keep = '..tostring(keep));
-        if (keep > 5000) then
-            table.foreach(PurgeLogData[realm][player].battles, function( counter, v2 )
-                if (counter < keep) then
-                    -- PvPLogDebugMsg('counter = '..tostring(counter));
-                    PurgeLogData[realm][player].battles[counter] = nil;
-                end               
-            end);
-        end
-    end
-end
-
 function PvPLogGetStats()
     local stats = { };
     stats.totalWins = 0;
@@ -1373,112 +1532,18 @@ function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, 
     end
 end
 
--- This function is called whenever the player's target has changed.
--- In WoW V2, this is about the only place where we can be sure of capturing
--- information about our target.
-function PvPLogUpdateTarget(dueling)
-    local targetName, targetRealm = UnitName("target"); 
-    local targetLevel = UnitLevel("target");
-    local targetRace = UnitRace("target");
-    local targetClass = UnitClass("target");
-    local targetGuild = GetGuildInfo("target");
-    local targetRank = UnitPVPName("target");
-    local targetIsPlayer = UnitIsPlayer("target");
-    local targetIsControlled = UnitPlayerControlled("target");
-    local targetIsEnemy = UnitIsEnemy("player", "target");
-    local targetName2 = UnitName("target");
-    if (targetName and targetName2 and targetName ~= targetName2) then
-        PvPLogDebugMsg('Target changed from '.. targetName ..' to ' .. targetName2);
-        return;
-    end
-    if (targetName) then
-        -- We have a valid target
-        if (dueling or ((targetIsPlayer or debug_pve) and targetIsEnemy)) then 
-            -- Its a player and its an enemy
-            -- (debug_pve only includes hostile NPCs, not neutral NPCs)
-            if (not targetRecords[targetName]) then
-                PvPLogDebugMsg('Target added: ' .. targetName);
-                targetRecords[targetName] = { };
-                table.insert(targetList, targetName);
-                if (table.getn(targetList) > NUMTARGETS) then
-                    PvPLogDebugMsg('Target removed: ' .. targetList[1]);
-                    targetRecords[targetList[1]] = nil;
-                    table.remove(targetList,1);
-                end
-            end
-            if (not targetRecords[targetName].level) then
-                PvPLogDebugMsg('Target populated: ' .. targetName);
-                targetRecords[targetName].realm = targetRealm;
-                targetRecords[targetName].level = targetLevel;
-                targetRecords[targetName].race = targetRace;
-                targetRecords[targetName].class = targetClass;
-                targetRecords[targetName].guild = targetGuild;
-                targetRecords[targetName].rank = PvPLogFindRank(targetRank, targetName);
-            else
-                if (targetLevel > targetRecords[targetName].level) then
-                    PvPLogDebugMsg('Target updated: ' .. targetName);
-                    targetRecords[targetName].level = targetLevel;
-                end
-            end
-        elseif (targetIsControlled and targetIsEnemy) then
-            PvPLogDebugMsg('Target is an enemy pet ');
-            -- If we could figure out who owned this pet then we could
-            -- credit them with the damage instead of the pet.
-        elseif (not debug_pve and debug_ignore) then
-            -- Its not a player or its not an enemy
-            if (not ignoreRecords[targetName]) then
-                PvPLogDebugMsg('Ignore added: ' .. targetName);
-                ignoreRecords[targetName] = true;
-                table.insert(ignoreList, targetName);
-                if (table.getn(ignoreList) > NUMTARGETS) then
-                    PvPLogDebugMsg('Ignore removed: ' .. ignoreList[1]);
-                    ignoreRecords[ignoreList[1]] = nil;
-                    table.remove(ignoreList,1);
-                end
-            end
-            if (targetRecords[targetName]) then
-                -- It got into targetRecords, remove it.
-                index = -1;
-                table.foreach(targetList,
-                    function(i,t)
-                        if(t == targetName) then
-                            index = i;
-                            return;
-                        end
-                    end
-                );
-                if (index ~= -1) then
-                    PvPLogDebugMsg('Target removed: ' .. targetList[index]);
-                    targetRecords[targetName] = nil;
-                    table.remove(targetList,index);
-                else
-                    PvPLogDebugMsg('TargetRecord not found in TargetList for: '..targetName);
-                end
-            end
-        end
-
-        local total = PvPLogGetPvPTotals(targetName);
-        local guildTotal = PvPLogGetGuildTotals(targetGuild);
-        local msg = "";
-        local show = false;
-        if (total and (total.wins > 0 or total.loss > 0)) then
-            msg = msg .. CYAN .. PVPLOG.UI_PVP .. ": " .. GREEN .. total.wins.. CYAN .. 
-            " / " .. RED .. total.loss;
-            show = true;
-        end
-        if (guildTotal and (guildTotal.wins > 0 or guildTotal.loss > 0)) then
-            if (show) then
-                msg = msg .. CYAN .. " - ";
-            end
-            msg = msg .. CYAN .. PVPLOG.GUILD .. ": ";
-            msg = msg .. GREEN .. guildTotal.wins.. CYAN .. " / ".. RED .. 
-            guildTotal.loss;
-            show = true;
-        end
-        local field = getglobal("PvPLogTargetText");
-        if (show and PvPLogData[realm][player].display) then
-            field:SetText(msg);
-            field:Show();
+function PvPLogKeepPurge(value)
+    if (tonumber(value)) then
+        -- PvPLogDebugMsg('value = '..tostring(value)..', PurgeCounter = '..tostring(PurgeLogData[realm][player].PurgeCounter));
+        local keep = PurgeLogData[realm][player].PurgeCounter - tonumber(value);
+        -- PvPLogDebugMsg('keep = '..tostring(keep));
+        if (keep > 5000) then
+            table.foreach(PurgeLogData[realm][player].battles, function( counter, v2 )
+                if (counter < keep) then
+                    -- PvPLogDebugMsg('counter = '..tostring(counter));
+                    PurgeLogData[realm][player].battles[counter] = nil;
+                end               
+            end);
         end
     end
 end
@@ -1685,6 +1750,14 @@ function PvPLogSlashHandler(msg)
             debug_ttm = false;
         else
             PvPLogDebugMsg("debug_ttm = "..tostring(debug_ttm));
+        end
+    elseif (command == "ptc") then
+        if (value == "on") then
+            debug_ptc = true;
+        elseif (value == "off") then
+            debug_ptc = false;
+        else
+            PvPLogDebugMsg("debug_ptc = "..tostring(debug_ptc));
         end
     elseif (command == "vars") then
         if (softPL) then
