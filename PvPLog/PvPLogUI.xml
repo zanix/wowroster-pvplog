@@ -716,7 +716,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 
     <Frame name="PvPLogStatsFrame" parent="UIParent" enableMouse="true" movable="true" frameStrata="DIALOG" hidden="true" toplevel="true">
         <Size>
-            <AbsDimension x="650" y="560"/>
+            <AbsDimension x="750" y="560"/>
         </Size>
         <Anchors>
             <Anchor point="CENTER"/>
@@ -768,7 +768,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="130" y="-30"/>
+                                <AbsDimension x="180" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -777,7 +777,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="190" y="-30"/>
+                                <AbsDimension x="240" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -786,7 +786,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="250" y="-30"/>
+                                <AbsDimension x="300" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -795,7 +795,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="340" y="-30"/>
+                                <AbsDimension x="390" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -804,7 +804,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="450" y="-30"/>
+                                <AbsDimension x="500" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -813,7 +813,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="530" y="-30"/>
+                                <AbsDimension x="580" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -822,7 +822,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="580" y="-30"/>
+                                <AbsDimension x="630" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>

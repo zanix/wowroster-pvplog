@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-03-25
+    Last Modified:    2008-03-27
 ]]
 
 PVPLOG = {};
@@ -66,6 +66,7 @@ PVPLOG = {};
 --  PVPLOG.AB = "Arathi Basin";
 --  PVPLOG.AV = "Alterac Valley";
 --  PVPLOG.WSG = "Warsong Gulch";
+--  PVPLOG.EOS = "Eye of the Storm";
     
     PVPLOG.WIN = "win";
     PVPLOG.LOSS = "loss";
@@ -107,6 +108,7 @@ PVPLOG = {};
     PVPLOG.UI_LEVEL = "Level"
     PVPLOG.UI_WINS = "Wins";
     PVPLOG.UI_LOSSES = "Losses";
+    PVPLOG.UI_FLAGS = "Flags";
     PVPLOG.UI_TOGGLE = "Toggles " .. PVPLOG.UI_CONFIG;
     PVPLOG.UI_TOGGLE2 = "Toggles " .. PVPLOG.STATS;
     PVPLOG.UI_RIGHT_CLICK = "Right click: ";
@@ -220,6 +222,7 @@ if (GetLocale() == "deDE") then
     PVPLOG.UI_LEVEL = "Level"
     PVPLOG.UI_WINS = "Siege";
     PVPLOG.UI_LOSSES = "Niederlagen"; -- "Verloren"
+    PVPLOG.UI_FLAGS = "Flags";
     PVPLOG.UI_TOGGLE = PVPLOG.UI_CONFIG .. " anzeigen/verbergen";
     PVPLOG.UI_TOGGLE2 = PVPLOG.STATS .. " anzeigen/verbergen";
     PVPLOG.UI_RIGHT_CLICK = "Rechtsklick: ";
@@ -334,6 +337,7 @@ elseif (GetLocale() == "frFR") then
     PVPLOG.UI_LEVEL = "Level"
     PVPLOG.UI_WINS = "Victoires";
     PVPLOG.UI_LOSSES = "Défaites";   
+    PVPLOG.UI_FLAGS = "Flags";
     PVPLOG.UI_TOGGLE = "Montre " .. PVPLOG.UI_CONFIG;
     PVPLOG.UI_TOGGLE2 = "Montre " .. PVPLOG.STATS;
     PVPLOG.UI_RIGHT_CLICK = "Clic droit : ";
@@ -444,6 +448,7 @@ elseif (GetLocale() == "esES") then
     PVPLOG.UI_LEVEL = "Level"
     PVPLOG.UI_WINS = "Victorias";
     PVPLOG.UI_LOSSES = "Derrotas";
+    PVPLOG.UI_FLAGS = "Flags";
     PVPLOG.UI_RIGHT_CLICK = "Clic derecho: ";
     PVPLOG.UI_LEFT_CLICK = "Clic izquierdo: ";
     PVPLOG.UI_TOGGLE = "Muestra/oculta " .. PVPLOG.UI_CONFIG;

@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-03-26
+    Last Modified:    2008-03-28
 ]]
 
 -- Local variables
@@ -26,7 +26,6 @@ local bg_status;
 local bg_mapName;
 local bg_instanceId;
 local bg_found = false;
-local bg_indx = 0;
 
 local isDuel = false;
 local duelInbounds = true;
@@ -331,15 +330,15 @@ function PvPLogOnEvent()
 -- Code for debugging the tooltip stuff
                 if (debug_ttm) then
                     local v2 = { };
-                    PvPLogGetTooltipText(v2, (UnitName("mouseover")), nil, nil);
-                    PvPLogChatMsg("character = '"..UnitName("mouseover").."'");
+                    PvPLogGetTooltipText(v2, PvPLogUnitName("mouseover"), nil, nil);
+                    PvPLogChatMsg("character = '"..PvPLogUnitName("mouseover").."'");
                     PvPLogChatMsg('    Race = '..tostring(v2.race)..', Class = '..tostring(v2.class));
                     PvPLogChatMsg('    Level = '..tostring(v2.level)..', Rank = '..tostring(v2.rank));
                     PvPLogChatMsg('    Guild = '..tostring(v2.guild)..', Realm = '..tostring(v2.realm));
                     PvPLogChatMsg('    GUID = '..tostring(v2.guid)..', Owner = '..tostring(v2.owner));
                 end
 --***
-                local total = PvPLogGetPvPTotals(UnitName("mouseover"));
+                local total = PvPLogGetPvPTotals(PvPLogUnitName("mouseover"));
                 local guildTotal = PvPLogGetGuildTotals(GetGuildInfo("mouseover"));
 
                 if (total and (total.wins > 0 or total.loss > 0)) then
@@ -390,7 +389,7 @@ function PvPLogOnEvent()
                     end
                     PvPLogFloatMsg(msg, "fire");
 
-                    msg = UnitName("mouseover") ..
+                    msg = PvPLogUnitName("mouseover") ..
                         " -- [" .. UnitLevel("mouseover") .. "] " .. 
                         UnitRace("mouseover") .. " " .. UnitClass("mouseover");
                     if (GetGuildInfo("mouseover")) then
@@ -719,8 +718,8 @@ function PvPLogFindRealm(full)
     local left;
     local realm;
     _, _, left, realm = string.find(full,"(.*) %- (.*)");
-    -- PvPLogDebugMsg("full = '"..tostring(full).."'");
-    -- PvPLogDebugMsg("left = '"..tostring(left).."', realm = '"..tostring(realm).."'");
+    PvPLogDebugMsg("full = '"..tostring(full).."'");
+    PvPLogDebugMsg("left = '"..tostring(left).."', realm = '"..tostring(realm).."'");
     return left, realm;
 end
 
@@ -735,7 +734,17 @@ function PvPLogFindRank(full, name)
             rank = left;
         end
     end
+    PvPLogDebugMsg("full = '"..tostring(name).."', name = '"..tostring(name).."'");
+    PvPLogDebugMsg("rank = '"..tostring(rank).."'");
     return rank;
+end
+
+function PvPLogUnitName(unit)
+    local name = GetUnitName(unit, true);
+    if (name) then
+        name = string.gsub(name, " %- ", "-");
+    end
+    return name;
 end
 
 function PvPLogGetTooltipText(table, name, guid, addpet)
@@ -746,7 +755,7 @@ function PvPLogGetTooltipText(table, name, guid, addpet)
     local level;
 
     if (guid) then
-        -- PvPLogDebugMsg("name = '"..name.."', guid = '"..tostring(guid).."'");
+        PvPLogDebugMsg("name = '"..name.."', guid = '"..tostring(guid).."'");
         GameTooltip:SetHyperlink("unit:" .. guid);
         hide = true;
         table.guid = guid;
@@ -755,7 +764,7 @@ function PvPLogGetTooltipText(table, name, guid, addpet)
     -- PvPLogDebugMsg("m = "..tostring(m));
     for n = 1, m do
         text[n] = getglobal('GameTooltipTextLeft'..n):GetText();
-        -- PvPLogDebugMsg("text["..n.."] = "..tostring(text[n]));
+        PvPLogDebugMsg("text["..n.."] = "..tostring(text[n]));
         if (string.find(text[n], PVPLOG.TT_LEVEL)) then
             l = n;
         end    
@@ -892,6 +901,9 @@ function PvPLogMyDamage(res1,guid)
             end
             foundDamaged = true;
         end
+        if (guid and targetRecords[res1]) then
+            targetRecords[res1].guid = guid;
+        end
     end
 end
 
@@ -909,6 +921,9 @@ function PvPLogDamageMe(res1, guid)
             lastDamagerToMe = res1;
             foundDamager = true;
         end
+        if (guid and targetRecords[res1]) then
+            targetRecords[res1].guid = guid;
+        end
     end
 end
 
@@ -917,7 +932,8 @@ end
 -- information about our target.
 -- In WoW 2.4, The GUID in the combat log gives us another method to collect target info.
 function PvPLogUpdateTarget(dueling)
-    local targetName, targetRealm = UnitName("target"); 
+    local targetName = PvPLogUnitName("target")     
+    local _, targetRealm = UnitName("target"); 
     local targetLevel = UnitLevel("target");
     local targetRace = UnitRace("target");
     local targetClass = UnitClass("target");
@@ -926,7 +942,7 @@ function PvPLogUpdateTarget(dueling)
     local targetIsPlayer = UnitIsPlayer("target");
     local targetIsControlled = UnitPlayerControlled("target");
     local targetIsEnemy = UnitIsEnemy("player", "target");
-    local targetName2 = UnitName("target");
+    local targetName2 = PvPLogUnitName("target");
     if (targetName and targetName2 and targetName ~= targetName2) then
         PvPLogDebugMsg('Target changed from '.. targetName ..' to ' .. targetName2);
         return;
@@ -1345,12 +1361,10 @@ end
 
 function PvPLogInBG()
     bg_found = false;
-    bg_indx = 0;
     for i=1, MAX_BATTLEFIELD_QUEUES do
         bg_status, bg_mapName, bg_instanceId = GetBattlefieldStatus(i);
         if (bg_status == "active" ) then
             bg_found = true;
-            bg_indx = i;
             return true;
         end
     end
@@ -1439,7 +1453,7 @@ function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, 
     PurgeLogData[realm][player].battles[PurgeCounter].rank = vrank;
     PurgeLogData[realm][player].battles[PurgeCounter].honor = 0; -- obsolete
     if (bg_found) then
-        PurgeLogData[realm][player].battles[PurgeCounter].bg = bg_indx;
+        PurgeLogData[realm][player].battles[PurgeCounter].bg = 1;
     else
         PurgeLogData[realm][player].battles[PurgeCounter].bg = 0;
     end
@@ -1486,8 +1500,16 @@ function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, 
     end
 
     notifyMsg = string.gsub( notifyMsg, "%%n", vname );
-    notifyMsg = string.gsub( notifyMsg, "%%l", leveltext );
-    notifyMsg = string.gsub( notifyMsg, "%%c", vclass );
+    if( leveltext ) then
+        notifyMsg = string.gsub( notifyMsg, "%%l", leveltext );
+    else
+        notifyMsg = string.gsub( notifyMsg, "%%l", "" );
+    end
+    if( vclass ) then
+        notifyMsg = string.gsub( notifyMsg, "%%c", vclass );
+    else
+        notifyMsg = string.gsub( notifyMsg, "%%c", "" );
+    end
     if( vrace ) then
         notifyMsg = string.gsub( notifyMsg, "%%r", vrace );
     else
@@ -1507,7 +1529,8 @@ function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, 
     notifyMsg = string.gsub( notifyMsg, "%%y", y );
     notifyMsg = string.gsub( notifyMsg, "%%z", ZoneName );
     notifyMsg = string.gsub( notifyMsg, "%%w", SubZone );
-    notifyMsg = string.gsub( notifyMsg, " %(%)", '' );
+    notifyMsg = string.gsub( notifyMsg, " %(%)", "" );
+    notifyMsg = string.gsub( notifyMsg, " %<%>", "" );
 
     PvPLogDebugAdd(notifyMsg);
     if (notifySystem) then

@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-03-15
+    Last Modified:    2008-03-27
 ]]
 
 local realm = "";
@@ -387,20 +387,18 @@ function PvPLogStats_SetValues(statsValue)
     txtPvPLogStats_PlayersHeader:SetText(CYAN .. PVPLOG.UI_NAME);
     txtPvPLogStats_ClassHeader:SetText(CYAN .. PVPLOG.UI_CLASS);
     txtPvPLogStats_GuildsHeader:SetText(MAGENTA .. PVPLOG.GUILD);
+    txtPvPLogStats_RaceHeader:SetText(CYAN .. PVPLOG.UI_RACE);
     if (PVPLOG.STATS_TYPE == PVPLOG.RECENT) then
-        txtPvPLogStats_RaceHeader:SetText(CYAN .. PVPLOG.UI_RACE);
         txtPvPLogStats_LevelHeader:SetText(CYAN .. PVPLOG.UI_LDIFF);
         txtPvPLogStats_RealmsHeader:SetText(ORANGE .. PVPLOG.PLAYER);
         txtPvPLogStats_WinsHeader:SetText(GREEN .. PVPLOG.UI_WINS);
-        txtPvPLogStats_LossesHeader:SetText(RED .. PVPLOG.UI_LOSSES);
+        txtPvPLogStats_LossesHeader:SetText(RED .. PVPLOG.UI_FLAGS);
     elseif (PVPLOG.STATS_TYPE == PVPLOG.TARGET) then
-        txtPvPLogStats_RaceHeader:SetText(CYAN .. PVPLOG.UI_RACE);
         txtPvPLogStats_LevelHeader:SetText(CYAN .. PVPLOG.UI_LEVEL);
         txtPvPLogStats_RealmsHeader:SetText(ORANGE .. PVPLOG.REALM);
         txtPvPLogStats_WinsHeader:SetText(" ");
-        txtPvPLogStats_LossesHeader:SetText(" ");
+        txtPvPLogStats_LossesHeader:SetText(GREEN .. "GUID");
     else
-        txtPvPLogStats_RaceHeader:SetText(" ");
         txtPvPLogStats_LevelHeader:SetText(" ");
         txtPvPLogStats_RealmsHeader:SetText(ORANGE .. PVPLOG.REALM);
         txtPvPLogStats_WinsHeader:SetText(GREEN .. PVPLOG.UI_WINS);
@@ -430,35 +428,48 @@ function PvPLogStats_SetValues(statsValue)
     if (PVPLOG.STATS_TYPE == PVPLOG.RECENT) then
         local now = time();
         local dayago = now - 24 * 60 * 60;
+        local flag;
         PvPLogDebugUI('now = '..tostring(now)..', dayago = '..tostring(dayago));
         table.foreach(PurgeLogData[realm], function( character, v1 )
-            PvPLogDebugUI('character = '..tostring(character));
+            PvPLogDebugUI('character = '..tostring(character)..
+                ', recordBG = '..tostring(PvPLogData[realm][character].recordBG)..
+                ', recordDuel = '..tostring(PvPLogData[realm][character].recordDuel));
             table.foreach(PurgeLogData[realm][character].battles, function( counter, v2 )
-                if (v2.bg and v2.bg == 0 and v2.time and v2.time > dayago and v2.enemy == isEnemy) then
-                    if (statCount >= startCount and statCount <= endCount) then
-                        pvpPlayerList = pvpPlayerList..v2.name.."\n";
-                        pvpLevelList = pvpLevelList..v2.lvlDiff.."\n";
-                        if (v2.race) then
-                            pvpRaceList = pvpRaceList..v2.race.."\n";
-                        else
-                            pvpRaceList = pvpRaceList.." \n";
+                if (v2.time and v2.time > dayago) then
+                    if (((PvPLogData[realm][character].recordBG or (v2.bg and v2.bg == 0)) and v2.enemy == 1) or
+                        (PvPLogData[realm][character].recordDuel and v2.enemy == 0)) then
+                        if (statCount >= startCount and statCount <= endCount) then
+                            pvpPlayerList = pvpPlayerList..v2.name.."\n";
+                            pvpLevelList = pvpLevelList..v2.lvlDiff.."\n";
+                            if (v2.race) then
+                                pvpRaceList = pvpRaceList..v2.race.."\n";
+                            else
+                                pvpRaceList = pvpRaceList.." \n";
+                            end
+                            if (v2.class) then
+                                pvpClassList = pvpClassList..v2.class.."\n";
+                            else
+                                pvpClassList = pvpClassList.." \n";
+                            end
+                            if (v2.guild) then
+                                pvpGuildList = pvpGuildList..v2.guild.."\n";
+                            else
+                                pvpGuildList = pvpGuildList.." \n";
+                            end
+                            pvpRealmList = pvpRealmList..character.."\n";
+                            pvpWinsList = pvpWinsList..v2.win.."\n";
+                            flag = " ";
+                            if (v2.bg and v2.bg ~= 0) then
+                                flag = "BG";
+                            end
+                            if (v2.enemy == 0) then
+                                flag = "D";
+                            end
+                            pvpLossList = pvpLossList..flag.."\n";
                         end
-                        if (v2.class) then
-                            pvpClassList = pvpClassList..v2.class.."\n";
-                        else
-                            pvpClassList = pvpClassList.." \n";
-                        end
-                        if (v2.guild) then
-                            pvpGuildList = pvpGuildList..v2.guild.."\n";
-                        else
-                            pvpGuildList = pvpGuildList.." \n";
-                        end
-                        pvpRealmList = pvpRealmList..character.."\n";
-                        pvpWinsList = pvpWinsList..v2.win.."\n";
-                        pvpLossList = pvpLossList..1-v2.win.."\n";
+                        statCount = statCount + 1;
+                        statsTotal = statsTotal + 1;
                     end
-                    statCount = statCount + 1;
-                    statsTotal = statsTotal + 1;
                 end
             end);
         end);
@@ -498,8 +509,12 @@ function PvPLogStats_SetValues(statsValue)
                 else
                     pvpRealmList = pvpRealmList.." \n";
                 end
-                pvpWinsList = pvpWinsList.." \n";
-                pvpLossList = pvpLossList.." \n";
+                if (v2.guid) then
+                    pvpWinsList = pvpWinsList..v2.guid.."\n";
+                else
+                    pvpWinsList = pvpWinsList.." \n";
+                end
+                    pvpLossList = pvpLossList.." \n";
             end
             statCount = statCount + 1;
             statsTotal = statsTotal + 1;
