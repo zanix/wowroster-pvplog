@@ -123,6 +123,8 @@ PVPLOG = {};
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
     PVPLOG.TT_PET = "'s Pet"
     PVPLOG.TT_MINION = "'s Minion"
+    PVPLOG.TT_CREATION = "'s Creation"
+    PVPLOG.TT_GUARDIAN = "'s Guardian"
     PVPLOG.TT_LEVEL2 = "Level ([%d%?]+)"
 
 --***********
@@ -237,6 +239,7 @@ if (GetLocale() == "deDE") then
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
     PVPLOG.TT_PET = "Begleiter von " --- Begleiter von Name
     PVPLOG.TT_MINION = "Diener von " --- Diener von Name
+    PVPLOG.TT_CREATION = "Creation von "
     PVPLOG.TT_LEVEL2 = "Level ([%d%?]+)"
 
 elseif (GetLocale() == "frFR") then
@@ -352,7 +355,7 @@ elseif (GetLocale() == "frFR") then
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
     PVPLOG.TT_PET = "'s Pet"
     PVPLOG.TT_MINION = "'s Minion"
-    PVPLOG.TT_OWNER = "(%w+)'s "
+    PVPLOG.TT_CREATION = "'s Creation"
     PVPLOG.TT_LEVEL2 = "Level ([%d%?]+)"
 
 elseif (GetLocale() == "esES") then
@@ -463,7 +466,7 @@ elseif (GetLocale() == "esES") then
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
     PVPLOG.TT_PET = "'s Pet"
     PVPLOG.TT_MINION = "'s Minion"
-    PVPLOG.TT_OWNER = "(%w+)'s "
+    PVPLOG.TT_CREATION = "'s Creation"
     PVPLOG.TT_LEVEL2 = "Level ([%d%?]+)"
 
 end

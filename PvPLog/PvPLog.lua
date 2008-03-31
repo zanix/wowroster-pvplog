@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-03-28
+    Last Modified:    2008-03-30
 ]]
 
 -- Local variables
@@ -41,18 +41,19 @@ local debug_ui = false;       -- Overridden by PvPLogDebug.ui after VARIABLES_LO
 local debug_ttm = false;
 local debug_ptc = true;       -- Overridden by PvPLogDebug.ptc after VARIABLES_LOADED event.
 
-local lastDamagerToMe = "";
-local foundDamaged = false;
-local foundDamager = false;
-
 local NUMTARGETS = 60;
 local NUMRECENTS = 10;
 local recentDamager = { };
+local foundDamager = false;
+local lastDamagerToMe = "";
+
 local recentDamaged = { };
+local foundDamaged = false;
+
 local ignoreList = { };
 local ignoreRecords = { };
 
-local MAXDEBUG = 2000;
+local MAXDEBUG = 3000;
 
 local lastDing = -1;        -- This will contain the GetTime() of the last ding and overhead message.
 local lastRecent = -1;      -- This will contain the GetTime() of the last removal of a recentDamaged.
@@ -424,6 +425,7 @@ function PvPLogOnEvent()
             return;
         end
      
+--[[
         -- search in player list
         local found = false;
         table.foreach(recentDamager,
@@ -435,6 +437,7 @@ function PvPLogOnEvent()
             end
         );
         if (found) then
+]]--
             if (targetRecords[lastDamagerToMe]) then
                 if (targetRecords[lastDamagerToMe].level) then
                     v = targetRecords[lastDamagerToMe];
@@ -446,9 +449,11 @@ function PvPLogOnEvent()
             else
                 PvPLogDebugMsg("No targetRecords for: "..lastDamagerToMe, RED);
             end
+--[[
         else
             PvPLogDebugMsg("No recentDamager for: "..lastDamagerToMe, RED);
         end
+]]--
 
         -- we are dead, clear the variables
         PvPLogDebugMsg('Recents cleared (dead).');
@@ -482,8 +487,10 @@ function PvPLogOnEvent()
             else
                 PvPLogDebugAdd(message);
             end
-            if (debug_pve or bit.band(dstFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~= 0) then
-                PvPLogPlayerDeath(dstName);
+            if (bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0) then
+                if (debug_pve or bit.band(dstFlags, COMBATLOG_OBJECT_TYPE_PLAYER) ~= 0) then
+                    PvPLogPlayerDeath(dstName);
+                end
             end
         elseif (type == "UNIT_DIED") then
             if (dstName ~= player) then
@@ -493,8 +500,10 @@ function PvPLogOnEvent()
                 else
                     PvPLogDebugAdd(message);
                 end
-                if (debug_pve or bit.band(dstFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~= 0) then
-                    PvPLogPlayerDeath(dstName);
+                if (bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0) then
+                    if (debug_pve or bit.band(dstFlags, COMBATLOG_OBJECT_TYPE_PLAYER) ~= 0) then
+                        PvPLogPlayerDeath(dstName);
+                    end
                 end
             end
         elseif (srcName == player) then
@@ -575,26 +584,8 @@ function PvPLogOnEvent()
     end
 end
 
-function PvPLogPrintStats()
-    local stats = PvPLogGetStats();
-    PvPLogChatMsgCyan("PvPLog " .. PVPLOG.STATS .. ":");
-    PvPLogChatMsg(MAGENTA.."   "..PVPLOG.TOTAL.." "..PVPLOG.WINS..":     ".. stats.totalWins ..
-        " ("..PVPLOG.ALD..": "..(math.floor(stats.totalWinAvgLevelDiff*100)/100)..")");
-
-    PvPLogChatMsg(MAGENTA.."   "..PVPLOG.TOTAL.." "..PVPLOG.LOSSES..":  ".. stats.totalLoss ..
-        " ("..PVPLOG.ALD..": "..(math.floor(stats.totalLossAvgLevelDiff*100)/100)..")");
-
-    PvPLogChatMsg(ORANGE .. "    "..PVPLOG.UI_PVP.." "..PVPLOG.WINS..":     ".. stats.pvpWins ..
-        " ("..PVPLOG.ALD..": "..(math.floor(stats.pvpWinAvgLevelDiff*100)/100)..")");
-
-    PvPLogChatMsg(ORANGE .. "    "..PVPLOG.UI_PVP.." "..PVPLOG.LOSSES..":  ".. stats.pvpLoss ..
-        " ("..PVPLOG.ALD..": "..(math.floor(stats.pvpLossAvgLevelDiff*100)/100)..")");
-
-    PvPLogChatMsg(GREEN .. "    "..PVPLOG.DUEL.." "..PVPLOG.WINS..":    ".. stats.duelWins ..
-        " ("..PVPLOG.ALD..": "..(math.floor(stats.duelWinAvgLevelDiff*100)/100)..")");
-
-    PvPLogChatMsg(GREEN .. "    "..PVPLOG.DUEL.." "..PVPLOG.LOSSES..": ".. stats.duelLoss ..
-        " ("..PVPLOG.ALD..": "..(math.floor(stats.duelLossAvgLevelDiff*100)/100)..")");
+function PvPLogDebugFlag()
+    return debug_flag;
 end
 
 function PvPLogDebugMsg(msg, color)
@@ -641,6 +632,28 @@ function PvPLogChatMsg(msg)
     if (DEFAULT_CHAT_FRAME) then
         DEFAULT_CHAT_FRAME:AddMessage(msg);
     end
+end
+
+function PvPLogPrintStats()
+    local stats = PvPLogGetStats();
+    PvPLogChatMsgCyan("PvPLog " .. PVPLOG.STATS .. ":");
+    PvPLogChatMsg(MAGENTA.."   "..PVPLOG.TOTAL.." "..PVPLOG.WINS..":     ".. stats.totalWins ..
+        " ("..PVPLOG.ALD..": "..(math.floor(stats.totalWinAvgLevelDiff*100)/100)..")");
+
+    PvPLogChatMsg(MAGENTA.."   "..PVPLOG.TOTAL.." "..PVPLOG.LOSSES..":  ".. stats.totalLoss ..
+        " ("..PVPLOG.ALD..": "..(math.floor(stats.totalLossAvgLevelDiff*100)/100)..")");
+
+    PvPLogChatMsg(ORANGE .. "    "..PVPLOG.UI_PVP.." "..PVPLOG.WINS..":     ".. stats.pvpWins ..
+        " ("..PVPLOG.ALD..": "..(math.floor(stats.pvpWinAvgLevelDiff*100)/100)..")");
+
+    PvPLogChatMsg(ORANGE .. "    "..PVPLOG.UI_PVP.." "..PVPLOG.LOSSES..":  ".. stats.pvpLoss ..
+        " ("..PVPLOG.ALD..": "..(math.floor(stats.pvpLossAvgLevelDiff*100)/100)..")");
+
+    PvPLogChatMsg(GREEN .. "    "..PVPLOG.DUEL.." "..PVPLOG.WINS..":    ".. stats.duelWins ..
+        " ("..PVPLOG.ALD..": "..(math.floor(stats.duelWinAvgLevelDiff*100)/100)..")");
+
+    PvPLogChatMsg(GREEN .. "    "..PVPLOG.DUEL.." "..PVPLOG.LOSSES..": ".. stats.duelLoss ..
+        " ("..PVPLOG.ALD..": "..(math.floor(stats.duelLossAvgLevelDiff*100)/100)..")");
 end
 
 function PvPLogFloatMsg(msg, color)
@@ -782,8 +795,20 @@ function PvPLogGetTooltipText(table, name, guid, addpet)
     end
     if (l == 3) then
         local left, found = string.gsub(text[2], PVPLOG.TT_PET, "");
+        if (found ~= 1) then
+            left, found = string.gsub(text[2], PVPLOG.TT_MINION, "");
+        end
+        if (found ~= 1) then
+            left, found = string.gsub(text[2], PVPLOG.TT_CREATION, "");
+        end
+        if (found ~= 1) then
+            left, found = string.gsub(text[2], PVPLOG.TT_GUARDIAN, "");
+        end
+
         if (found == 1) then
             table.owner = left;
+--[[
+-- In BGs, the owner could be "left-realm" and we don't have realm at this point.
             if (addpet) then
                 if (not targetRecords[left]) then
                     PvPLogDebugMsg("Owner Target Addition: "..left, RED);
@@ -791,20 +816,7 @@ function PvPLogGetTooltipText(table, name, guid, addpet)
                 end
                 targetRecords[left].pet = name;
             end
-        else
-            left, found = string.gsub(text[2], PVPLOG.TT_MINION, "");
-            if (found == 1) then
-                table.owner = left;
-                if (addpet) then
-                    if (not targetRecords[left]) then
-                        PvPLogDebugMsg("Owner Target Addition: "..left, RED);
-                        PvPLogAddTarget(left);
-                    end
-                    targetRecords[left].pet = name;
-                end
-            end
-        end
-        if (found == 1) then
+]]--
             _, _, level = string.find(text[3], PVPLOG.TT_LEVEL2);
             if (level == "??") then
                 table.level = -1;
@@ -974,7 +986,7 @@ function PvPLogUpdateTarget(dueling)
                 end
             end
         elseif (targetIsControlled and targetIsEnemy) then
-            PvPLogDebugMsg('Target is an enemy pet ');
+            PvPLogDebugMsg("Target "..targetName.." is an enemy pet");
             -- If we could figure out who owned this pet then we could
             -- credit them with the damage instead of the pet.
         elseif (not debug_pve and debug_ignore) then
