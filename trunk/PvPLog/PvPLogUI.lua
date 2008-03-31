@@ -3,16 +3,18 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-03-27
+    Last Modified:    2008-03-29
 ]]
 
 local realm = "";
 local player = "";
-local CYAN    = "|cff00ffff";
 local WHITE   = "|cffffffff";
 local RED     = "|cffff0000";
 local GREEN   = "|cff00ff00";
+local BLUE    = "|cff0000ff";
+local CYAN    = "|cff00ffff";
 local MAGENTA = "|cffff00ff";
+local YELLOW  = "|cffffff00";
 local FIRE    = "|cffde2413";
 local ORANGE  = "|cffd06c01";
 local statsValue = 1;
@@ -393,16 +395,19 @@ function PvPLogStats_SetValues(statsValue)
         txtPvPLogStats_RealmsHeader:SetText(ORANGE .. PVPLOG.PLAYER);
         txtPvPLogStats_WinsHeader:SetText(GREEN .. PVPLOG.UI_WINS);
         txtPvPLogStats_LossesHeader:SetText(RED .. PVPLOG.UI_FLAGS);
+        txtPvPLogStats_NotesHeader:SetText(" ");
     elseif (PVPLOG.STATS_TYPE == PVPLOG.TARGET) then
         txtPvPLogStats_LevelHeader:SetText(CYAN .. PVPLOG.UI_LEVEL);
         txtPvPLogStats_RealmsHeader:SetText(ORANGE .. PVPLOG.REALM);
         txtPvPLogStats_WinsHeader:SetText(" ");
         txtPvPLogStats_LossesHeader:SetText(GREEN .. "GUID");
+        txtPvPLogStats_NotesHeader:SetText(YELLOW.."Owner"..WHITE.."/"..ORANGE.."Pet");
     else
         txtPvPLogStats_LevelHeader:SetText(" ");
         txtPvPLogStats_RealmsHeader:SetText(ORANGE .. PVPLOG.REALM);
         txtPvPLogStats_WinsHeader:SetText(GREEN .. PVPLOG.UI_WINS);
         txtPvPLogStats_LossesHeader:SetText(RED .. PVPLOG.UI_LOSSES);
+        txtPvPLogStats_NotesHeader:SetText(" ");
     end
     txtPvPLogStats_PlayerList:SetText("");
     txtPvPLogStats_RaceList:SetText("");
@@ -412,6 +417,7 @@ function PvPLogStats_SetValues(statsValue)
     txtPvPLogStats_RealmsList:SetText("");
     txtPvPLogStats_WinsList:SetText("");
     txtPvPLogStats_LossesList:SetText("");
+    txtPvPLogStats_NotesList:SetText("");
     pvpPlayerList = "";
     pvpRaceList = "";
     pvpClassList = "";
@@ -420,6 +426,7 @@ function PvPLogStats_SetValues(statsValue)
     pvpRealmList = "";
     pvpWinsList = "";
     pvpLossList = "";
+    pvpNotesList = "";
     startCount = ((statsValue*30+1)-30);
     endCount = (statsValue*30);
     statCount  = 1;
@@ -466,6 +473,7 @@ function PvPLogStats_SetValues(statsValue)
                                 flag = "D";
                             end
                             pvpLossList = pvpLossList..flag.."\n";
+                            pvpNotesList = pvpNotesList.." \n";
                         end
                         statCount = statCount + 1;
                         statsTotal = statsTotal + 1;
@@ -515,6 +523,13 @@ function PvPLogStats_SetValues(statsValue)
                     pvpWinsList = pvpWinsList.." \n";
                 end
                     pvpLossList = pvpLossList.." \n";
+                if (v2.owner) then
+                    pvpNotesList = pvpNotesList..YELLOW..v2.owner.."\n";
+                elseif (v2.pet) then
+                    pvpNotesList = pvpNotesList..ORANGE..v2.pet.."\n";
+                else
+                    pvpNotesList = pvpNotesList.." \n";
+                end
             end
             statCount = statCount + 1;
             statsTotal = statsTotal + 1;
@@ -596,6 +611,7 @@ function PvPLogStats_SetValues(statsValue)
                 pvpLevelList = pvpLevelList.." \n";
                 pvpWinsList = pvpWinsList..v1.wins.."\n";
                 pvpLossList = pvpLossList..v1.loss.."\n";
+                pvpNotesList = pvpNotesList.." \n";
             end
             statCount = statCount + 1;
             statsTotal = statsTotal + 1;
@@ -609,6 +625,7 @@ function PvPLogStats_SetValues(statsValue)
     txtPvPLogStats_RealmsList:SetText(ORANGE .. pvpRealmList);
     txtPvPLogStats_WinsList:SetText(GREEN .. pvpWinsList);
     txtPvPLogStats_LossesList:SetText(RED .. pvpLossList);
+    txtPvPLogStats_NotesList:SetText(pvpNotesList);
 end
 
 function PvPLog_PvPLogStats_OnHide()

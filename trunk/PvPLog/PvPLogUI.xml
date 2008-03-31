@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          2.5.0
-    Last Modified:    2008-01-09
+    Version:          3.0.0
+    Last Modified:    2008-03-29
 -->
 
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
@@ -716,7 +716,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 
     <Frame name="PvPLogStatsFrame" parent="UIParent" enableMouse="true" movable="true" frameStrata="DIALOG" hidden="true" toplevel="true">
         <Size>
-            <AbsDimension x="750" y="560"/>
+            <AbsDimension x="900" y="560"/>
         </Size>
         <Anchors>
             <Anchor point="CENTER"/>
@@ -827,6 +827,15 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </FontString>
+                <FontString name="txtPvPLogStats_NotesHeader" inherits="SystemFont">
+                    <Anchors>
+                        <Anchor point="TOPLEFT">
+                            <Offset>
+                                <AbsDimension x="770" y="-30"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </FontString>
             </Layer>
             <Layer level="BACKGROUND">
                 <FontString name="txtPvPLogStats_PlayerList" inherits="NumberFontNormal">
@@ -897,6 +906,15 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         <Anchor point="TOPLEFT" relativeTo = "txtPvPLogStats_LossesHeader">
                             <Offset>
                                 <AbsDimension x="20" y="-30"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </FontString>
+                <FontString name="txtPvPLogStats_NotesList" inherits="NumberFontNormal">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeTo = "txtPvPLogStats_NotesHeader">
+                            <Offset>
+                                <AbsDimension x="10" y="-30"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
