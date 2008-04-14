@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-03-30
+    Last Modified:    2008-04-13
 ]]
 
 -- Local variables
@@ -331,7 +331,7 @@ function PvPLogOnEvent()
 -- Code for debugging the tooltip stuff
                 if (debug_ttm) then
                     local v2 = { };
-                    PvPLogGetTooltipText(v2, PvPLogUnitName("mouseover"), nil, nil);
+                    PvPLogGetTooltipText(v2, PvPLogUnitName("mouseover"), nil);
                     PvPLogChatMsg("character = '"..PvPLogUnitName("mouseover").."'");
                     PvPLogChatMsg('    Race = '..tostring(v2.race)..', Class = '..tostring(v2.class));
                     PvPLogChatMsg('    Level = '..tostring(v2.level)..', Rank = '..tostring(v2.rank));
@@ -424,37 +424,22 @@ function PvPLogOnEvent()
           not softPL) then
             return;
         end
-     
---[[
-        -- search in player list
-        local found = false;
-        table.foreach(recentDamager,
-            function(i,tname)
-                if (tname == lastDamagerToMe) then
-                    found = true;
-                    return true;
+        if (targetRecords[lastDamagerToMe]) then
+            if (targetRecords[lastDamagerToMe].level) then
+                v = targetRecords[lastDamagerToMe];
+                if (v.owner and targetRecords[owner] and targetRecords[owner].level) then
+                    PvPLogDebugMsg("Switching from "..lastDamagerToMe.." to "..owner);
+                    v = targetRecords[owner];
+                    lastDamagerToMe = owner;
                 end
-            end
-        );
-        if (found) then
-]]--
-            if (targetRecords[lastDamagerToMe]) then
-                if (targetRecords[lastDamagerToMe].level) then
-                    v = targetRecords[lastDamagerToMe];
-                    PvPLogChatMsgCyan("PvP "..PVPLOG.DLKB..RED..lastDamagerToMe);
-                    PvPLogRecord(lastDamagerToMe, v.level, v.race, v.class, v.guild, 1, 0, v.rank, v.realm);
-                else
-                    PvPLogDebugMsg("Empty targetRecords for: "..lastDamagerToMe, RED);
-                end
+                PvPLogChatMsgCyan("PvP "..PVPLOG.DLKB..RED..lastDamagerToMe);
+                PvPLogRecord(lastDamagerToMe, v.level, v.race, v.class, v.guild, 1, 0, v.rank, v.realm);
             else
-                PvPLogDebugMsg("No targetRecords for: "..lastDamagerToMe, RED);
+                PvPLogDebugMsg("Empty targetRecords for: "..lastDamagerToMe, RED);
             end
---[[
         else
-            PvPLogDebugMsg("No recentDamager for: "..lastDamagerToMe, RED);
+            PvPLogDebugMsg("No targetRecords for: "..lastDamagerToMe, RED);
         end
-]]--
-
         -- we are dead, clear the variables
         PvPLogDebugMsg('Recents cleared (dead).');
         -- recentDamaged = { }; -- Deferred because some of them may still die.
@@ -760,30 +745,32 @@ function PvPLogUnitName(unit)
     return name;
 end
 
-function PvPLogGetTooltipText(table, name, guid, addpet)
+function PvPLogGetTooltipText(table, name, guid)
     local m = 0;
     local l = 0;
-    local hide = false;
     local text = { };
     local level;
 
+    PvPLogDebugMsg("name = '"..name.."', guid = '"..tostring(guid).."'");
     if (guid) then
-        PvPLogDebugMsg("name = '"..name.."', guid = '"..tostring(guid).."'");
-        GameTooltip:SetHyperlink("unit:" .. guid);
+        PvPLogTooltip:SetHyperlink("unit:" .. guid);
         hide = true;
         table.guid = guid;
+        m = PvPLogTooltip:NumLines();
+    else
+        m = GameTooltip:NumLines();
     end
-    m = GameTooltip:NumLines();
-    -- PvPLogDebugMsg("m = "..tostring(m));
+    PvPLogDebugMsg("m = "..tostring(m));
     for n = 1, m do
-        text[n] = getglobal('GameTooltipTextLeft'..n):GetText();
+        if (guid) then
+            text[n] = getglobal('PvPLogTooltipTextLeft'..n):GetText();
+        else
+            text[n] = getglobal('GameTooltipTextLeft'..n):GetText();
+        end
         PvPLogDebugMsg("text["..n.."] = "..tostring(text[n]));
         if (string.find(text[n], PVPLOG.TT_LEVEL)) then
             l = n;
         end    
-    end
-    if (hide) then
-        GameTooltip:Hide();
     end
     if (l > 0) then
         _, _, level, table.race, table.class = string.find(text[l], PVPLOG.TT_PLAYER);
@@ -807,16 +794,6 @@ function PvPLogGetTooltipText(table, name, guid, addpet)
 
         if (found == 1) then
             table.owner = left;
---[[
--- In BGs, the owner could be "left-realm" and we don't have realm at this point.
-            if (addpet) then
-                if (not targetRecords[left]) then
-                    PvPLogDebugMsg("Owner Target Addition: "..left, RED);
-                    PvPLogAddTarget(left);
-                end
-                targetRecords[left].pet = name;
-            end
-]]--
             _, _, level = string.find(text[3], PVPLOG.TT_LEVEL2);
             if (level == "??") then
                 table.level = -1;
@@ -905,7 +882,7 @@ function PvPLogMyDamage(res1,guid)
         if ((isDuel or not ignoreRecords[res1]) and not targetRecords[res1]) then
             PvPLogDebugMsg("Damaged Target Addition: "..res1, RED);
             PvPLogAddTarget(res1);
-            PvPLogGetTooltipText(targetRecords[res1], res1, guid, true);
+            PvPLogGetTooltipText(targetRecords[res1], res1, guid);
         end
         if (isDuel or not ignoreRecords[res1]) then
             if (not PvPLogPutInTable(recentDamaged, res1)) then
@@ -924,7 +901,7 @@ function PvPLogDamageMe(res1, guid)
         if ((isDuel or not ignoreRecords[res1]) and not targetRecords[res1]) then
             PvPLogDebugMsg("Damager Target Addition: "..res1, RED);
             PvPLogAddTarget(res1);
-            PvPLogGetTooltipText(targetRecords[res1], res1, guid, true);
+            PvPLogGetTooltipText(targetRecords[res1], res1, guid);
         end
         if (isDuel or not ignoreRecords[res1]) then
             if (not PvPLogPutInTable(recentDamager, res1)) then
@@ -987,8 +964,13 @@ function PvPLogUpdateTarget(dueling)
             end
         elseif (targetIsControlled and targetIsEnemy) then
             PvPLogDebugMsg("Target "..targetName.." is an enemy pet");
-            -- If we could figure out who owned this pet then we could
-            -- credit them with the damage instead of the pet.
+            if (not targetRecords[targetName]) then
+                PvPLogDebugMsg('Target added: ' .. targetName);
+                PvPLogAddTarget(targetName);
+            end
+            PvPLogGetTooltipText(targetRecords[targetName], targetName, nil);
+            PvPLogChatMsg('    Level = '..tostring(targetRecords[targetName].level)..
+                ', Owner = '..tostring(targetRecords[targetName].owner));
         elseif (not debug_pve and debug_ignore) then
             -- Its not a player or its not an enemy
             if (not ignoreRecords[targetName]) then
