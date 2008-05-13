@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-04-13
+    Last Modified:    2008-05-13
 ]]
 
 -- Local variables
@@ -465,19 +465,9 @@ function PvPLogOnEvent()
 -- This is where the fun begins. 
 -- Decoding the combat events (type) into what damaged me and what I damaged.
 --
+--      if (type == "PARTY_KILL") then -- It appears that all PARTY_KILL events also have a UNIT_DIED event.
 
-        if (type == "PARTY_KILL") then
-            if (debug_combat) then
-                PvPLogDebugMsg(message, RED);
-            else
-                PvPLogDebugAdd(message);
-            end
-            if (bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0) then
-                if (debug_pve or bit.band(dstFlags, COMBATLOG_OBJECT_TYPE_PLAYER) ~= 0) then
-                    PvPLogPlayerDeath(dstName);
-                end
-            end
-        elseif (type == "UNIT_DIED") then
+        if (type == "UNIT_DIED") then
             if (dstName ~= player) then
                 -- The death of the player will be handled by the PLAYER_DEAD event.
                 if (debug_combat) then
@@ -751,7 +741,7 @@ function PvPLogGetTooltipText(table, name, guid)
     local text = { };
     local level;
 
-    PvPLogDebugMsg("name = '"..name.."', guid = '"..tostring(guid).."'");
+    -- PvPLogDebugMsg("name = '"..name.."', guid = '"..tostring(guid).."'");
     if (guid) then
         PvPLogTooltip:SetHyperlink("unit:" .. guid);
         hide = true;
@@ -760,14 +750,14 @@ function PvPLogGetTooltipText(table, name, guid)
     else
         m = GameTooltip:NumLines();
     end
-    PvPLogDebugMsg("m = "..tostring(m));
+    -- PvPLogDebugMsg("m = "..tostring(m));
     for n = 1, m do
         if (guid) then
             text[n] = getglobal('PvPLogTooltipTextLeft'..n):GetText();
         else
             text[n] = getglobal('GameTooltipTextLeft'..n):GetText();
         end
-        PvPLogDebugMsg("text["..n.."] = "..tostring(text[n]));
+        -- PvPLogDebugMsg("text["..n.."] = "..tostring(text[n]));
         if (string.find(text[n], PVPLOG.TT_LEVEL)) then
             l = n;
         end    
@@ -969,8 +959,6 @@ function PvPLogUpdateTarget(dueling)
                 PvPLogAddTarget(targetName);
             end
             PvPLogGetTooltipText(targetRecords[targetName], targetName, nil);
-            PvPLogChatMsg('    Level = '..tostring(targetRecords[targetName].level)..
-                ', Owner = '..tostring(targetRecords[targetName].owner));
         elseif (not debug_pve and debug_ignore) then
             -- Its not a player or its not an enemy
             if (not ignoreRecords[targetName]) then
