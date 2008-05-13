@@ -1,7 +1,7 @@
 ## Interface: 20400
 ## Title: PvPLog
 ## Author: Brad Morgan
-## Version: 2.99.8
+## Version: 2.99.9
 ## Notes: Keeps track of your PvP kills and the people who kill you.
 ## Notes-deDE: Zeichnet PvP Siege und Verluste auf, sowie Duelle.
 ## Notes-frFR: Enregistre les victoires et les défaites JcJ.
