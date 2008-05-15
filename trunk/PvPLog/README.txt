@@ -146,6 +146,9 @@ Use:
     	/pvplog ttm [on|off]
 	    Turns tooltip to chat debugging messages on or off.
 
+    	/pvplog ttv [on|off]
+	    Turns tooltip parsing debugging messages on or off.
+
     	/pvplog ptc [on|off]
 	    Turns the recording of targets when PLAYER_TARGET_CHANGED on or off.
 
