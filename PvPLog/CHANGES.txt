@@ -2,9 +2,13 @@ PvPLog
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
 Version:          3.0.0
-Last Modified:    2008-05-13
+Last Modified:    2008-05-15
 
 CHANGES
+
+2008-05-13  * 2.99.91
+    * Conditionalized some debug messages.
+    * Fixed finding the owner when killed by a pet.
 
 2008-05-13  * 2.99.9
     * Initial beta code with 2.4 combat log changes.

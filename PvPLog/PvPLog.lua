@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-05-13
+    Last Modified:    2008-05-15
 ]]
 
 -- Local variables
@@ -38,8 +38,9 @@ local debug_event2 = false;   -- Overridden by PvPLogDebug.event2 after VARIABLE
 local debug_combat = false;   -- Overridden by PvPLogDebug.combat after VARIABLES_LOADED event.
 local debug_pve = false;      -- Overridden by PvPLogDebug.pve after VARIABLES_LOADED event.
 local debug_ui = false;       -- Overridden by PvPLogDebug.ui after VARIABLES_LOADED event.
-local debug_ttm = false;
 local debug_ptc = true;       -- Overridden by PvPLogDebug.ptc after VARIABLES_LOADED event.
+local debug_ttm = false;
+local debug_ttv = false;
 
 local NUMTARGETS = 60;
 local NUMRECENTS = 10;
@@ -427,10 +428,18 @@ function PvPLogOnEvent()
         if (targetRecords[lastDamagerToMe]) then
             if (targetRecords[lastDamagerToMe].level) then
                 v = targetRecords[lastDamagerToMe];
-                if (v.owner and targetRecords[owner] and targetRecords[owner].level) then
-                    PvPLogDebugMsg("Switching from "..lastDamagerToMe.." to "..owner);
-                    v = targetRecords[owner];
-                    lastDamagerToMe = owner;
+                if (v.owner) then
+                    -- lastDamagerToMe is a pet.
+                    local owner = v.owner;
+                    if (targetPlain[owner]) then
+                    -- real owner has a realm
+                        owner = targetPlain[owner];
+                    end
+                    if (targetRecords[owner] and targetRecords[owner].level) then
+                        PvPLogDebugMsg("Switching from "..lastDamagerToMe.." to "..owner);
+                        v = targetRecords[owner];
+                        lastDamagerToMe = owner;
+                    end
                 end
                 PvPLogChatMsgCyan("PvP "..PVPLOG.DLKB..RED..lastDamagerToMe);
                 PvPLogRecord(lastDamagerToMe, v.level, v.race, v.class, v.guild, 1, 0, v.rank, v.realm);
@@ -706,8 +715,10 @@ function PvPLogFindRealm(full)
     local left;
     local realm;
     _, _, left, realm = string.find(full,"(.*) %- (.*)");
-    PvPLogDebugMsg("full = '"..tostring(full).."'");
-    PvPLogDebugMsg("left = '"..tostring(left).."', realm = '"..tostring(realm).."'");
+    if (debug_ttv) then
+        PvPLogDebugMsg("full = '"..tostring(full).."'");
+        PvPLogDebugMsg("left = '"..tostring(left).."', realm = '"..tostring(realm).."'");
+    end
     return left, realm;
 end
 
@@ -722,8 +733,10 @@ function PvPLogFindRank(full, name)
             rank = left;
         end
     end
-    PvPLogDebugMsg("full = '"..tostring(name).."', name = '"..tostring(name).."'");
-    PvPLogDebugMsg("rank = '"..tostring(rank).."'");
+    if (debug_ttv) then
+        PvPLogDebugMsg("full = '"..tostring(name).."', name = '"..tostring(name).."'");
+        PvPLogDebugMsg("rank = '"..tostring(rank).."'");
+    end
     return rank;
 end
 
@@ -741,7 +754,9 @@ function PvPLogGetTooltipText(table, name, guid)
     local text = { };
     local level;
 
-    -- PvPLogDebugMsg("name = '"..name.."', guid = '"..tostring(guid).."'");
+    if (debug_ttv) then
+        PvPLogDebugMsg("name = '"..name.."', guid = '"..tostring(guid).."'");
+    end
     if (guid) then
         PvPLogTooltip:SetHyperlink("unit:" .. guid);
         hide = true;
@@ -750,14 +765,18 @@ function PvPLogGetTooltipText(table, name, guid)
     else
         m = GameTooltip:NumLines();
     end
-    -- PvPLogDebugMsg("m = "..tostring(m));
+    if (debug_ttv) then
+        PvPLogDebugMsg("m = "..tostring(m));
+    end
     for n = 1, m do
         if (guid) then
             text[n] = getglobal('PvPLogTooltipTextLeft'..n):GetText();
         else
             text[n] = getglobal('GameTooltipTextLeft'..n):GetText();
         end
-        -- PvPLogDebugMsg("text["..n.."] = "..tostring(text[n]));
+        if (debug_ttv) then
+            PvPLogDebugMsg("text["..n.."] = "..tostring(text[n]));
+        end
         if (string.find(text[n], PVPLOG.TT_LEVEL)) then
             l = n;
         end    
@@ -836,18 +855,26 @@ function PvPLogAddIgnore(name)
     end
 end
 
--- Add to targetRecords and targetList.
+-- Add to targetRecords, targetList, targetPlain.
 function PvPLogAddTarget(name)
     targetRecords[name] = { };
     table.insert(targetList, name);
+    local _,_,plain = string.find(name,"(.*)%-.*");
+    if (plain) then
+        targetPlain[plain] = name;
+    end
     if (table.getn(targetList) > NUMTARGETS) then
         PvPLogDebugMsg('Target removed: ' .. targetList[1]);
         targetRecords[targetList[1]] = nil;
+        _,_,plain = string.find(targetList[1],"(.*)%-.*");
+        if (plain) then
+            targetPlain[plain] = nil;
+        end
         table.remove(targetList,1);
     end
 end
 
--- Remove from targetRecords and targetList.
+-- Remove from targetRecords, targetList, targetPlain.
 function PvPLogRemTarget(name)
     local index = -1;
     table.foreach(targetList,
@@ -862,8 +889,12 @@ function PvPLogRemTarget(name)
         PvPLogDebugMsg('Target removed: ' .. targetList[index]);
         targetRecords[name] = nil;
         table.remove(targetList,index);
+        _,_,plain = string.find(name,"(.*)%-.*");
+        if (plain) then
+            targetPlain[plain] = nil;
+        end
     else
-        PvPLogDebugMsg('TargetRecord not found in TargetList for: '..targetName);
+        PvPLogDebugMsg('TargetRecord not found in TargetList for: '..name);
     end
 end
 
@@ -1030,6 +1061,9 @@ function PvPLogInitialize()
     end
     if (targetRecords == nil) then
         targetRecords = { };
+    end
+    if (targetPlain == nil) then
+        targetPlain = { };
     end
 
     if (PvPLogData == nil) then
@@ -1703,6 +1737,7 @@ function PvPLogSlashHandler(msg)
         if (value == "clear") then
             targetList = { };
             targetRecords = { };
+            targetPlain = { };
         end
     elseif (command == "event1") then
         if (value == "on") then
@@ -1756,6 +1791,14 @@ function PvPLogSlashHandler(msg)
         else
             PvPLogDebugMsg("debug_ttm = "..tostring(debug_ttm));
         end
+    elseif (command == "ttv") then
+        if (value == "on") then
+            debug_ttv = true;
+        elseif (value == "off") then
+            debug_ttv = false;
+        else
+            PvPLogDebugMsg("debug_ttv = "..tostring(debug_ttv));
+        end
     elseif (command == "ptc") then
         if (value == "on") then
             debug_ptc = true;
@@ -1777,6 +1820,12 @@ function PvPLogSlashHandler(msg)
         end
         s = string.sub(s,3);
         PvPLogDebugMsg("targetRecords = {"..s.."}");
+        s = "";
+        for i in pairs(targetPlain) do
+            s = s..", "..i;
+        end
+        s = string.sub(s,3);
+        PvPLogDebugMsg("targetPlain = {"..s.."}");
         PvPLogDebugMsg("ignoreList = {"..table.concat(ignoreList,", ").."}");
         s = "";
         for i in pairs(ignoreRecords) do
