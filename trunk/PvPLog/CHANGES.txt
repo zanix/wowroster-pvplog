@@ -2,9 +2,12 @@ PvPLog
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
 Version:          3.0.0
-Last Modified:    2008-05-15
+Last Modified:    2008-05-19
 
 CHANGES
+
+2008-05-19  * 3.0.0
+    * Updated TOC
 
 2008-05-13  * 2.99.91
     * Conditionalized some debug messages.

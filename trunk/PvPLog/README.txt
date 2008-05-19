@@ -2,7 +2,7 @@ PvPLog
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
 Version:          3.0.0
-Last Modified:    2008-03-26
+Last Modified:    2008-05-19
 
 README
 
