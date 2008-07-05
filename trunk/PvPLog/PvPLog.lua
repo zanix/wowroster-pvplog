@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.0.0
-    Last Modified:    2008-05-15
+    Version:          3.0.1
+    Last Modified:    2008-07-05
 ]]
 
 -- Local variables
@@ -474,9 +474,13 @@ function PvPLogOnEvent()
 -- This is where the fun begins. 
 -- Decoding the combat events (type) into what damaged me and what I damaged.
 --
---      if (type == "PARTY_KILL") then -- It appears that all PARTY_KILL events also have a UNIT_DIED event.
-
-        if (type == "UNIT_DIED") then
+        if (type == "PARTY_KILL") then -- It appears that all PARTY_KILL events also have a UNIT_DIED event.
+            if (debug_combat) then
+                PvPLogDebugMsg(message, RED);
+            else
+                PvPLogDebugAdd(message);
+            end
+        elseif (type == "UNIT_DIED") then
             if (dstName ~= player) then
                 -- The death of the player will be handled by the PLAYER_DEAD event.
                 if (debug_combat) then
