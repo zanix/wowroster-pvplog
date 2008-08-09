@@ -16,17 +16,17 @@ RPGOCP = {
 	EMAIL		= GetAddOnMetadata("CharacterProfiler", "X-Email");
 	URL			= GetAddOnMetadata("CharacterProfiler", "X-Website");
 	DATE		= GetAddOnMetadata("CharacterProfiler", "X-Date");
-	PROFILEDB	= "2.3.1";
+	PROFILEDB	= "3.0.0";
 	FRAME		= "rpgoCPframe";
 	TOOLTIP		= "rpgoCPtooltip";
 }
 RPGOCP.PREFS={
 	enabled=true,verbose=false,tooltip=true,tooltipshtml=true,fixtooltip=true,fixquantity=true,fixicon=true,fixcolor=true,reagentfull=true,talentsfull=true,questsfull=false,lite=true,button=true,debug=false,ver=020100,
-	scan={inventory=true,talents=true,honor=true,reputation=true,spells=true,pet=true,equipment=true,mail=true,professions=true,skills=true,quests=true,bank=true},
+	scan={inventory=true,talents=true,honor=true,reputation=true,spells=true,pet=true,companion=true,equipment=true,mail=true,professions=true,skills=true,quests=true,bank=true},
 };
 RPGOCP.events={"PLAYER_LEVEL_UP","TIME_PLAYED_MSG",
 	"CRAFT_SHOW","CRAFT_UPDATE","TRADE_SKILL_SHOW","TRADE_SKILL_UPDATE",
-	"CHARACTER_POINTS_CHANGED",
+	"CHARACTER_POINTS_CHANGED","COMPANION_UPDATE",
 	"BANKFRAME_OPENED","BANKFRAME_CLOSED","MAIL_SHOW","MAIL_CLOSED","MAIL_INBOX_UPDATE",
 	"MERCHANT_CLOSED","UNIT_QUEST_LOG_CHANGED","QUEST_FINISHED","PET_STABLE_CLOSED",
 	"ZONE_CHANGED","ZONE_CHANGED_INDOORS","PLAYER_CONTROL_LOST","PLAYER_CONTROL_GAINED",
@@ -169,6 +169,10 @@ RPGOCP.event2={
 	PET_STABLE_CLOSED =
 		function()
 			RPGOCP:ScanPetStable();
+		end,
+	COMPANION_UPDATE =
+		function()
+			RPGOCP:ScanCompanionFrame();
 		end,
 };
 RPGOCP.funcs={
@@ -464,6 +468,7 @@ function RPGOCP:UpdateProfile()
 	self:GetHonor();
 	self:GetArena();
 	self:ScanPetInfo();
+	self:ScanCompanionFrame();
 	self:UpdateZone();
 	self:UpdatePlayed();
 	self:UpdateDate();
@@ -484,6 +489,7 @@ function RPGOCP:ForceExport()
 	self:InitProfile();
 	self:UpdateProfile();
 	self:ScanPetInfo();
+	self:ScanCompanionFrame();
 	self:Show();
 end
 --[Purge]
@@ -2100,6 +2106,23 @@ function RPGOCP:ScanPetInit(name)
 	end
 end
 
+function RPGOCP:ScanCompanionInit(name,companionType)
+	if(name) then
+		if(not self.db["Companions"]) then
+			self.db["Companions"]={};
+		end
+		if(not self.db["Companions"][companionType]) then
+			self.db["Companions"][companionType]={};
+		end
+		if(not self.db["Companions"][companionType][name]) then
+			self.db["Companions"][companionType][name]={};
+		end
+		if(not self.db["timestamp"]["Companions"][companionType]) then
+			self.db["timestamp"]["Companions"][companionType]={};
+		end
+	end
+end
+
 function RPGOCP:ScanPetStable()
 	if(self.prefs["scan"]["pet"] and (self.state["_class"]=="HUNTER" and UnitLevel("player")>9)) then
 		local stablePets={};
@@ -2159,6 +2182,29 @@ function RPGOCP:ScanPetInfo()
 	elseif(self.db) then
 		self.db["Pets"]=nil;
 		self.state["Pets"]={};
+	end
+end
+
+function RPGOCP:ScanCompanionFrame()
+	if(self.prefs["scan"]["companions"]) then
+		local structCompanion=self.db["Companions"];
+
+		for index,companionType in pairs(rpgo.db.crittertype) do
+			for companionIndex=0,GetNumCompanions(companionType) do
+				local creatureID,creatureName,spellID,icon,active = GetCompanionInfo(companionType,companionIndex);
+
+				if(creatureName and creatureName~=UNKNOWN) then
+					self:ScanCompanionInit(creatureName,companionType);
+					structCompanion[companionType][companionIndex]["Slot"]=creatureID;
+					structCompanion[companionType][companionIndex]["Icon"]=rpgo.scanIcon(icon);
+					structCompanion[companionType][companionIndex]["Name"]=creatureName;
+					self.db["timestamp"]["Companions"][companionType][creatureName]=time();
+				end
+			end
+		end
+	elseif(self.db) then
+		self.db["Companions"]=nil;
+		self.state["Companions"]={};
 	end
 end
 
