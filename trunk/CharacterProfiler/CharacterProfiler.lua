@@ -22,7 +22,7 @@ RPGOCP = {
 }
 RPGOCP.PREFS={
 	enabled=true,verbose=false,tooltip=true,tooltipshtml=true,fixtooltip=true,fixquantity=true,fixicon=true,fixcolor=true,reagentfull=true,talentsfull=true,questsfull=false,lite=true,button=true,debug=false,ver=020100,
-	scan={inventory=true,talents=true,honor=true,reputation=true,spells=true,pet=true,companion=true,equipment=true,mail=true,professions=true,skills=true,quests=true,bank=true},
+	scan={inventory=true,talents=true,honor=true,reputation=true,spells=true,pet=true,companions=true,equipment=true,mail=true,professions=true,skills=true,quests=true,bank=true},
 };
 RPGOCP.events={"PLAYER_LEVEL_UP","TIME_PLAYED_MSG",
 	"CRAFT_SHOW","CRAFT_UPDATE","TRADE_SKILL_SHOW","TRADE_SKILL_UPDATE",
@@ -357,6 +357,7 @@ function RPGOCP:InitState()
 		Bag={},Inventory={},Bank={},
 		Professions={}, SpellBook={},
 		Pets={}, Stable={}, PetSpell={},
+		Companions={},
 	};
 	self.queue={};
 end
@@ -760,6 +761,20 @@ function RPGOCP:Show()
 					end
 				end
 			rpgo.PrintMsg("  " .. msg);
+
+				msg="Companions:";
+				tsort={};
+				table.foreach(self.state["Companions"], function(k,v) table.insert(tsort,k) end );
+				table.sort(tsort);
+				if(table.getn(tsort)==0) then
+					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned");
+				else
+					for _,item in pairs(tsort) do
+						msg=msg .. " " .. item..": "..self.state["Companions"][item];
+					end
+				end
+			rpgo.PrintMsg("  " .. msg);
+
 			if( (self:State("_class")=="HUNTER" and UnitLevel("player")>9) or self:State("_class")=="WARLOCK") then
 				msg="Pets: ";
 				tsort={};
@@ -2106,16 +2121,19 @@ function RPGOCP:ScanPetInit(name)
 	end
 end
 
-function RPGOCP:ScanCompanionInit(name,companionType)
-	if(name) then
+function RPGOCP:ScanCompanionInit(index,companionType)
+	if(index) then
 		if(not self.db["Companions"]) then
 			self.db["Companions"]={};
 		end
 		if(not self.db["Companions"][companionType]) then
 			self.db["Companions"][companionType]={};
 		end
-		if(not self.db["Companions"][companionType][name]) then
-			self.db["Companions"][companionType][name]={};
+		if(not self.db["Companions"][companionType][index]) then
+			self.db["Companions"][companionType][index]={};
+		end
+		if(not self.db["timestamp"]["Companions"]) then
+			self.db["timestamp"]["Companions"]={};
 		end
 		if(not self.db["timestamp"]["Companions"][companionType]) then
 			self.db["timestamp"]["Companions"][companionType]={};
@@ -2187,20 +2205,25 @@ end
 
 function RPGOCP:ScanCompanionFrame()
 	if(self.prefs["scan"]["companions"]) then
+	
+		local crittertypes={"Critter","Mount"};
 		local structCompanion=self.db["Companions"];
 
-		for index,companionType in pairs(rpgo.db.crittertype) do
-			for companionIndex=0,GetNumCompanions(companionType) do
+		for index,companionType in pairs(crittertypes) do
+			for companionIndex=1,GetNumCompanions(companionType) do
 				local creatureID,creatureName,spellID,icon,active = GetCompanionInfo(companionType,companionIndex);
 
 				if(creatureName and creatureName~=UNKNOWN) then
-					self:ScanCompanionInit(creatureName,companionType);
-					structCompanion[companionType][companionIndex]["Slot"]=creatureID;
-					structCompanion[companionType][companionIndex]["Icon"]=rpgo.scanIcon(icon);
+					self:ScanCompanionInit(companionIndex,companionType);
 					structCompanion[companionType][companionIndex]["Name"]=creatureName;
+					structCompanion[companionType][companionIndex]["CreatureId"]=creatureID;
+					structCompanion[companionType][companionIndex]["SpellId"]=spellID;
+					structCompanion[companionType][companionIndex]["Active"]=active;
+					structCompanion[companionType][companionIndex]["Icon"]=rpgo.scanIcon(icon);
 					self.db["timestamp"]["Companions"][companionType][creatureName]=time();
 				end
 			end
+			self.state["Companions"][companionType]=GetNumCompanions(companionType);
 		end
 	elseif(self.db) then
 		self.db["Companions"]=nil;
