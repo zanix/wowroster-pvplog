@@ -3,6 +3,7 @@ if(not rpgo) then rpgo={}; end
 if(not rpgo.db) then rpgo.db={}; end
 rpgo.db.class = {WARRIOR=1,PALADIN=2,HUNTER=3,ROGUE=4,PRIEST=5,SHAMAN=7,MAGE=8,WARLOCK=9,DRUID=11};
 rpgo.db.race = {Human=1,Orc=2,Dwarf=3,NightElf=4,Scourge=5,Tauren=6,Gnome=7,Troll=8,BloodElf=10,Draenei=11};
+rpgo.db.crittertype = { 1 = "CRITTER", 2 = "MOUNT" };
 --[[########################################################
 --## general functions
 --######################################################--]]
