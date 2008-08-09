@@ -1213,6 +1213,13 @@ function RPGOCP:GetQuests(force)
 		return color;
 	end
 
+	local function GetQuestID(index)
+		local link = GetQuestLink(index)
+		if not link then return end
+
+		return tonumber(link:match(":(%d+):"))
+	end
+
 	if( force or (self:State("QuestsLog")~=numEntries) ) then
 		self.db["Quests"]={};
 		self:State("Quests",0);self:State("QuestsLog",0);
@@ -1235,15 +1242,18 @@ function RPGOCP:GetQuests(force)
 					if(self.prefs["questsfull"]) then
 						questDescription,questObjective = GetQuestLogQuestText(idx);
 					end
+
 					structQuest[header][slot]={
 						Title=questTitle,
+						Link=GetQuestID(idx),
 						Level=questLevel,
 						Complete=isComplete,
 						Tag=questTag,
 						Difficulty=GetDifficultyValue(questLevel),
 						Group=suggestedGroup,
 						Description=questDescription,
-						Objective=questObjective};
+						Objective=questObjective,
+						Daily=isDaily};
 
 					num=GetNumQuestLeaderBoards(idx);
 					if(num and num > 0) then
