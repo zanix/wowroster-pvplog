@@ -2212,7 +2212,6 @@ function RPGOCP:ScanCompanionFrame()
 		for index,companionType in pairs(crittertypes) do
 			for companionIndex=1,GetNumCompanions(companionType) do
 				local creatureID,creatureName,spellID,icon,active = GetCompanionInfo(companionType,companionIndex);
-
 				if(creatureName and creatureName~=UNKNOWN) then
 					self:ScanCompanionInit(companionIndex,companionType);
 					structCompanion[companionType][companionIndex]["Name"]=creatureName;
@@ -2221,10 +2220,13 @@ function RPGOCP:ScanCompanionFrame()
 					structCompanion[companionType][companionIndex]["Active"]=active;
 					structCompanion[companionType][companionIndex]["Icon"]=rpgo.scanIcon(icon);
 					self.db["timestamp"]["Companions"][companionType][creatureName]=time();
+					
+					self.tooltip:SetHyperlink("spell:" ..spellID,BOOKTYPE_SPELL)
+					structCompanion[companionType][companionIndex]["Tooltip"] = self:ScanTooltip();
+				end
+					
 				end
 			end
-			self.state["Companions"][companionType]=GetNumCompanions(companionType);
-		end
 	elseif(self.db) then
 		self.db["Companions"]=nil;
 		self.state["Companions"]={};
