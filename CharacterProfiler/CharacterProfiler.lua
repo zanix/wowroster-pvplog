@@ -22,7 +22,7 @@ RPGOCP = {
 }
 RPGOCP.PREFS={
 	enabled=true,verbose=false,tooltip=true,tooltipshtml=true,fixtooltip=true,fixquantity=true,fixicon=true,fixcolor=true,reagentfull=true,talentsfull=true,questsfull=false,lite=true,button=true,debug=false,ver=020100,
-	scan={inventory=true,talents=true,honor=true,reputation=true,spells=true,pet=true,companions=true,equipment=true,mail=true,professions=true,skills=true,quests=true,bank=true},
+	scan={inventory=true,talents=true,honor=true,reputation=true,spells=true,pet=true,companions=true,equipment=true,mail=true,professions=true,skills=true,quests=true,bank=true,glyphs=true},
 };
 RPGOCP.events={"PLAYER_LEVEL_UP","TIME_PLAYED_MSG",
 	"CRAFT_SHOW","CRAFT_UPDATE","TRADE_SKILL_SHOW","TRADE_SKILL_UPDATE",
@@ -30,6 +30,7 @@ RPGOCP.events={"PLAYER_LEVEL_UP","TIME_PLAYED_MSG",
 	"BANKFRAME_OPENED","BANKFRAME_CLOSED","MAIL_SHOW","MAIL_CLOSED","MAIL_INBOX_UPDATE",
 	"MERCHANT_CLOSED","UNIT_QUEST_LOG_CHANGED","QUEST_FINISHED","PET_STABLE_CLOSED",
 	"ZONE_CHANGED","ZONE_CHANGED_INDOORS","PLAYER_CONTROL_LOST","PLAYER_CONTROL_GAINED",
+	"GLYPHFRAME_OPEN","GLYPH_UPDATED",
 };
 
 RPGOCP.usage={
@@ -174,6 +175,11 @@ RPGOCP.event2={
 		function()
 			RPGOCP:ScanCompanionFrame();
 		end,
+	GLYPHFRAME_OPEN = 
+		function()
+			RPGOCP:ScanGlyphs();
+		end,
+	
 };
 RPGOCP.funcs={
 	fixicon =
@@ -357,7 +363,7 @@ function RPGOCP:InitState()
 		Bag={},Inventory={},Bank={},
 		Professions={}, SpellBook={},
 		Pets={}, Stable={}, PetSpell={},
-		Companions={},
+		Companions={}, Glyphs={},
 	};
 	self.queue={};
 end
@@ -470,6 +476,7 @@ function RPGOCP:UpdateProfile()
 	self:GetArena();
 	self:ScanPetInfo();
 	self:ScanCompanionFrame();
+	self:ScanGlyphs();
 	self:UpdateZone();
 	self:UpdatePlayed();
 	self:UpdateDate();
@@ -491,6 +498,7 @@ function RPGOCP:ForceExport()
 	self:UpdateProfile();
 	self:ScanPetInfo();
 	self:ScanCompanionFrame();
+	self:ScanGlyphs();
 	self:Show();
 end
 --[Purge]
@@ -2141,6 +2149,23 @@ function RPGOCP:ScanCompanionInit(index,companionType)
 	end
 end
 
+function RPGOCP:ScanGlyphInit(index)
+	if(index) then
+		if(not self.db["Glyphs"]) then
+			self.db["Glyphs"]={};
+		end
+		if(not self.db["Glyphs"]["glyph"..index]) then
+			self.db["Glyphs"]["glyph"..index]={};
+		end
+		if(not self.db["timestamp"]["Glyphs"]) then
+			self.db["timestamp"]["Glyphs"]={};
+		end
+		if(not self.db["timestamp"]["Glyphs"]["glyph"..index]) then
+			self.db["timestamp"]["Glyphs"]["glyph"..index]={};
+		end
+	end
+end
+
 function RPGOCP:ScanPetStable()
 	if(self.prefs["scan"]["pet"] and (self.state["_class"]=="HUNTER" and UnitLevel("player")>9)) then
 		local stablePets={};
@@ -2207,13 +2232,13 @@ function RPGOCP:ScanCompanionFrame()
 	if(self.prefs["scan"]["companions"]) then
 	
 		local crittertypes={"Critter","Mount"};
-		local structCompanion=self.db["Companions"];
 
 		for index,companionType in pairs(crittertypes) do
 			for companionIndex=1,GetNumCompanions(companionType) do
 				local creatureID,creatureName,spellID,icon,active = GetCompanionInfo(companionType,companionIndex);
 				if(creatureName and creatureName~=UNKNOWN) then
 					self:ScanCompanionInit(companionIndex,companionType);
+					local structCompanion=self.db["Companions"];
 					structCompanion[companionType][companionIndex]["Name"]=creatureName;
 					structCompanion[companionType][companionIndex]["CreatureId"]=creatureID;
 					structCompanion[companionType][companionIndex]["SpellId"]=spellID;
@@ -2230,6 +2255,30 @@ function RPGOCP:ScanCompanionFrame()
 	elseif(self.db) then
 		self.db["Companions"]=nil;
 		self.state["Companions"]={};
+	end
+end
+
+function RPGOCP:ScanGlyphs()
+	if(self.prefs["scan"]["glyphs"]) then	
+		for index = 1,GetNumGlyphSockets() do
+			local enabled, glyphType, glyphSpell, icon = GetGlyphSocketInfo(index);
+			if(enabled == 1 and glyphSpell) then 
+				self:ScanGlyphInit(index);
+				local structGlyph=self.db["Glyphs"];
+				local name = GetSpellInfo(glyphSpell);
+				structGlyph["glyph"..index]["Name"] = name;
+				structGlyph["glyph"..index]["Type"] = glyphType;
+				structGlyph["glyph"..index]["Icon"] = rpgo.scanIcon(icon);
+				self.db["timestamp"]["Glyphs"]["glyph"..index]=time();
+				
+				self.tooltip:SetGlyph(index);
+				structGlyph["glyph"..index]["Tooltip"] = self:ScanTooltip();
+			end
+		end
+		
+	elseif(self.db) then
+		self.db["Glyphs"] = nil;
+		self.state["Glyphs"]={};
 	end
 end
 
