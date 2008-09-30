@@ -175,7 +175,7 @@ RPGOCP.event2={
 		function()
 			RPGOCP:ScanCompanionFrame();
 		end,
-	GLYPHFRAME_OPEN = 
+	GLYPHFRAME_OPEN =
 		function()
 			RPGOCP:ScanGlyphs();
 		end,
@@ -724,7 +724,7 @@ function RPGOCP:Show()
 				table.foreach(self.state["Professions"], function (k,v) table.insert(tsort,k) end );
 				table.sort(tsort);
 				if(table.getn(tsort)==0) then
-					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned")..".   to scan: open each profession";
+					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned")..".  - open each profession to scan";
 				else
 					for _,item in pairs(tsort) do
 						msg=msg .. " " .. item..":"..self.state["Professions"][item];
@@ -737,10 +737,23 @@ function RPGOCP:Show()
 				table.foreach(self.state["SpellBook"], function(k,v) table.insert(tsort,k) end );
 				table.sort(tsort);
 				if(table.getn(tsort)==0) then
-					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned")..".   to scan: open your spellbook";
+					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned")..".  - open your spellbook to scan";
 				else
 					for _,item in pairs(tsort) do
 						msg=msg .. " " .. item..":"..self.state["SpellBook"][item];
+					end
+				end
+			rpgo.PrintMsg("  " .. msg);
+
+				msg="Glyphs:";
+				tsort={};
+				table.foreach(self.state["Glyphs"], function(k,v) table.insert(tsort,k) end );
+				table.sort(tsort);
+				if(table.getn(tsort)==0) then
+					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned");
+				else
+					for _,item in pairs(tsort) do
+						msg=msg .. " " .. item..":"..self.state["Glyphs"][item];
 					end
 				end
 			rpgo.PrintMsg("  " .. msg);
@@ -750,7 +763,7 @@ function RPGOCP:Show()
 				table.foreach(self.state["Inventory"], function(k,v) table.insert(tsort,k) end );
 				table.sort(tsort);
 				if(table.getn(tsort)==0) then
-					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned")..".   to scan: open your bank or 'character info'";
+					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned")..".  - open your bank or 'character info' to scan";
 				else
 					for _,item in pairs(tsort) do
 						msg=msg .. " " .. item.."]"..self.state["Inventory"][item]["inv"].."/"..self.state["Inventory"][item]["slot"];
@@ -762,7 +775,7 @@ function RPGOCP:Show()
 				table.foreach(self.state["Bank"], function(k,v) table.insert(tsort,k) end );
 				table.sort(tsort);
 				if(table.getn(tsort)==0) then
-					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned")..".   to scan: open your bank";
+					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned")..".  - open your bank to scan";
 				else
 					for _,item in pairs(tsort) do
 						msg=msg .. " " .. item.."]"..self.state["Bank"][item]["inv"].."/"..self.state["Bank"][item]["slot"];
@@ -778,7 +791,7 @@ function RPGOCP:Show()
 					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned");
 				else
 					for _,item in pairs(tsort) do
-						msg=msg .. " " .. item..": "..self.state["Companions"][item];
+						msg=msg .. " " .. item..":"..self.state["Companions"][item];
 					end
 				end
 			rpgo.PrintMsg("  " .. msg);
@@ -2154,14 +2167,14 @@ function RPGOCP:ScanGlyphInit(index)
 		if(not self.db["Glyphs"]) then
 			self.db["Glyphs"]={};
 		end
-		if(not self.db["Glyphs"]["glyph"..index]) then
-			self.db["Glyphs"]["glyph"..index]={};
+		if(not self.db["Glyphs"][index]) then
+			self.db["Glyphs"][index]={};
 		end
 		if(not self.db["timestamp"]["Glyphs"]) then
 			self.db["timestamp"]["Glyphs"]={};
 		end
-		if(not self.db["timestamp"]["Glyphs"]["glyph"..index]) then
-			self.db["timestamp"]["Glyphs"]["glyph"..index]={};
+		if(not self.db["timestamp"]["Glyphs"][index]) then
+			self.db["timestamp"]["Glyphs"][index]={};
 		end
 	end
 end
@@ -2230,11 +2243,13 @@ end
 
 function RPGOCP:ScanCompanionFrame()
 	if(self.prefs["scan"]["companions"]) then
-	
 		local crittertypes={"Critter","Mount"};
 
 		for index,companionType in pairs(crittertypes) do
-			for companionIndex=1,GetNumCompanions(companionType) do
+			local numCompanions = GetNumCompanions(companionType);
+			self.state["Companions"][companionType]=numCompanions;
+
+			for companionIndex=1,numCompanions do
 				local creatureID,creatureName,spellID,icon,active = GetCompanionInfo(companionType,companionIndex);
 				if(creatureName and creatureName~=UNKNOWN) then
 					self:ScanCompanionInit(companionIndex,companionType);
@@ -2249,9 +2264,9 @@ function RPGOCP:ScanCompanionFrame()
 					self.tooltip:SetHyperlink("spell:" ..spellID,BOOKTYPE_SPELL)
 					structCompanion[companionType][companionIndex]["Tooltip"] = self:ScanTooltip();
 				end
-					
-				end
 			end
+			self.state["Companions"][companionType]=GetNumCompanions(companionType);
+		end
 	elseif(self.db) then
 		self.db["Companions"]=nil;
 		self.state["Companions"]={};
@@ -2259,23 +2274,26 @@ function RPGOCP:ScanCompanionFrame()
 end
 
 function RPGOCP:ScanGlyphs()
-	if(self.prefs["scan"]["glyphs"]) then	
+	if(self.prefs["scan"]["glyphs"]) then
 		for index = 1,GetNumGlyphSockets() do
 			local enabled, glyphType, glyphSpell, icon = GetGlyphSocketInfo(index);
-			if(enabled == 1 and glyphSpell) then 
+			self.state["Glyphs"][index]="";
+
+			if(enabled == 1 and glyphSpell) then
 				self:ScanGlyphInit(index);
 				local structGlyph=self.db["Glyphs"];
 				local name = GetSpellInfo(glyphSpell);
-				structGlyph["glyph"..index]["Name"] = name;
-				structGlyph["glyph"..index]["Type"] = glyphType;
-				structGlyph["glyph"..index]["Icon"] = rpgo.scanIcon(icon);
-				self.db["timestamp"]["Glyphs"]["glyph"..index]=time();
-				
+				structGlyph[index]["Name"] = name;
+				structGlyph[index]["Type"] = glyphType;
+				structGlyph[index]["Icon"] = rpgo.scanIcon(icon);
+				self.db["timestamp"]["Glyphs"][index]=time();
+
+				self.state["Glyphs"][index]=name;
+
 				self.tooltip:SetGlyph(index);
-				structGlyph["glyph"..index]["Tooltip"] = self:ScanTooltip();
+				structGlyph[index]["Tooltip"] = self:ScanTooltip();
 			end
 		end
-		
 	elseif(self.db) then
 		self.db["Glyphs"] = nil;
 		self.state["Glyphs"]={};
