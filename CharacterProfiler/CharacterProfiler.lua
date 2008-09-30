@@ -2173,9 +2173,6 @@ function RPGOCP:ScanGlyphInit(index)
 		if(not self.db["timestamp"]["Glyphs"]) then
 			self.db["timestamp"]["Glyphs"]={};
 		end
-		if(not self.db["timestamp"]["Glyphs"][index]) then
-			self.db["timestamp"]["Glyphs"][index]={};
-		end
 	end
 end
 
@@ -2286,7 +2283,6 @@ function RPGOCP:ScanGlyphs()
 				structGlyph[index]["Name"] = name;
 				structGlyph[index]["Type"] = glyphType;
 				structGlyph[index]["Icon"] = rpgo.scanIcon(icon);
-				self.db["timestamp"]["Glyphs"][index]=time();
 
 				self.state["Glyphs"][index]=name;
 
@@ -2294,6 +2290,7 @@ function RPGOCP:ScanGlyphs()
 				structGlyph[index]["Tooltip"] = self:ScanTooltip();
 			end
 		end
+		self.db["timestamp"]["Glyphs"]=time();
 	elseif(self.db) then
 		self.db["Glyphs"] = nil;
 		self.state["Glyphs"]={};
