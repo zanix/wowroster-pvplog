@@ -1,4 +1,4 @@
-local VERSION = 2020001
+local VERSION = 03000001
 if(not rpgo) then rpgo={}; end
 if(not rpgo.db) then rpgo.db={}; end
 rpgo.db.class = {WARRIOR=1,PALADIN=2,HUNTER=3,ROGUE=4,PRIEST=5,SHAMAN=7,MAGE=8,WARLOCK=9,DRUID=11};
@@ -109,18 +109,6 @@ end
 end
 
 --[[########################################################
---## recipe functions
---######################################################--]]
---[GetRecipeInfo] recipeStr
-rpgo.GetRecipeInfo = function(recipeStr)
-	local id,name,link;
-	if(recipeStr) then
-		_,_,link,id,name = string.find(recipeStr, "|c%x+|H(enchant:(%d+)|h%[(.-)%])|h|r"); end
-		if ( id~=nil ) then id=tonumber(id); end
-	return id,name,link;
-end
-
---[[########################################################
 --## item functions
 --######################################################--]]
 --[GetContainerNumSlots]
@@ -130,12 +118,6 @@ rpgo.GetContainerNumSlots = function(bagID)
 	else
 		return GetContainerNumSlots(bagID);
 	end
-end
---[GetItemID] itemStr
-rpgo.GetItemID = function(itemStr)
-	local id,rid,link;
-	if(itemStr) then _,_,link,id,rid=string.find(itemStr,"item:((%d+):[-%d]+:[-%d]+:[-%d]+:[-%d]+:[-%d]+:([-%d]+):[-%d]+)|"); end
-	return id,rid,link;
 end
 --[ItemHasGem] itemStr
 rpgo.ItemHasGem = function(itemStr)
@@ -179,6 +161,40 @@ rpgo.GetItemInfoTT = function(tooltip)
 	end
 	if(nTT) then r,g,b=ttText:GetTextColor(); cTT=string.format("ff%02x%02x%02x",r*256,g*256,b*256); end
 	return nTT,cTT;
+end
+--[GetItemID] itemStr
+rpgo.GetItemID = function(itemStr)
+	local id,rid;
+	if(itemStr) then _,_,id,rid=string.find(itemStr,"|Hitem:(%d+):[-%d]+:[-%d]+:[-%d]+:[-%d]+:[-%d]+:([-%d]+):[-%d]+|h"); end
+	return tonumber(id),tonumber(rid);
+end
+
+--[GetQuestID] questStr
+rpgo.GetQuestID = function(questStr)
+	local id,lvl;
+	if(questStr) then _,_,id,lvl=string.find(questStr,"|Hquest:(%d+):([-%d]+)|h"); end
+	return tonumber(id);
+end
+
+--[GetSpellID] spellStr
+rpgo.GetSpellID = function(spellStr)
+	local id;
+	if(spellStr) then _,_,id=string.find(spellStr,"|Hspell:(%d+)|h"); end
+	return tonumber(id);
+end
+
+--[GetTalentID] talentStr
+rpgo.GetTalentID = function(talentStr)
+	local id;
+	if(talentStr) then _,_,id=string.find(talentStr,"|Htalent:(%d+):[-%d]+|h"); end
+	return tonumber(id);
+end
+
+--[GetRecipeId] recipeStr
+rpgo.GetRecipeId = function(recipeStr)
+	local id;
+	if(recipeStr) then _,_,id = string.find(recipeStr, "|Henchant:(%d+)|h"); end
+	return tonumber(id);
 end
 
 --[[########################################################

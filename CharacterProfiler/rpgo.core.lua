@@ -5,7 +5,7 @@ if(not rpgo.colorGreen) then rpgo.colorGreen="00cc00"; end
 if(not rpgo.colorRed)   then rpgo.colorRed  ="ff0000"; end
 --if(not rpgo.func) then rpgo.func={}; end
 
-local VERSION = 2030001
+local VERSION = 03000001
 if(rpgo.ver and rpgo.ver >= VERSION) then return end
 --[[########################################################
 --## addon object functions
@@ -37,7 +37,6 @@ rpgo.PrefTidy=function(self)
 		return rpgo.PrefTidySub(self.prefs,self.PREFS);
 	end
 end
-
 --[PrefInit] structPref,structDefault
 rpgo.PrefInitSub = function(structPref,structDefault)
 	for pref,val in pairs(structDefault) do
@@ -114,7 +113,6 @@ rpgo.PrefToggle=function(self,pref,val)
 	msg=msg.." "..rpgo.PrefColorize(self.prefs[pref]);
 	self:PrintTitle(msg);
 end
-
 --[PrefColorize] pref
 rpgo.PrefColorize = function(pref)
 	if(type(pref)=="boolean") then
@@ -129,7 +127,6 @@ rpgo.PrefColorize = function(pref)
 			return rpgo.StringColorize(rpgo.colorTitle,"["..tostring(pref).."]|r")
 	end
 end
-
 --[State] pref
 rpgo.State = function(self,...)
 	if(not self.state) then return end
@@ -138,9 +135,14 @@ rpgo.State = function(self,...)
 	local key=select(1,...);
 	if(n==2) then
 		local val=select(2,...);
+		if(not state[key]) then
+			if(val=='++' or val=='--') then
+				state[key]=0;
+			end
+		end
 		if(val=='++') then
 			state[key]=state[key]+1;
-		elseif(val=='++') then
+		elseif(val=='--') then
 			state[key]=state[key]-1;
 		else
 			state[key]=val;

@@ -21,16 +21,17 @@ RPGOCP = {
 	TOOLTIP		= "rpgoCPtooltip";
 }
 RPGOCP.PREFS={
-	enabled=true,verbose=false,tooltip=true,tooltipshtml=true,fixtooltip=true,fixquantity=true,fixicon=true,fixcolor=true,reagentfull=true,talentsfull=true,questsfull=false,lite=true,button=true,debug=false,ver=020100,
-	scan={inventory=true,talents=true,honor=true,reputation=true,spells=true,pet=true,companions=true,equipment=true,mail=true,professions=true,skills=true,quests=true,bank=true,glyphs=true},
+	enabled=true,verbose=false,tooltip=true,tooltipshtml=true,fixtooltip=true,fixquantity=true,fixicon=true,fixcolor=true,reagentfull=true,talentsfull=true,questsfull=false,lite=true,button=true,debug=false,ver=030000,
+	scan={inventory=true,currency=true,talents=true,honor=true,reputation=true,spells=true,pet=true,companions=true,equipment=true,mail=true,professions=true,skills=true,quests=true,bank=true,glyphs=true},
 };
 RPGOCP.events={"PLAYER_LEVEL_UP","TIME_PLAYED_MSG",
-	"CRAFT_SHOW","CRAFT_UPDATE","TRADE_SKILL_SHOW","TRADE_SKILL_UPDATE",
-	"CHARACTER_POINTS_CHANGED","COMPANION_UPDATE",
+	"CRAFT_SHOW","CRAFT_CLOSE","CRAFT_UPDATE",
+	"TRADE_SKILL_SHOW","TRADE_SKILL_CLOSE","TRADE_SKILL_UPDATE",
+	"GLYPH_ADDED","GLYPH_REMOVED","GLYPH_UPDATED",
+	"CHARACTER_POINTS_CHANGED","COMPANION_LEARNED","COMPANION_UPDATE",
 	"BANKFRAME_OPENED","BANKFRAME_CLOSED","MAIL_SHOW","MAIL_CLOSED","MAIL_INBOX_UPDATE",
 	"MERCHANT_CLOSED","UNIT_QUEST_LOG_CHANGED","QUEST_FINISHED","PET_STABLE_CLOSED",
 	"ZONE_CHANGED","ZONE_CHANGED_INDOORS","PLAYER_CONTROL_LOST","PLAYER_CONTROL_GAINED",
-	"GLYPHFRAME_OPEN","GLYPH_UPDATED",
 };
 
 RPGOCP.usage={
@@ -157,11 +158,11 @@ RPGOCP.event2={
 		end,
 	QUEST_FINISHED =
 		function()
-			RPGOCP:GetQuests(force);
+			RPGOCP:GetQuests(true);
 		end,
 	UNIT_QUEST_LOG_CHANGED =
 		function()
-			RPGOCP:GetQuests(force);
+			RPGOCP:GetQuests(true);
 		end,
 	CHARACTER_POINTS_CHANGED =
 		function()
@@ -171,15 +172,26 @@ RPGOCP.event2={
 		function()
 			RPGOCP:ScanPetStable();
 		end,
-	COMPANION_UPDATE =
+	COMPANION_LEARNED =
 		function()
-			RPGOCP:ScanCompanionFrame();
+		RPGOCP:ScanCompanions();
 		end,
-	GLYPHFRAME_OPEN =
+	GLYPH_UPDATED =
 		function()
 			RPGOCP:ScanGlyphs();
 		end,
-	
+	GLYPH_ADDED =
+		function(a1)
+			RPGOCP:ScanGlyphs(a1);
+		end,
+	GLYPH_REMOVED =
+		function(a1)
+			RPGOCP:ScanGlyphs(a1);
+		end,
+	CURRENCY_DISPLAY_UPDATE =
+		function()
+			RPGOCP:ScanCurrency(true);
+		end,
 };
 RPGOCP.funcs={
 	fixicon =
@@ -298,12 +310,12 @@ function RPGOCP:Init()
 end
 
 --[EventHandler]
-function RPGOCP:EventHandler(event,arg1,arg2)
+function RPGOCP:EventHandler(event,arg1,arg2,arg3)
 	if(not event) then return end
 	if(not self.prefs or not self.prefs.enabled) then return; end
 
 	if(rpgoDebugArg) then
-		rpgoDebugArg(self.ABBR,event,arg1,arg2);
+		rpgoDebugArg(self.ABBR,event,arg1,arg2,arg3);
 	end
 
 	--debugprofilestart();
@@ -354,16 +366,16 @@ function RPGOCP:InitState()
 		_skills={},
 		Equipment=0,
 		Guild=nil, GuildNum=nil,
-		Skills=0,
+		Skills=0, Glyphs=0,
 		Talents=0,TalentPts=0,
 		Reputation=0,
 		Quests=0, QuestsLog=0,
 		Mail=nil,
-		Honor=0,
+		Honor=nil,
 		Bag={},Inventory={},Bank={},
 		Professions={}, SpellBook={},
-		Pets={}, Stable={}, PetSpell={},
-		Companions={}, Glyphs={},
+		Pets={}, Stable={}, PetSpell={}, PetTalent={},
+		Companions={},
 	};
 	self.queue={};
 end
@@ -467,19 +479,21 @@ function RPGOCP:UpdateProfile()
 	self:GetBuffs(self.db);
 	self:GetInventory();
 	self:GetEquipment();
+	self:ScanCurrency();
 	self:GetTalents();
 	self:GetSkills();
 	self:GetSpellBook();
+	self:ScanGlyphs();
 	self:GetReputation();
 	self:GetQuests();
 	self:GetHonor();
 	self:GetArena();
 	self:ScanPetInfo();
-	self:ScanCompanionFrame();
-	self:ScanGlyphs();
+	self:ScanCompanions();
 	self:UpdateZone();
 	self:UpdatePlayed();
 	self:UpdateDate();
+	self:PrintDebug( "time",time() );
 end
 --[ForceExport]
 function RPGOCP:ForceExport()
@@ -497,8 +511,6 @@ function RPGOCP:ForceExport()
 	self:InitProfile();
 	self:UpdateProfile();
 	self:ScanPetInfo();
-	self:ScanCompanionFrame();
-	self:ScanGlyphs();
 	self:Show();
 end
 --[Purge]
@@ -674,24 +686,27 @@ function RPGOCP:Show()
 		if(self:State("_player") and self:State("_loaded")) then
 			local msg="";
 			local tsort={};
-				msg="Profile for: " .. self:State("_player") .. " @" .. self:State("_server");
+				msg="Profile: " .. self:State("_player") .. " @" .. self:State("_server");
 				if(self.db["Level"]) then
 					msg=msg.." (lvl "..self.db["Level"]..")"
 				end
 			self:PrintTitle(msg);
 
 				if(self:State("Guild")==0) then
-				elseif(self:State("Guild")) then
-					msg="Guild: ";
-					if(self.db["Guild"]["Name"] and self.db["Guild"]["Title"]) then
-						msg=msg.."Name:"..self.db["Guild"]["Name"].."  Title:"..self.db["Guild"]["Title"];
+				else
+					if(self:State("Guild")) then
+						msg="Guild: ";
+						if(self.db["Guild"]["Name"] and self.db["Guild"]["Title"]) then
+							msg=msg.."Name:"..self.db["Guild"]["Name"].."  Title:"..self.db["Guild"]["Title"];
+						else
+							msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned");
+						end
 					else
 						msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned");
 					end
-				else
-					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned");
+					rpgo.PrintMsg("  "..msg);
 				end
-			rpgo.PrintMsg("  "..msg);
+
 				msg="Zone: ";
 				if(self.db["Zone"]) then
 					msg=msg..self.db["Zone"];
@@ -709,26 +724,25 @@ function RPGOCP:Show()
 				msg=msg .. " Talent:" ..self:State("Talents");
 				msg=msg .. " Rep:" ..self:State("Reputation");
 				msg=msg .. " Quest:" ..self:State("Quests");
+--WotLK
+			if( GetNumGlyphSockets) then 
+				msg=msg .. " Glyphs:";
+				if( self.state["Glyphs"]==0 ) then
+					msg=msg..rpgo.StringColorize(rpgo.colorRed,NONE);
+				else
+					msg=msg..self:State("Glyphs");
+				end
+			end
 				if(self:State("Mail")) then
 					msg=msg .. " Mail:" ..self:State("Mail");
 				end
-				if(self:State("Honor")~=0 and self.db["Honor"]["RankName"]) then
-					msg=msg .. " Honor:" ..self.db["Honor"]["RankName"];
-				else
-					msg=msg .. " Honor:"..NONE;
-				end
-			rpgo.PrintMsg("  " .. msg);
-
-				msg="Professions:";
-				tsort={};
-				table.foreach(self.state["Professions"], function (k,v) table.insert(tsort,k) end );
-				table.sort(tsort);
-				if(table.getn(tsort)==0) then
-					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned")..".  - open each profession to scan";
-				else
-					for _,item in pairs(tsort) do
-						msg=msg .. " " .. item..":"..self.state["Professions"][item];
+				if(self:State("Honor")) then
+					msg=msg .. " Honor:" ..self:State("Honor");
+					if(self.db["Honor"]["RankName"]) then
+						msg=msg .. " (" ..self.db["Honor"]["RankName"]..")";
 					end
+				else
+					msg=msg .. " Honor:"..rpgo.StringColorize(rpgo.colorRed,NONE);
 				end
 			rpgo.PrintMsg("  " .. msg);
 
@@ -745,15 +759,15 @@ function RPGOCP:Show()
 				end
 			rpgo.PrintMsg("  " .. msg);
 
-				msg="Glyphs:";
+				msg="Professions:";
 				tsort={};
-				table.foreach(self.state["Glyphs"], function(k,v) table.insert(tsort,k) end );
+				table.foreach(self.state["Professions"], function (k,v) table.insert(tsort,k) end );
 				table.sort(tsort);
 				if(table.getn(tsort)==0) then
-					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned");
+					msg=msg..rpgo.StringColorize(rpgo.colorRed," not scanned")..".  - open each profession to scan";
 				else
 					for _,item in pairs(tsort) do
-						msg=msg .. " " .. item..":"..self.state["Glyphs"][item];
+						msg=msg .. " " .. item..":"..self.state["Professions"][item];
 					end
 				end
 			rpgo.PrintMsg("  " .. msg);
@@ -770,6 +784,7 @@ function RPGOCP:Show()
 					end
 				end
 			rpgo.PrintMsg("  " .. msg);
+
 				msg="Bank:";
 				tsort={};
 				table.foreach(self.state["Bank"], function(k,v) table.insert(tsort,k) end );
@@ -783,6 +798,8 @@ function RPGOCP:Show()
 				end
 			rpgo.PrintMsg("  " .. msg);
 
+--WotLK
+			if( GetNumCompanions ) then 
 				msg="Companions:";
 				tsort={};
 				table.foreach(self.state["Companions"], function(k,v) table.insert(tsort,k) end );
@@ -795,6 +812,7 @@ function RPGOCP:Show()
 					end
 				end
 			rpgo.PrintMsg("  " .. msg);
+			end
 
 			if( (self:State("_class")=="HUNTER" and UnitLevel("player")>9) or self:State("_class")=="WARLOCK") then
 				msg="Pets: ";
@@ -920,7 +938,6 @@ function ForceQuit()
 	end
 	return rpgo_ForceQuit_old();
 end
-
 --[Logout]
 local rpgo_Logout_old=Logout;
 function Logout()
@@ -930,7 +947,6 @@ function Logout()
 	end
 	return rpgo_Logout_old();
 end
-
 --[PetAbandon]
 local rpgo_PetAbandon_old=PetAbandon;
 function PetAbandon()
@@ -1034,7 +1050,7 @@ function RPGOCP:GetSkills()
 
 	local skillheader,order,structSkill = nil,1,self.db["Skills"];
 	for idx=1,GetNumSkillLines() do
-		local skillName,isHeader,isExpanded,skillRank,numTempPoints,skillModifier,skillMaxRank,isAbandonable,stepCost,rankCost,minLevel,skillCostType=GetSkillLineInfo(idx);
+		local skillName,isHeader,isExpanded,skillRank,numTempPoints,skillModifier,skillMaxRank,isAbandonable,stepCost,rankCost,minLevel,skillCostType,skillDescription = GetSkillLineInfo(idx);
 		if(isHeader==1) then
 			skillheader=skillName;
 			structSkill[skillheader]={Order=order};
@@ -1075,15 +1091,15 @@ function RPGOCP:GetReputation()
 	local thisHeader,numFactions,structRep = NONE,GetNumFactions(),self.db["Reputation"];
 	structRep["Count"]=numFactions;
 	for idx=1,numFactions do
-		local name,description,standingID,barMin,barMax,barValue,atWar,canToggle,isHeader,isCollapsed=GetFactionInfo(idx);
+		local name,description,standingId,bottomValue,topValue,earnedValue,atWarWith,canToggleAtWar,isHeader,isCollapsed,isWatched,isSubGroup = GetFactionInfo(idx);
 		if(isHeader) then
 			thisHeader=name;
 			structRep[thisHeader]={};
-		elseif(standingID) then
+		elseif(standingId) then
 			structRep[thisHeader][name]={
-				Standing = getglobal("FACTION_STANDING_LABEL"..standingID),
-				AtWar = atWar or 0,
-				Value = barValue-barMin..":"..barMax-barMin};
+				Standing = getglobal("FACTION_STANDING_LABEL"..standingId),
+				AtWar = atWarWith or 0,
+				Value = earnedValue-bottomValue..":"..topValue-bottomValue};
 		end
 		self:State("Reputation",'++');
 	end
@@ -1126,6 +1142,70 @@ function RPGOCP:GetHonor()
 		self:State("Honor",lifetimeHK);
 	end
 end
+
+function RPGOCP:ScanCurrency(force)
+	if( not GetCurrencyListSize ) then return end;
+	if(not self.prefs["scan"]["currency"]) then
+		self.db["Currency"]=nil;
+		return;
+	end
+
+self:PrintDebug( 'currency' );
+	local toCollapse={};
+	for idx=GetCurrencyListSize(),1,-1 do
+		local _,isHeader,isExpanded=GetCurrencyListInfo(idx);
+		if(isHeader and not isExpanded) then
+			table.insert(toCollapse,idx);
+			ExpandCurrencyList(idx,1);
+		end
+	end
+
+	if( force or (self:State("Currency")~=GetCurrencyListSize()) ) then
+		if (not self.db["Currency"]) then
+			self.db["Currency"]={}; end
+		local structCurrency = self.db["Currency"];
+		local thisHeader;
+		local cnt = 0;
+		local name,isHeader,isExpanded,isUnused,isWatched,count,extraCurrencyType,icon;
+		for idx=1,GetCurrencyListSize() do
+			name,isHeader,isExpanded,isUnused,isWatched,count,extraCurrencyType,icon = GetCurrencyListInfo(idx);
+self:PrintDebug( 'currency',name );
+			if ( name and name ~= "" ) then
+				if ( isHeader ) then
+					thisHeader=name;
+					structCurrency[thisHeader]={};
+				else
+					if ( extraCurrencyType ~= 0 ) then
+						icon = TokenFrameContainer.buttons[idx].icon:GetTexture();
+					end
+					self.tooltip:SetCurrencyToken(idx)
+					if( not isWatched ) then
+						isWatched=nil;
+					end
+					
+					structCurrency[thisHeader][name] = {
+						Name	= name,
+						Watched	= isWatched,
+						Count	= count,
+						Type	= extraCurrencyType,
+						Icon	= rpgo.scanIcon(icon),
+						Tooltip	= self:ScanTooltip()
+					};
+				end
+				cnt=cnt+1;
+			end
+		end
+		self:State("Currency",cnt);
+	end
+
+	table.sort(toCollapse);
+	for _,idx in pairs(toCollapse) do
+		ExpandCurrencyList(idx,0);
+	end
+	RPGOCP.frame:RegisterEvent("KNOWN_CURRENCY_TYPES_UPDATE");
+	RPGOCP.frame:RegisterEvent("CURRENCY_DISPLAY_UPDATE");
+end
+
 function RPGOCP:GetArena()
 	if(not self.prefs["scan"]["honor"]) then
 		self.db["Honor"]=nil;
@@ -1182,39 +1262,64 @@ function RPGOCP:GetArena()
 end
 
 --[GetTalents]
-function RPGOCP:GetTalents()
+function RPGOCP:GetTalents(unit)
 	if(not self.prefs["scan"]["talents"] or UnitLevel("player") < 10 ) then
-		self.db["Talents"]=nil;
-		return;
+		self.db["Talents"]=nil; return;
 	end
-	local numTabs,numPts=GetNumTalentTabs(),UnitCharacterPoints("player");
-	if( (self:State("Talents")~=numTabs+numPts) ) then
+	unit = unit or "player";
+
+	local numTabs,numPts,state,petName;
+	local structTalent={};
+	if ( unit == "pet" ) then
+		petName = UnitName("pet");
+		numPts = GetPetTalentPoints();
+		numTabs = 1;
+		--to remove
+		self.db["Pets"][petName]["TalentPointsUsed"]=nil;
+		self.db["Pets"][petName]["TalentPoints"]=numPts;
+		--self.db["Pets"][petName]["Talents"]={};
+		--structTalent=self.db["Pets"][petName]["Talents"];
+		state = "PetTalents";
+	else
+		numPts = UnitCharacterPoints("player");
+		numTabs=GetNumTalentTabs();
 		self.db["TalentPoints"]=numPts;
-		self.db["Talents"]={};
-		self:State("Talents",numPts);
-		local structTalent=self.db["Talents"];
+		--self.db["Talents"]={};
+		--structTalent=self.db["Talents"];
+		state = "Talents";
+	end
+
+	if( (self:State(state)~=numTabs+numPts) ) then
+		local tabName,iconTexture,pointsSpent,background;
+		local nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq;
 		for tabIndex=1,numTabs do
-			local tabName,texture,points,fileName=GetTalentTabInfo(tabIndex);
+			tabName,iconTexture,pointsSpent,background = GetTalentTabInfo(tabIndex,nil,unit=="pet");
 			if(not self.prefs["fixicon"]) then
-				fileName="Interface\\TalentFrame\\"..fileName; end
+				background="Interface\\TalentFrame\\"..background; end
 			structTalent[tabName]={
-				Background=fileName,
-				PointsSpent=points,
+				Background=background,
+				PointsSpent=pointsSpent,
 				Order=tabIndex
 				};
 			for talentIndex=1,GetNumTalents(tabIndex) do
-				local nameTalent,iconTexture,iconX,iconY,currentRank,maxRank=GetTalentInfo(tabIndex,talentIndex);
+				nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq = GetTalentInfo(tabIndex,talentIndex);
 				if(currentRank > 0 or self.prefs["talentsfull"]) then
 					self.tooltip:SetTalent(tabIndex,talentIndex)
 					structTalent[tabName][nameTalent]={
+						TalentId= rpgo.GetTalentID( GetTalentLink(tabIndex,talentIndex) ),
 						Rank	= strjoin(":", currentRank,maxRank),
-						Location= strjoin(":", iconX,iconY),
+						Location= strjoin(":", tier,column),
 						Icon	= rpgo.scanIcon(iconTexture),
 						Tooltip	= self:ScanTooltip()
 						};
 				end
 			end
-			self:State("Talents",'++');
+			self:State(state,'++');
+		end
+		if ( unit == "pet" ) then
+			self.db["Pets"][petName]["Talents"]=structTalent;
+		else
+			self.db["Talents"]=structTalent;
 		end
 	end
 end
@@ -1255,21 +1360,14 @@ function RPGOCP:GetQuests(force)
 		return color;
 	end
 
-	local function GetQuestID(index)
-		local link = GetQuestLink(index)
-		if not link then return end
-
-		return tonumber(link:match(":(%d+):"))
-	end
-
 	if( force or (self:State("QuestsLog")~=numEntries) ) then
 		self.db["Quests"]={};
 		self:State("Quests",0);self:State("QuestsLog",0);
 		local slot,num,header,structQuest = 1,nil,UNKNOWN,self.db["Quests"];
 		for idx=1,numEntries do
 			local questDescription,questObjective;
-			local questTitle, questLevel, questTag, suggestedGroup, isHeader, isCollapsed, isComplete, isDaily = GetQuestLogTitle(idx);
-
+			local questId = rpgo.GetQuestID( GetQuestLink(idx) );
+			local questTitle,questLevel,questTag,suggestedGroup,isHeader,isCollapsed,isComplete,isDaily = GetQuestLogTitle(idx);
 			if(questTitle) then
 				if(isHeader) then
 					header=questTitle;
@@ -1284,18 +1382,17 @@ function RPGOCP:GetQuests(force)
 					if(self.prefs["questsfull"]) then
 						questDescription,questObjective = GetQuestLogQuestText(idx);
 					end
-
 					structQuest[header][slot]={
-						Title=questTitle,
-						Link=GetQuestID(idx),
-						Level=questLevel,
+						QuestId	=questId,
+						Title	=questTitle,
+						Level	=questLevel,
 						Complete=isComplete,
-						Tag=questTag,
+						Daily	=isDaily,
+						Tag		=questTag,
 						Difficulty=GetDifficultyValue(questLevel),
 						Group=suggestedGroup,
 						Description=questDescription,
-						Objective=questObjective,
-						Daily=isDaily};
+						Objective=questObjective};
 
 					num=GetNumQuestLeaderBoards(idx);
 					if(num and num > 0) then
@@ -1341,267 +1438,266 @@ function RPGOCP:GetQuests(force)
 	SelectQuestLogEntry(selected);
 end
 
---[GetStats]
-function RPGOCP:GetStats(structStats,unit)
-	unit = unit or "player";
-	if( unit=="player" and (UnitIsDeadOrGhost("player") or rpgo.UnitHasResSickness("player")) ) then
-		return
-	end
-	if(not structStats["Attributes"]) then structStats["Attributes"]={}; end
-	structStats["Level"]=UnitLevel(unit);
-	structStats["Health"]=UnitHealthMax(unit);
-	structStats["Mana"]=UnitManaMax(unit);
-	structStats["Power"]=UnitPower[UnitPowerType(unit)];
-	structStats["Attributes"]["Stats"]={};
-	for i=1,table.getn(UnitStatName) do
-		local stat,effectiveStat,posBuff,negBuff=UnitStat(unit,i);
-		structStats["Attributes"]["Stats"][UnitStatName[i]] = strjoin(":", (stat - posBuff - negBuff),posBuff,negBuff);
-	end
-	local base,posBuff,negBuff,modBuff,effBuff,stat;
-	base,modBuff = UnitDefense(unit);
-	posBuff,negBuff = 0,0;
-	if ( modBuff > 0 ) then
-		posBuff = modBuff;
-	elseif ( modBuff < 0 ) then
-		negBuff = modBuff;
-	end
-	structStats["Attributes"]["Defense"] = {};
-	structStats["Attributes"]["Defense"]["Defense"] = strjoin(":", base,posBuff,negBuff);
-	base,effBuff,stat,posBuff,negBuff=UnitArmor(unit);
-	structStats["Attributes"]["Defense"]["Armor"] = strjoin(":", base,posBuff,negBuff);
-	structStats["Attributes"]["Defense"]["ArmorReduction"] = PaperDollFrame_GetArmorReduction(effBuff, UnitLevel("player"));
-	base,posBuff,negBuff = GetCombatRating(CR_DEFENSE_SKILL),rpgo.round(GetCombatRatingBonus(CR_DEFENSE_SKILL),2),0;
-	structStats["Attributes"]["Defense"]["DefenseRating"]=strjoin(":", base,posBuff,negBuff);
-	structStats["Attributes"]["Defense"]["DefensePercent"]=GetDodgeBlockParryChanceFromDefense();
-	base,posBuff,negBuff = GetCombatRating(CR_DODGE),rpgo.round(GetCombatRatingBonus(CR_DODGE),2),0;
-	structStats["Attributes"]["Defense"]["DodgeRating"]=strjoin(":", base,posBuff,negBuff);
-	structStats["Attributes"]["Defense"]["DodgeChance"]=rpgo.round(GetDodgeChance(),2);
-	base,posBuff,negBuff = GetCombatRating(CR_BLOCK),rpgo.round(GetCombatRatingBonus(CR_BLOCK),2),0;
-	structStats["Attributes"]["Defense"]["BlockRating"]=strjoin(":", base,posBuff,negBuff);
-	structStats["Attributes"]["Defense"]["BlockChance"]=rpgo.round(GetBlockChance(),2);
-	base,posBuff,negBuff = GetCombatRating(CR_PARRY),rpgo.round(GetCombatRatingBonus(CR_PARRY),2),0;
-	structStats["Attributes"]["Defense"]["ParryRating"]=strjoin(":", base,posBuff,negBuff);
-	structStats["Attributes"]["Defense"]["ParryChance"]=rpgo.round(GetParryChance(),2);
-	structStats["Attributes"]["Defense"]["Resilience"]={};
-	structStats["Attributes"]["Defense"]["Resilience"]["Melee"]=GetCombatRating(CR_CRIT_TAKEN_MELEE);
-	structStats["Attributes"]["Defense"]["Resilience"]["Ranged"]=GetCombatRating(CR_CRIT_TAKEN_RANGED);
-	structStats["Attributes"]["Defense"]["Resilience"]["Spell"]=GetCombatRating(CR_CRIT_TAKEN_SPELL);
+	--[GetStats]
+	function RPGOCP:GetStats(structStats,unit)
+		unit = unit or "player";
+		if( unit=="player" and (UnitIsDeadOrGhost("player") or rpgo.UnitHasResSickness("player")) ) then
+			return
+		end
+		if(not structStats["Attributes"]) then structStats["Attributes"]={}; end
+		structStats["Level"]=UnitLevel(unit);
+		structStats["Health"]=UnitHealthMax(unit);
+		structStats["Mana"]=UnitManaMax(unit);
+		structStats["Power"]=UnitPower[UnitPowerType(unit)];
+		structStats["Attributes"]["Stats"]={};
+		for i=1,table.getn(UnitStatName) do
+			local stat,effectiveStat,posBuff,negBuff=UnitStat(unit,i);
+			structStats["Attributes"]["Stats"][UnitStatName[i]] = strjoin(":", (stat - posBuff - negBuff),posBuff,negBuff);
+		end
+		local base,posBuff,negBuff,modBuff,effBuff,stat;
+		base,modBuff = UnitDefense(unit);
+		posBuff,negBuff = 0,0;
+		if ( modBuff > 0 ) then
+			posBuff = modBuff;
+		elseif ( modBuff < 0 ) then
+			negBuff = modBuff;
+		end
+		structStats["Attributes"]["Defense"] = {};
+		structStats["Attributes"]["Defense"]["Defense"] = strjoin(":", base,posBuff,negBuff);
+		base,effBuff,stat,posBuff,negBuff=UnitArmor(unit);
+		structStats["Attributes"]["Defense"]["Armor"] = strjoin(":", base,posBuff,negBuff);
+		structStats["Attributes"]["Defense"]["ArmorReduction"] = PaperDollFrame_GetArmorReduction(effBuff, UnitLevel("player"));
+		base,posBuff,negBuff = GetCombatRating(CR_DEFENSE_SKILL),rpgo.round(GetCombatRatingBonus(CR_DEFENSE_SKILL),2),0;
+		structStats["Attributes"]["Defense"]["DefenseRating"]=strjoin(":", base,posBuff,negBuff);
+		structStats["Attributes"]["Defense"]["DefensePercent"]=GetDodgeBlockParryChanceFromDefense();
+		base,posBuff,negBuff = GetCombatRating(CR_DODGE),rpgo.round(GetCombatRatingBonus(CR_DODGE),2),0;
+		structStats["Attributes"]["Defense"]["DodgeRating"]=strjoin(":", base,posBuff,negBuff);
+		structStats["Attributes"]["Defense"]["DodgeChance"]=rpgo.round(GetDodgeChance(),2);
+		base,posBuff,negBuff = GetCombatRating(CR_BLOCK),rpgo.round(GetCombatRatingBonus(CR_BLOCK),2),0;
+		structStats["Attributes"]["Defense"]["BlockRating"]=strjoin(":", base,posBuff,negBuff);
+		structStats["Attributes"]["Defense"]["BlockChance"]=rpgo.round(GetBlockChance(),2);
+		base,posBuff,negBuff = GetCombatRating(CR_PARRY),rpgo.round(GetCombatRatingBonus(CR_PARRY),2),0;
+		structStats["Attributes"]["Defense"]["ParryRating"]=strjoin(":", base,posBuff,negBuff);
+		structStats["Attributes"]["Defense"]["ParryChance"]=rpgo.round(GetParryChance(),2);
+		structStats["Attributes"]["Defense"]["Resilience"]={};
+		structStats["Attributes"]["Defense"]["Resilience"]["Melee"]=GetCombatRating(CR_CRIT_TAKEN_MELEE);
+		structStats["Attributes"]["Defense"]["Resilience"]["Ranged"]=GetCombatRating(CR_CRIT_TAKEN_RANGED);
+		structStats["Attributes"]["Defense"]["Resilience"]["Spell"]=GetCombatRating(CR_CRIT_TAKEN_SPELL);
 
-	structStats["Attributes"]["Resists"]={};
-	for i=1,table.getn(UnitResistanceName) do
-		local base,resistance,positive,negative=UnitResistance(unit,i);
-		structStats["Attributes"]["Resists"][UnitResistanceName[i]] = strjoin(":", base,positive,negative);
-	end
-	if(unit=="player") then
-		structStats["Hearth"]=GetBindLocation();
-		structStats["Money"]=rpgo.Arg2Tab("Gold","Silver","Copper",rpgo.parseMoney(GetMoney()));
-		structStats["IsResting"]=IsResting() == 1 or false;
-		local XPrest=GetXPExhaustion() or 0;
-		structStats["Experience"]=strjoin(":", UnitXP("player"),UnitXPMax("player"),XPrest);
-		self:GetAttackRating(structStats["Attributes"],unit);
-		self.db["timestamp"]["Attributes"]=time();
-	else
-		self:GetAttackRatingOld(structStats["Attributes"],unit,"Pet");
-	end
-end
-
-function RPGOCP:CharacterDamageFrame(damageFrame)
-	damageFrame = damageFrame or getglobal("PlayerStatFrameLeft1");
-	if (not damageFrame.damage) then return; end
-	self.tooltip:ClearLines();
-	-- Main hand weapon
-	self.tooltip:SetText(INVTYPE_WEAPONMAINHAND, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-	self.tooltip:AddDoubleLine(ATTACK_SPEED_COLON, format("%.2f", damageFrame.attackSpeed), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-	self.tooltip:AddDoubleLine(DAMAGE_COLON, damageFrame.damage, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-	self.tooltip:AddDoubleLine(DAMAGE_PER_SECOND, format("%.1f", damageFrame.dps), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-	-- Check for offhand weapon
-	if ( damageFrame.offhandAttackSpeed ) then
-		self.tooltip:AddLine("\n");
-		self.tooltip:AddLine(INVTYPE_WEAPONOFFHAND, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-		self.tooltip:AddDoubleLine(ATTACK_SPEED_COLON, format("%.2f", damageFrame.offhandAttackSpeed), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-		self.tooltip:AddDoubleLine(DAMAGE_COLON, damageFrame.offhandDamage, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-		self.tooltip:AddDoubleLine(DAMAGE_PER_SECOND, format("%.1f", damageFrame.offhandDps), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-	end
-end
-
-function RPGOCP:CharacterRangedDamageFrame(damageFrame)
-	damageFrame = damageFrame or getglobal("PlayerStatFrameLeft1");
-	if (not damageFrame.damage) then return; end
-	self.tooltip:ClearLines();
-	self.tooltip:SetText(INVTYPE_RANGED, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-	self.tooltip:AddDoubleLine(ATTACK_SPEED_COLON, format("%.2f", damageFrame.attackSpeed), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-	self.tooltip:AddDoubleLine(DAMAGE_COLON, damageFrame.damage, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-	self.tooltip:AddDoubleLine(DAMAGE_PER_SECOND, format("%.1f", damageFrame.dps), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-end
-
-function RPGOCP:GetAttackRating(structAttack,unit,prefix)
-	unit = unit or "player";
-	prefix = prefix or "PlayerStatFrameLeft";
-	UpdatePaperdollStats(prefix, "PLAYERSTAT_MELEE_COMBAT");
-
-	local stat = getglobal(prefix.."1");
-	local statText = getglobal(prefix.."1".."StatText");
-
-	local mainHandAttackBase,mainHandAttackMod,offHandAttackBase,offHandAttackMod = UnitAttackBothHands(unit);
-	local speed,offhandSpeed = UnitAttackSpeed(unit);
-	structAttack["Melee"]={};
-	structAttack["Melee"]["MainHand"]={};
-	structAttack["Melee"]["MainHand"]["AttackSpeed"]=rpgo.round(speed,2);
-	structAttack["Melee"]["MainHand"]["AttackDPS"]=rpgo.round(stat.dps,1);
-	structAttack["Melee"]["MainHand"]["AttackSkill"]=mainHandAttackBase+mainHandAttackMod;
-	structAttack["Melee"]["MainHand"]["AttackRating"]=strjoin(":", mainHandAttackBase,mainHandAttackMod,0);
-
-	local tt=statText:GetText();
-	tt=rpgo.StripColor(tt);
-	structAttack["Melee"]["MainHand"]["DamageRange"]=string.gsub(tt,"^(%d+)%s?-%s?(%d+)$","%1:%2");
-
-	local _,_,dmgMin,dmgMax,dmgBonus = string.find(stat.damage,"^(%d+)%s?%-%s?(%d+)(.*)$");
-	structAttack["Melee"]["MainHand"]["DamageRangeBase"]=strjoin(":", dmgMin,dmgMax);
-	structAttack["Melee"]["MainHand"]["DamageRangeBonus"]=dmgBonus;
-
-	self:CharacterDamageFrame();
-	local tt=self:ScanTooltip();
-	structAttack["Melee"]["DamageRangeTooltip"]=rpgo.StripColor(tt);
-
-	if ( offhandSpeed ) then
-		structAttack["Melee"]["OffHand"]={};
-		structAttack["Melee"]["OffHand"]["AttackSpeed"]=rpgo.round(offhandSpeed,2);
-		structAttack["Melee"]["OffHand"]["AttackDPS"]=rpgo.round(stat.offhandDps,1);
-		structAttack["Melee"]["OffHand"]["AttackSkill"]=offHandAttackBase+offHandAttackMod;
-		structAttack["Melee"]["OffHand"]["AttackRating"]=strjoin(":", offHandAttackBase,offHandAttackMod,0);
-
-		tt=stat.offhandDamage;
-		tt=rpgo.StripColor(tt);
-		structAttack["Melee"]["OffHand"]["DamageRange"]=string.gsub(tt,"^(%d+)%s?-%s?(%d+)","%1:%2");
-	else
-		structAttack["Melee"]["OffHand"]=nil;
-	end
-	local stat4 = getglobal(prefix.."4");
-	local base,posBuff,negBuff;
-	base,posBuff,negBuff = UnitAttackPower(unit);
-	structAttack["Melee"]["AttackPower"] = strjoin(":", base,posBuff,negBuff);
-	structAttack["Melee"]["AttackPowerDPS"]=rpgo.round(max((base+posBuff+negBuff), 0)/ATTACK_POWER_MAGIC_NUMBER,1);
-	structAttack["Melee"]["AttackPowerTooltip"]=stat4.tooltip2;
-	base,posBuff,negBuff = GetCombatRating(CR_EXPERTISE),rpgo.round(GetCombatRatingBonus(CR_EXPERTISE),2),0;
-	structAttack["Melee"]["Expertise"]=strjoin(":", base,posBuff,negBuff);
-	base,posBuff,negBuff = GetCombatRating(CR_HIT_MELEE),rpgo.round(GetCombatRatingBonus(CR_HIT_MELEE),2),0;
-	structAttack["Melee"]["HitRating"]=strjoin(":", base,posBuff,negBuff);
-	base,posBuff,negBuff = GetCombatRating(CR_CRIT_MELEE),rpgo.round(GetCombatRatingBonus(CR_CRIT_MELEE),2),0;
-	structAttack["Melee"]["CritRating"]=strjoin(":", base,posBuff,negBuff);
-	base,posBuff,negBuff = GetCombatRating(CR_HASTE_MELEE),rpgo.round(GetCombatRatingBonus(CR_HASTE_MELEE),2),0;
-	structAttack["Melee"]["HasteRating"]=strjoin(":", base,posBuff,negBuff);
-
-	structAttack["Melee"]["CritChance"]=rpgo.round(GetCritChance(),2);
-
-	if(unit=="player") then
-		if ( not GetInventoryItemTexture(unit,18) and not UnitHasRelicSlot(unit)) then
-			structAttack["Ranged"]=nil;
+		structStats["Attributes"]["Resists"]={};
+		for i=1,table.getn(UnitResistanceName) do
+			local base,resistance,positive,negative=UnitResistance(unit,i);
+			structStats["Attributes"]["Resists"][UnitResistanceName[i]] = strjoin(":", base,positive,negative);
+		end
+		if(unit=="player") then
+			structStats["Hearth"]=GetBindLocation();
+			structStats["Money"]=rpgo.Arg2Tab("Gold","Silver","Copper",rpgo.parseMoney(GetMoney()));
+			structStats["IsResting"]=IsResting() == 1 or false;
+			structStats["Experience"]=strjoin(":", UnitXP("player"),UnitXPMax("player"),GetXPExhaustion() or 0);
+			self:GetAttackRating(structStats["Attributes"],unit);
+			self.db["timestamp"]["Attributes"]=time();
 		else
-			UpdatePaperdollStats(prefix, "PLAYERSTAT_RANGED_COMBAT");
-			local damageFrame = getglobal(prefix.."1");
-			local damageFrameText = getglobal(prefix.."1".."StatText");
+			self:GetAttackRatingOld(structStats["Attributes"],unit,"Pet");
+		end
+	end
 
-			if(PaperDollFrame.noRanged) then
+	function RPGOCP:CharacterDamageFrame(damageFrame)
+		damageFrame = damageFrame or getglobal("PlayerStatFrameLeft1");
+		if (not damageFrame.damage) then return; end
+		self.tooltip:ClearLines();
+		-- Main hand weapon
+		self.tooltip:SetText(INVTYPE_WEAPONMAINHAND, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+		self.tooltip:AddDoubleLine(ATTACK_SPEED_COLON, format("%.2f", damageFrame.attackSpeed), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+		self.tooltip:AddDoubleLine(DAMAGE_COLON, damageFrame.damage, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+		self.tooltip:AddDoubleLine(DAMAGE_PER_SECOND, format("%.1f", damageFrame.dps), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+		-- Check for offhand weapon
+		if ( damageFrame.offhandAttackSpeed ) then
+			self.tooltip:AddLine("\n");
+			self.tooltip:AddLine(INVTYPE_WEAPONOFFHAND, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+			self.tooltip:AddDoubleLine(ATTACK_SPEED_COLON, format("%.2f", damageFrame.offhandAttackSpeed), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+			self.tooltip:AddDoubleLine(DAMAGE_COLON, damageFrame.offhandDamage, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+			self.tooltip:AddDoubleLine(DAMAGE_PER_SECOND, format("%.1f", damageFrame.offhandDps), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+		end
+	end
+
+	function RPGOCP:CharacterRangedDamageFrame(damageFrame)
+		damageFrame = damageFrame or getglobal("PlayerStatFrameLeft1");
+		if (not damageFrame.damage) then return; end
+		self.tooltip:ClearLines();
+		self.tooltip:SetText(INVTYPE_RANGED, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+		self.tooltip:AddDoubleLine(ATTACK_SPEED_COLON, format("%.2f", damageFrame.attackSpeed), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+		self.tooltip:AddDoubleLine(DAMAGE_COLON, damageFrame.damage, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+		self.tooltip:AddDoubleLine(DAMAGE_PER_SECOND, format("%.1f", damageFrame.dps), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+	end
+
+	function RPGOCP:GetAttackRating(structAttack,unit,prefix)
+		unit = unit or "player";
+		prefix = prefix or "PlayerStatFrameLeft";
+		UpdatePaperdollStats(prefix, "PLAYERSTAT_MELEE_COMBAT");
+
+		local stat = getglobal(prefix.."1");
+		local statText = getglobal(prefix.."1".."StatText");
+
+		local mainHandAttackBase,mainHandAttackMod,offHandAttackBase,offHandAttackMod = UnitAttackBothHands(unit);
+		local speed,offhandSpeed = UnitAttackSpeed(unit);
+		structAttack["Melee"]={};
+		structAttack["Melee"]["MainHand"]={};
+		structAttack["Melee"]["MainHand"]["AttackSpeed"]=rpgo.round(speed,2);
+		structAttack["Melee"]["MainHand"]["AttackDPS"]=rpgo.round(stat.dps,1);
+		structAttack["Melee"]["MainHand"]["AttackSkill"]=mainHandAttackBase+mainHandAttackMod;
+		structAttack["Melee"]["MainHand"]["AttackRating"]=strjoin(":", mainHandAttackBase,mainHandAttackMod,0);
+
+		local tt=statText:GetText();
+		tt=rpgo.StripColor(tt);
+		structAttack["Melee"]["MainHand"]["DamageRange"]=string.gsub(tt,"^(%d+)%s?-%s?(%d+)$","%1:%2");
+
+		local _,_,dmgMin,dmgMax,dmgBonus = string.find(stat.damage,"^(%d+)%s?%-%s?(%d+)(.*)$");
+		structAttack["Melee"]["MainHand"]["DamageRangeBase"]=strjoin(":", dmgMin,dmgMax);
+		structAttack["Melee"]["MainHand"]["DamageRangeBonus"]=dmgBonus;
+
+		self:CharacterDamageFrame();
+		local tt=self:ScanTooltip();
+		structAttack["Melee"]["DamageRangeTooltip"]=rpgo.StripColor(tt);
+
+		if ( offhandSpeed ) then
+			structAttack["Melee"]["OffHand"]={};
+			structAttack["Melee"]["OffHand"]["AttackSpeed"]=rpgo.round(offhandSpeed,2);
+			structAttack["Melee"]["OffHand"]["AttackDPS"]=rpgo.round(stat.offhandDps,1);
+			structAttack["Melee"]["OffHand"]["AttackSkill"]=offHandAttackBase+offHandAttackMod;
+			structAttack["Melee"]["OffHand"]["AttackRating"]=strjoin(":", offHandAttackBase,offHandAttackMod,0);
+
+			tt=stat.offhandDamage;
+			tt=rpgo.StripColor(tt);
+			structAttack["Melee"]["OffHand"]["DamageRange"]=string.gsub(tt,"^(%d+)%s?-%s?(%d+)","%1:%2");
+		else
+			structAttack["Melee"]["OffHand"]=nil;
+		end
+		local stat4 = getglobal(prefix.."4");
+		local base,posBuff,negBuff;
+		base,posBuff,negBuff = UnitAttackPower(unit);
+		structAttack["Melee"]["AttackPower"] = strjoin(":", base,posBuff,negBuff);
+		structAttack["Melee"]["AttackPowerDPS"]=rpgo.round(max((base+posBuff+negBuff), 0)/ATTACK_POWER_MAGIC_NUMBER,1);
+		structAttack["Melee"]["AttackPowerTooltip"]=stat4.tooltip2;
+		base,posBuff,negBuff = GetCombatRating(CR_EXPERTISE),rpgo.round(GetCombatRatingBonus(CR_EXPERTISE),2),0;
+		structAttack["Melee"]["Expertise"]=strjoin(":", base,posBuff,negBuff);
+		base,posBuff,negBuff = GetCombatRating(CR_HIT_MELEE),rpgo.round(GetCombatRatingBonus(CR_HIT_MELEE),2),0;
+		structAttack["Melee"]["HitRating"]=strjoin(":", base,posBuff,negBuff);
+		base,posBuff,negBuff = GetCombatRating(CR_CRIT_MELEE),rpgo.round(GetCombatRatingBonus(CR_CRIT_MELEE),2),0;
+		structAttack["Melee"]["CritRating"]=strjoin(":", base,posBuff,negBuff);
+		base,posBuff,negBuff = GetCombatRating(CR_HASTE_MELEE),rpgo.round(GetCombatRatingBonus(CR_HASTE_MELEE),2),0;
+		structAttack["Melee"]["HasteRating"]=strjoin(":", base,posBuff,negBuff);
+
+		structAttack["Melee"]["CritChance"]=rpgo.round(GetCritChance(),2);
+
+		if(unit=="player") then
+			if ( not GetInventoryItemTexture(unit,18) and not UnitHasRelicSlot(unit)) then
 				structAttack["Ranged"]=nil;
 			else
-				local rangedAttackSpeed,minDamage,maxDamage,physicalBonusPos,physicalBonusNeg,percent = UnitRangedDamage(unit);
-				structAttack["Ranged"]={};
-				structAttack["Ranged"]["AttackSpeed"]=rpgo.round(rangedAttackSpeed,2);
-				structAttack["Ranged"]["AttackDPS"]=rpgo.round(damageFrame.dps,1);
-				structAttack["Ranged"]["AttackSkill"]=UnitRangedAttack(unit);
-				local rangedAttackBase,rangedAttackMod = UnitRangedAttack(unit);
-				structAttack["Ranged"]["AttackRating"]=strjoin(":", rangedAttackBase,rangedAttackMod,0);
+				UpdatePaperdollStats(prefix, "PLAYERSTAT_RANGED_COMBAT");
+				local damageFrame = getglobal(prefix.."1");
+				local damageFrameText = getglobal(prefix.."1".."StatText");
 
-				tt=damageFrameText:GetText();
-				tt=rpgo.StripColor(tt);
-				structAttack["Ranged"]["DamageRange"]=string.gsub(tt,"^(%d+)%s?-%s?(%d+)","%1:%2");
-				local _,_,dmgMin,dmgMax,dmgBonus = string.find(stat.damage,"^(%d+)%s?%-%s?(%d+)(.*)$");
-				structAttack["Ranged"]["DamageRangeBase"]=strjoin(":", dmgMin,dmgMax);
-				structAttack["Ranged"]["DamageRangeBonus"]=dmgBonus;
+				if(PaperDollFrame.noRanged) then
+					structAttack["Ranged"]=nil;
+				else
+					local rangedAttackSpeed,minDamage,maxDamage,physicalBonusPos,physicalBonusNeg,percent = UnitRangedDamage(unit);
+					structAttack["Ranged"]={};
+					structAttack["Ranged"]["AttackSpeed"]=rpgo.round(rangedAttackSpeed,2);
+					structAttack["Ranged"]["AttackDPS"]=rpgo.round(damageFrame.dps,1);
+					structAttack["Ranged"]["AttackSkill"]=UnitRangedAttack(unit);
+					local rangedAttackBase,rangedAttackMod = UnitRangedAttack(unit);
+					structAttack["Ranged"]["AttackRating"]=strjoin(":", rangedAttackBase,rangedAttackMod,0);
 
-				base,posBuff,negBuff = GetCombatRating(CR_HIT_RANGED),rpgo.round(GetCombatRatingBonus(CR_HIT_RANGED),2),0;
-				structAttack["Ranged"]["HitRating"]=strjoin(":", base,posBuff,negBuff);
-				base,posBuff,negBuff = GetCombatRating(CR_CRIT_RANGED),rpgo.round(GetCombatRatingBonus(CR_CRIT_RANGED),2),0;
-				structAttack["Ranged"]["CritRating"]=strjoin(":", base,posBuff,negBuff);
-				base,posBuff,negBuff = GetCombatRating(CR_HASTE_RANGED),rpgo.round(GetCombatRatingBonus(CR_HASTE_RANGED),2),0;
-				structAttack["Ranged"]["HasteRating"]=strjoin(":", base,posBuff,negBuff);
-				structAttack["Ranged"]["CritChance"]=rpgo.round(GetRangedCritChance(),2);
+					tt=damageFrameText:GetText();
+					tt=rpgo.StripColor(tt);
+					structAttack["Ranged"]["DamageRange"]=string.gsub(tt,"^(%d+)%s?-%s?(%d+)","%1:%2");
+					local _,_,dmgMin,dmgMax,dmgBonus = string.find(stat.damage,"^(%d+)%s?%-%s?(%d+)(.*)$");
+					structAttack["Ranged"]["DamageRangeBase"]=strjoin(":", dmgMin,dmgMax);
+					structAttack["Ranged"]["DamageRangeBonus"]=dmgBonus;
 
-				self:CharacterRangedDamageFrame();
-				local tt=self:ScanTooltip();
-				tt=rpgo.StripColor(tt);
-				structAttack["Ranged"]["DamageRangeTooltip"]=tt;
-				local base,posBuff,negBuff=UnitRangedAttackPower(unit);
-				apDPS=base/ATTACK_POWER_MAGIC_NUMBER;
-				structAttack["Ranged"]["AttackPower"] = strjoin(":", base,posBuff,negBuff);
-				structAttack["Ranged"]["AttackPowerDPS"]=rpgo.round(apDPS,1);
-				structAttack["Ranged"]["AttackPowerTooltip"]=format(RANGED_ATTACK_POWER_TOOLTIP,apDPS);
-				structAttack["Ranged"]["HasWandEquipped"]=false;
+					base,posBuff,negBuff = GetCombatRating(CR_HIT_RANGED),rpgo.round(GetCombatRatingBonus(CR_HIT_RANGED),2),0;
+					structAttack["Ranged"]["HitRating"]=strjoin(":", base,posBuff,negBuff);
+					base,posBuff,negBuff = GetCombatRating(CR_CRIT_RANGED),rpgo.round(GetCombatRatingBonus(CR_CRIT_RANGED),2),0;
+					structAttack["Ranged"]["CritRating"]=strjoin(":", base,posBuff,negBuff);
+					base,posBuff,negBuff = GetCombatRating(CR_HASTE_RANGED),rpgo.round(GetCombatRatingBonus(CR_HASTE_RANGED),2),0;
+					structAttack["Ranged"]["HasteRating"]=strjoin(":", base,posBuff,negBuff);
+					structAttack["Ranged"]["CritChance"]=rpgo.round(GetRangedCritChance(),2);
+
+					self:CharacterRangedDamageFrame();
+					local tt=self:ScanTooltip();
+					tt=rpgo.StripColor(tt);
+					structAttack["Ranged"]["DamageRangeTooltip"]=tt;
+					local base,posBuff,negBuff=UnitRangedAttackPower(unit);
+					apDPS=base/ATTACK_POWER_MAGIC_NUMBER;
+					structAttack["Ranged"]["AttackPower"] = strjoin(":", base,posBuff,negBuff);
+					structAttack["Ranged"]["AttackPowerDPS"]=rpgo.round(apDPS,1);
+					structAttack["Ranged"]["AttackPowerTooltip"]=format(RANGED_ATTACK_POWER_TOOLTIP,apDPS);
+					structAttack["Ranged"]["HasWandEquipped"]=false;
+				end
 			end
-		end
-		structAttack["Spell"] = {};
-		structAttack["Spell"]["BonusHealing"] = GetSpellBonusHealing();
-		local holySchool = 2;
-		local minCrit = GetSpellCritChance(holySchool);
-		structAttack["Spell"]["School"]={};
-		structAttack["Spell"]["SchoolCrit"]={};
-		for i=holySchool,MAX_SPELL_SCHOOLS do
-			bonusDamage = GetSpellBonusDamage(i);
-			spellCrit = GetSpellCritChance(i);
-			minCrit = min(minCrit,spellCrit);
-			structAttack["Spell"]["School"][UnitSchoolName[i]] = bonusDamage;
-			structAttack["Spell"]["SchoolCrit"][UnitSchoolName[i]] = rpgo.round(spellCrit,2);
-		end
-		structAttack["Spell"]["CritChance"] = rpgo.round(minCrit,2);
+			structAttack["Spell"] = {};
+			structAttack["Spell"]["BonusHealing"] = GetSpellBonusHealing();
+			local holySchool = 2;
+			local minCrit = GetSpellCritChance(holySchool);
+			structAttack["Spell"]["School"]={};
+			structAttack["Spell"]["SchoolCrit"]={};
+			for i=holySchool,MAX_SPELL_SCHOOLS do
+				bonusDamage = GetSpellBonusDamage(i);
+				spellCrit = GetSpellCritChance(i);
+				minCrit = min(minCrit,spellCrit);
+				structAttack["Spell"]["School"][UnitSchoolName[i]] = bonusDamage;
+				structAttack["Spell"]["SchoolCrit"][UnitSchoolName[i]] = rpgo.round(spellCrit,2);
+			end
+			structAttack["Spell"]["CritChance"] = rpgo.round(minCrit,2);
 
-		structAttack["Spell"]["BonusDamage"]=GetSpellBonusDamage(holySchool);
-		base,posBuff,negBuff = GetCombatRating(CR_HIT_SPELL),rpgo.round(GetCombatRatingBonus(CR_HIT_SPELL),2),0;
-		structAttack["Spell"]["HitRating"]=strjoin(":", base,posBuff,negBuff);
-		base,posBuff,negBuff = GetCombatRating(CR_CRIT_SPELL),rpgo.round(GetCombatRatingBonus(CR_CRIT_SPELL),2),0;
-		structAttack["Spell"]["CritRating"]=strjoin(":", base,posBuff,negBuff);
-		base,posBuff,negBuff = GetCombatRating(CR_HASTE_SPELL),rpgo.round(GetCombatRatingBonus(CR_HASTE_SPELL),2),0;
-		structAttack["Spell"]["HasteRating"]=strjoin(":", base,posBuff,negBuff);
-		structAttack["Spell"]["Penetration"] = GetSpellPenetration();
-		local base,casting = GetManaRegen();
-		base = floor( (base * 5.0) + 0.5);
-		casting = floor( (casting * 5.0) + 0.5);
-		structAttack["Spell"]["ManaRegen"] = strjoin(":", base,casting);
+			structAttack["Spell"]["BonusDamage"]=GetSpellBonusDamage(holySchool);
+			base,posBuff,negBuff = GetCombatRating(CR_HIT_SPELL),rpgo.round(GetCombatRatingBonus(CR_HIT_SPELL),2),0;
+			structAttack["Spell"]["HitRating"]=strjoin(":", base,posBuff,negBuff);
+			base,posBuff,negBuff = GetCombatRating(CR_CRIT_SPELL),rpgo.round(GetCombatRatingBonus(CR_CRIT_SPELL),2),0;
+			structAttack["Spell"]["CritRating"]=strjoin(":", base,posBuff,negBuff);
+			base,posBuff,negBuff = GetCombatRating(CR_HASTE_SPELL),rpgo.round(GetCombatRatingBonus(CR_HASTE_SPELL),2),0;
+			structAttack["Spell"]["HasteRating"]=strjoin(":", base,posBuff,negBuff);
+			structAttack["Spell"]["Penetration"] = GetSpellPenetration();
+			local base,casting = GetManaRegen();
+			base = floor( (base * 5.0) + 0.5);
+			casting = floor( (casting * 5.0) + 0.5);
+			structAttack["Spell"]["ManaRegen"] = strjoin(":", base,casting);
+		end
+		PaperDollFrame_UpdateStats();
 	end
-	PaperDollFrame_UpdateStats();
-end
 
-function RPGOCP:GetAttackRatingOld(structAttack,unit,prefix)
-	if(not unit) then unit="pet"; end
-	if(not prefix) then prefix="Pet"; end
+	function RPGOCP:GetAttackRatingOld(structAttack,unit,prefix)
+		if(not unit) then unit="pet"; end
+		if(not prefix) then prefix="Pet"; end
 
-	PaperDollFrame_SetDamage(PetDamageFrame, "Pet");
-	PaperDollFrame_SetArmor(PetArmorFrame, "Pet");
-	PaperDollFrame_SetAttackPower(PetAttackPowerFrame, "Pet");
+		PaperDollFrame_SetDamage(PetDamageFrame, "Pet");
+		PaperDollFrame_SetArmor(PetArmorFrame, "Pet");
+		PaperDollFrame_SetAttackPower(PetAttackPowerFrame, "Pet");
 
-	local damageFrame = getglobal(prefix.."DamageFrame");
-	local damageText = getglobal(prefix.."DamageFrameStatText");
-	local mainHandAttackBase,mainHandAttackMod = UnitAttackBothHands(unit);
+		local damageFrame = getglobal(prefix.."DamageFrame");
+		local damageText = getglobal(prefix.."DamageFrameStatText");
+		local mainHandAttackBase,mainHandAttackMod = UnitAttackBothHands(unit);
 
-	structAttack["Melee"]={};
-	structAttack["Melee"]["MainHand"]={};
-	structAttack["Melee"]["MainHand"]["AttackSpeed"]=rpgo.round(damageFrame.attackSpeed,2);
-	structAttack["Melee"]["MainHand"]["AttackDPS"]=rpgo.round(damageFrame.dps,1);
-	structAttack["Melee"]["MainHand"]["AttackRating"]=mainHandAttackBase+mainHandAttackMod;
+		structAttack["Melee"]={};
+		structAttack["Melee"]["MainHand"]={};
+		structAttack["Melee"]["MainHand"]["AttackSpeed"]=rpgo.round(damageFrame.attackSpeed,2);
+		structAttack["Melee"]["MainHand"]["AttackDPS"]=rpgo.round(damageFrame.dps,1);
+		structAttack["Melee"]["MainHand"]["AttackRating"]=mainHandAttackBase+mainHandAttackMod;
 
-	local tt=damageText:GetText();
-	tt=rpgo.StripColor(tt);
-	structAttack["Melee"]["MainHand"]["DamageRange"]=string.gsub(tt,"^(%d+)%s?-%s?(%d+)$","%1:%2");
+		local tt=damageText:GetText();
+		tt=rpgo.StripColor(tt);
+		structAttack["Melee"]["MainHand"]["DamageRange"]=string.gsub(tt,"^(%d+)%s?-%s?(%d+)$","%1:%2");
 
-	self:CharacterDamageFrame();
-	local tt=self:ScanTooltip();
-	tt=rpgo.StripColor(tt);
-	structAttack["Melee"]["DamageRangeTooltip"]=tt;
-	local base,posBuff,negBuff = UnitAttackPower(unit);
-	apDPS=max((base+posBuff+negBuff),0)/ATTACK_POWER_MAGIC_NUMBER;
-	structAttack["Melee"]["AttackPower"] = strjoin(":", base,posBuff,negBuff);
-	structAttack["Melee"]["AttackPowerDPS"]=rpgo.round(apDPS,1);
-	structAttack["Melee"]["AttackPowerTooltip"]=format(MELEE_ATTACK_POWER_TOOLTIP,apDPS);
-end
+		self:CharacterDamageFrame();
+		local tt=self:ScanTooltip();
+		tt=rpgo.StripColor(tt);
+		structAttack["Melee"]["DamageRangeTooltip"]=tt;
+		local base,posBuff,negBuff = UnitAttackPower(unit);
+		apDPS=max((base+posBuff+negBuff),0)/ATTACK_POWER_MAGIC_NUMBER;
+		structAttack["Melee"]["AttackPower"] = strjoin(":", base,posBuff,negBuff);
+		structAttack["Melee"]["AttackPowerDPS"]=rpgo.round(apDPS,1);
+		structAttack["Melee"]["AttackPowerTooltip"]=format(MELEE_ATTACK_POWER_TOOLTIP,apDPS);
+	end
 
 --[GetBuffs]
 function RPGOCP:GetBuffs(structBuffs,unit)
@@ -1621,13 +1717,13 @@ function RPGOCP:GetBuffs(structBuffs,unit)
 	if(UnitBuff(unit,idx)) then
 		structBuffs["Attributes"]["Buffs"]={};
 		while(UnitBuff(unit,idx)) do
-			local name,rank,icon,count=UnitBuff(unit,idx);
+			local name,rank,iconTexture,count,duration,timeLeft = UnitBuff(unit,idx);
 			self.tooltip:SetUnitBuff(unit,idx);
 			structBuffs["Attributes"]["Buffs"][idx]={
 				Name	= name,
 				Rank	= strNil(rank),
 				Count	= numNil(count),
-				Icon	= rpgo.scanIcon(icon),
+				Icon	= rpgo.scanIcon(iconTexture),
 				Tooltip	= self:ScanTooltip()};
 			idx=idx+1
 		end
@@ -1638,13 +1734,13 @@ function RPGOCP:GetBuffs(structBuffs,unit)
 	if(UnitDebuff(unit,idx)) then
 		structBuffs["Attributes"]["Debuffs"]={};
 		while(UnitDebuff(unit,idx)) do
-			local name,rank,icon,count=UnitDebuff(unit,idx);
+			local name,rank,iconTexture,count,debuffType,duration,timeLeft = UnitDebuff(unit,idx);
 			self.tooltip:SetUnitDebuff(unit,idx);
 			structBuffs["Attributes"]["Debuffs"][idx]={
 				Name	= name,
 				Rank	= strNil(rank),
 				Count	= numNil(count),
-				Icon	= rpgo.scanIcon(icon),
+				Icon	= rpgo.scanIcon(iconTexture),
 				Tooltip	= self:ScanTooltip()};
 			idx=idx+1
 		end
@@ -1664,9 +1760,9 @@ function RPGOCP:GetEquipment(force)
 		local structEquip=self.db["Equipment"];
 		for index,slot in pairs(UnitSlots) do
 			local itemLink,itemCount;
-			local itemTexture=GetInventoryItemTexture("player",index);
+			local itemTexture = GetInventoryItemTexture("player",index);
 			self.tooltip:SetInventoryItem("player",index);
-			itemLink=GetInventoryItemLink("player",index);
+			itemLink = GetInventoryItemLink("player",index);
 			if(itemLink) then
 				itemCount=GetInventoryItemCount("player",index);
 				if(itemCount == 1) then itemCount=nil; end
@@ -1751,12 +1847,13 @@ function RPGOCP:ScanContainer(invgrp,bagidx,bagid)
 		if(not self.prefs["fixicon"]) then
 			itemIcon="Interface\\Buttons\\"..itemIcon; end
 		self.tooltip:SetText(itemName);
-		self.tooltip:AddLine(format(CONTAINER_SLOTS,rpgo.GetContainerNumSlots(bagid),itemName));
 	else
 		itemColor,_,itemID,itemName=rpgo.GetItemInfo( GetInventoryItemLink("player",ContainerIDToInventoryID(bagid)) );
 		itemIcon=GetInventoryItemTexture("player",ContainerIDToInventoryID(bagid));
 		self.tooltip:SetInventoryItem("player",ContainerIDToInventoryID(bagid))
 	end
+
+
 	local bagInv,bagSlot=0,rpgo.GetContainerNumSlots(bagid);
 	if(bagSlot==nil or bagSlot==0) then
 		self.state[invgrp][bagidx]=nil
@@ -1769,7 +1866,8 @@ function RPGOCP:ScanContainer(invgrp,bagidx,bagid)
 		Item	= itemID,
 		Icon	= rpgo.scanIcon(itemIcon),
 		Tooltip	= self:ScanTooltip(),
-		Contents= {}};
+		Contents= {}
+		};
 	for slot=1,bagSlot do
 		local itemLink=GetContainerItemLink(bagid,slot);
 		if(itemLink) then
@@ -1805,7 +1903,6 @@ function RPGOCP.GetMail(idxStart)
 		if( not RPGOCP:State("Mail") and not idxStart and numMessages==0 ) then
 			rpgo.qInsert(RPGOCP.queue, {"MAIL_INBOX_UPDATE",RPGOCP.GetMail,1} );
 		end
-	--RPGOCP:PrintDebug("mail",numMessages,idxStart);
 		if( not RPGOCP:State("Mail") or RPGOCP:State("Mail")~=numMessages ) then
 			idxStart = idxStart or 1;
 			if( not RPGOCP:State("Mail") or idxStart==1) then
@@ -1815,16 +1912,17 @@ function RPGOCP.GetMail(idxStart)
 			local structMail=RPGOCP.db["MailBox"];
 			for idx=idxStart,numMessages do
 				local packageIcon,stationeryIcon,mailSender,mailSubject,mailCoin,_,daysLeft,itemCount,wasRead=GetInboxHeaderInfo(idx);
-	--RPGOCP:PrintDebug(idx,idxStart,mailSender,mailSubject,mailCoin,daysLeft,itemCount,wasRead);
 				structMail[idx]={
 					Sender	= mailSender or UNKNOWN,
 					Subject	= mailSubject,
-					Coin	= mailCoin,
 					MailIcon= rpgo.scanIcon(packageIcon or stationeryIcon),
-					CoinIcon= rpgo.scanIcon(GetCoinIcon(mailCoin)),
 					Days	= daysLeft,
 					Read	= wasRead,
 				};
+				if( mailCoin ~= 0 ) then
+					structMail[idx]["Coin"] = mailCoin;
+					structMail[idx]["CoinIcon"] = rpgo.scanIcon(GetCoinIcon(mailCoin));
+				end
 
 				if( itemCount ) then
 					structMail[idx]["Attachments"] = itemCount;
@@ -1841,7 +1939,6 @@ function RPGOCP.GetMail(idxStart)
 						rpgo.qInsert(RPGOCP.queue, {"MAIL_INBOX_UPDATE",RPGOCP.GetMail,idx} );
 						return;
 					end
-	--RPGOCP:PrintDebug(idx,mailSender,itemCount,table.count(structMail[idx]["Contents"]) );
 				end
 				if( mailSender ) then
 					RPGOCP:State("Mail",'++');
@@ -1849,6 +1946,132 @@ function RPGOCP.GetMail(idxStart)
 			end
 			RPGOCP.db["timestamp"]["MailBox"]=time();
 		end
+	end
+end
+
+function RPGOCP:GetSpellBook()
+	if(not self.prefs["scan"]["spells"]) then
+		self.db["SpellBook"]=nil;
+		return;
+	end
+	if ( not self.db["SpellBook"] ) then
+		self.db["SpellBook"]={};
+	end
+	local structSpell=self.db["SpellBook"];
+	for spellTab=1,GetNumSpellTabs() do
+		local spellTabname,spellTabtexture,offset,numSpells=GetSpellTabInfo(spellTab);
+		local cnt=0;
+		if(not self.state["SpellBook"][spellTabname] or self.state["SpellBook"][spellTabname]~=numSpells) then
+			structSpell[spellTabname]={
+					Icon	= rpgo.scanIcon(spellTabtexture),
+					Spells	= {},
+					};
+			self.state["SpellBook"][spellTabname]=0;
+			cnt=0;
+			for spellId=1+offset,numSpells+offset do
+				local spellName=GetSpellName(spellId,BOOKTYPE_SPELL);
+				if ( spellName ) then
+					structSpell[spellTabname]["Spells"][spellName] = self:ScanSpellInfo(spellId,BOOKTYPE_SPELL);
+					cnt=cnt+1;
+				end
+			end
+			self.state["SpellBook"][spellTabname]=cnt;
+			structSpell[spellTabname]["Count"]=numSpells;
+		end
+		self.db["timestamp"]["SpellBook"]=time();
+	end
+end
+
+function RPGOCP:ScanCompanions()
+--WotLK
+	if( not GetNumCompanions) then return; end
+
+	if(self.prefs["scan"]["companions"]) then
+		local crittertypes={"Critter","Mount"};
+
+		if(not self.db["Companions"]) then
+			self.db["Companions"]={};
+		end
+		if(not self.db["timestamp"]["Companions"]) then
+			self.db["timestamp"]["Companions"]={};
+		end
+		local structCompanion=self.db["Companions"];
+
+		for index,companionType in pairs(crittertypes) do
+			local numCompanions = GetNumCompanions(companionType);
+			if(not self.db["Companions"][companionType]) then
+				self.db["Companions"][companionType]={};
+			end
+
+self:PrintDebug('companion scan', numCompanions, self.state["Companions"][companionType]);
+			if( self.state["Companions"][companionType] ~= numCompanions ) then
+				self.state["Companions"][companionType] = 0;
+				for companionIndex=1,numCompanions do
+self:PrintDebug('companion scan', companionType, companionIndex);
+					local creatureID,creatureName,spellID,icon,active = GetCompanionInfo(companionType,companionIndex);
+					if(creatureName and creatureName~=UNKNOWN) then
+						self.tooltip:SetHyperlink("spell:" ..spellID,BOOKTYPE_SPELL)
+						structCompanion[companionType][companionIndex] = {
+							Name		= creatureName,
+							CreatureID	= creatureID,
+							SpellId		= spellID,
+							Active		= active,
+							Icon		= rpgo.scanIcon(icon),
+							Tooltip		= self:ScanTooltip(),
+						};
+					end
+					self.state["Companions"][companionType] = self.state["Companions"][companionType]+1;
+				end
+				self.db["timestamp"]["Companions"][companionType] = time();
+			end
+		end
+	elseif(self.db) then
+		self.db["Companions"]=nil;
+		self.state["Companions"]={};
+	end
+end
+
+function RPGOCP:ScanGlyphs(startGlyph)
+--WotLK
+	if( not GetNumGlyphSockets) then return; end
+
+	if(self.prefs["scan"]["glyphs"]) then
+		if(not self.db["Glyphs"]) then
+			self.db["Glyphs"]={};
+		end
+		local numGlyphs;
+		if( not startGlyph ) then
+			startGlyph = 1;
+			numGlyphs=GetNumGlyphSockets();
+		else
+			numGlyphs=startGlyph;
+			self.state["Glyphs"] = self.state["Glyphs"]-1;
+		end
+		
+self:PrintDebug('glyph scan', startGlyph,numGlyphs);
+		if( startGlyph==numGlyphs or self.state["Glyphs"]==0 ) then
+			local structGlyph=self.db["Glyphs"];
+			for index=startGlyph,numGlyphs do
+				local enabled, glyphType, glyphSpell, icon = GetGlyphSocketInfo(index);
+self:PrintDebug('glyph scan', index, enabled, glyphSpell);
+				if(enabled == 1 and glyphSpell) then
+					self.tooltip:SetGlyph(index);
+					structGlyph[index] = {
+						Name	= GetSpellInfo(glyphSpell),
+						Type	= glyphType,
+						Icon	= rpgo.scanIcon(icon),
+						Tooltip	= self:ScanTooltip(),
+					};
+					self.state["Glyphs"] = self.state["Glyphs"]+1;
+				else
+					structGlyph[index] = nil;
+				end
+			end
+			self.db["timestamp"]["Glyphs"]=time();
+		end
+	elseif(self.db) then
+		self.db["Glyphs"] = nil;
+		self.state["Glyphs"] = 0;
 	end
 end
 
@@ -1922,6 +2145,7 @@ function RPGOCP.GetTradeSkill(tradeskill,idxStart,idxHeader,txtHeader)
 	getglobal(tradeSkillFrameName .. "EditBox"):SetText(SEARCH);
 	tradeNameFilter(nil);
 	tradeFrame_Update();
+
 	--view
 	local selected=getTradeSkillSelect();
 	local toCollapse={};
@@ -1944,7 +2168,6 @@ function RPGOCP.GetTradeSkill(tradeskill,idxStart,idxHeader,txtHeader)
 	local stateProf=RPGOCP.state["Professions"];
 	local numTradeSkills = getNumTradeSkills();
 
-	--RPGOCP:PrintDebug(tradeskill,skillLineName,numTradeSkills);
 	if(numTradeSkills>0 and (not stateProf[skillLineName] or numTradeSkills~=stateProf[skillLineName]) ) then
 		if(not structProf[skillLineName] or not stateProf[skillLineName]) then
 			structProf[skillLineName]={};
@@ -1975,7 +2198,6 @@ function RPGOCP.GetTradeSkill(tradeskill,idxStart,idxHeader,txtHeader)
 				lastHeaderIdx = idxHeader;
 				skillHeader=skillName;
 				db = structProf[skillLineName][skillHeader];
-	--RPGOCP:PrintDebug("rescan",skillName,skillType,idxHeader);
 			end
 		else
 			idxStart = 1;
@@ -1994,7 +2216,6 @@ function RPGOCP.GetTradeSkill(tradeskill,idxStart,idxHeader,txtHeader)
 						structProf[skillLineName][skillHeader]={};
 					end
 					db = structProf[skillLineName][skillHeader];
-	--RPGOCP:PrintDebug(skillName,skillType,idx,lastHeaderIdx);
 				elseif( skillHeader ) then
 					cooldown,numMade=nil,nil;
 					reagents={};
@@ -2003,13 +2224,12 @@ function RPGOCP.GetTradeSkill(tradeskill,idxStart,idxHeader,txtHeader)
 					for ridx=1,getTradeSkillNumReagents(idx) do
 						reagentName,_,reagentCount,_=getTradeSkillReagentInfo(idx,ridx);
 						if(not reagentName) then
-	--RPGOCP:PrintDebug(skillName,skillType,idx,lastHeaderIdx,ridx);
 							rpgo.qInsert(RPGOCP.queue, {tradeFrameEvent,RPGOCP.GetTradeSkill,tradeskill,idx,lastHeaderIdx,skillHeader} );
 							return;
 						end
 
 						if(RPGOCP.prefs["reagentfull"]) then
-							itemID,_,_ = rpgo.GetItemID(getTradeSkillReagentItem(idx,ridx));
+							itemID = rpgo.GetItemID(getTradeSkillReagentItem(idx,ridx));
 							table.insert(reagents, {
 								Name=reagentName,
 								Count=reagentCount,
@@ -2043,7 +2263,7 @@ function RPGOCP.GetTradeSkill(tradeskill,idxStart,idxHeader,txtHeader)
 					if( numMade==1 ) then numMade=nil; end
 
 					db[skillName]={
-						RecipeID= rpgo.GetRecipeInfo( getTradeSkillLink(idx) ),
+						RecipeID= rpgo.GetRecipeId( getTradeSkillLink(idx) ),
 						Icon	= rpgo.scanIcon(skillIcon),
 						Difficulty= TradeSkillCode[skillType],
 						Item	= itemLink,
@@ -2059,20 +2279,16 @@ function RPGOCP.GetTradeSkill(tradeskill,idxStart,idxHeader,txtHeader)
 						db[skillName]["timestamp"]=time();
 					end
 				else
-	--RPGOCP:PrintDebug("header empty",skillName,skillType,idx,lastHeaderIdx);
 						rpgo.qInsert(RPGOCP.queue, {tradeFrameEvent,RPGOCP.GetTradeSkill,tradeskill,idx,lastHeaderIdx,skillHeader} );
 						return;
 				end
 				stateProf[skillLineName]=stateProf[skillLineName]+1;
 			else
-						--RPGOCP:PrintDebug("name empty",skillName,skillType,idx,lastHeaderIdx);
-						--rpgo.qInsert(RPGOCP.queue, {tradeFrameEvent,RPGOCP.GetTradeSkill,tradeskill,idx,lastHeaderIdx,skillHeader} );
 						return;
 			end
 		end
 		RPGOCP:TidyProfessions();
 		RPGOCP.db["timestamp"]["Professions"][skillLineName]=time();
-	--RPGOCP:PrintDebug("done",numTradeSkills,stateProf[skillLineName]);
 	end
 
 	--view
@@ -2092,42 +2308,6 @@ function RPGOCP:TidyProfessions()
 	end
 end
 
-function RPGOCP:GetSpellBook()
-	if(not self.prefs["scan"]["spells"]) then
-		self.db["SpellBook"]=nil;
-		return;
-	end
-	if ( not self.db["SpellBook"] ) then
-		self.db["SpellBook"]={};
-	end
-	local structSpell=self.db["SpellBook"];
-	for spelltab=1,GetNumSpellTabs() do
-		local spelltabname,spelltabtexture,offset,numSpells=GetSpellTabInfo(spelltab);
-		local cnt=0;
-		if(not self.state["SpellBook"][spelltabname] or self.state["SpellBook"][spelltabname]~=numSpells) then
-			structSpell[spelltabname]={
-					Icon	= rpgo.scanIcon(spelltabtexture),
-					Spells	= {},
-					};
-			self.state["SpellBook"][spelltabname]=0;
-			cnt=0;
-			for spellId=1+offset,numSpells+offset do
-				spellName,spellRank=GetSpellName( spellId,BOOKTYPE_SPELL );
-				spellTexture=GetSpellTexture( spellId,spelltab );
-				self.tooltip:SetSpell(spellId,BOOKTYPE_SPELL);
-				structSpell[spelltabname]["Spells"][spellName]={
-					Rank	= spellRank,
-					Icon	= rpgo.scanIcon(spellTexture),
-					Tooltip	= self:ScanTooltip()};
-				cnt=cnt+1;
-			end
-			self.state["SpellBook"][spelltabname]=cnt;
-			structSpell[spelltabname]["Count"]=numSpells;
-		end
-		self.db["timestamp"]["SpellBook"]=time();
-	end
-end
-
 function RPGOCP:ScanPetInit(name)
 	if(name) then
 		if(not self.db["Pets"]) then
@@ -2138,40 +2318,6 @@ function RPGOCP:ScanPetInit(name)
 		end
 		if(not self.db["timestamp"]["Pets"]) then
 			self.db["timestamp"]["Pets"]={};
-		end
-	end
-end
-
-function RPGOCP:ScanCompanionInit(index,companionType)
-	if(index) then
-		if(not self.db["Companions"]) then
-			self.db["Companions"]={};
-		end
-		if(not self.db["Companions"][companionType]) then
-			self.db["Companions"][companionType]={};
-		end
-		if(not self.db["Companions"][companionType][index]) then
-			self.db["Companions"][companionType][index]={};
-		end
-		if(not self.db["timestamp"]["Companions"]) then
-			self.db["timestamp"]["Companions"]={};
-		end
-		if(not self.db["timestamp"]["Companions"][companionType]) then
-			self.db["timestamp"]["Companions"][companionType]={};
-		end
-	end
-end
-
-function RPGOCP:ScanGlyphInit(index)
-	if(index) then
-		if(not self.db["Glyphs"]) then
-			self.db["Glyphs"]={};
-		end
-		if(not self.db["Glyphs"][index]) then
-			self.db["Glyphs"][index]={};
-		end
-		if(not self.db["timestamp"]["Glyphs"]) then
-			self.db["timestamp"]["Glyphs"]={};
 		end
 	end
 end
@@ -2221,12 +2367,14 @@ function RPGOCP:ScanPetInfo()
 				local structPet=self.db["Pets"][petName];
 				structPet["Name"]=petName;
 				structPet["Type"]=UnitCreatureFamily("pet");
-				structPet["TalentPoints"],structPet["TalentPointsUsed"]=GetPetTrainingPoints();
-				local currXP,nextXP=GetPetExperience();
-				structPet["Experience"]=strjoin(":", currXP,nextXP);
-
+				structPet["Experience"]=strjoin(":", GetPetExperience());
 				self:GetStats(structPet,"pet");
 				self:GetBuffs(structPet,"pet");
+				
+--WotLK
+			if( GetPetTalentPoints ) then
+				self:GetTalents("pet");
+			end
 				self:GetPetSpellBook();
 				self.state["Pets"][petName]=1;
 				self.db["timestamp"]["Pets"][petName]=time();
@@ -2235,65 +2383,6 @@ function RPGOCP:ScanPetInfo()
 	elseif(self.db) then
 		self.db["Pets"]=nil;
 		self.state["Pets"]={};
-	end
-end
-
-function RPGOCP:ScanCompanionFrame()
-	if(self.prefs["scan"]["companions"]) then
-		local crittertypes={"Critter","Mount"};
-
-		for index,companionType in pairs(crittertypes) do
-			local numCompanions = GetNumCompanions(companionType);
-			self.state["Companions"][companionType]=numCompanions;
-
-			for companionIndex=1,numCompanions do
-				local creatureID,creatureName,spellID,icon,active = GetCompanionInfo(companionType,companionIndex);
-				if(creatureName and creatureName~=UNKNOWN) then
-					self:ScanCompanionInit(companionIndex,companionType);
-					local structCompanion=self.db["Companions"];
-					structCompanion[companionType][companionIndex]["Name"]=creatureName;
-					structCompanion[companionType][companionIndex]["CreatureId"]=creatureID;
-					structCompanion[companionType][companionIndex]["SpellId"]=spellID;
-					structCompanion[companionType][companionIndex]["Active"]=active;
-					structCompanion[companionType][companionIndex]["Icon"]=rpgo.scanIcon(icon);
-					self.db["timestamp"]["Companions"][companionType][creatureName]=time();
-					
-					self.tooltip:SetHyperlink("spell:" ..spellID,BOOKTYPE_SPELL)
-					structCompanion[companionType][companionIndex]["Tooltip"] = self:ScanTooltip();
-				end
-			end
-			self.state["Companions"][companionType]=GetNumCompanions(companionType);
-		end
-	elseif(self.db) then
-		self.db["Companions"]=nil;
-		self.state["Companions"]={};
-	end
-end
-
-function RPGOCP:ScanGlyphs()
-	if(self.prefs["scan"]["glyphs"]) then
-		for index = 1,GetNumGlyphSockets() do
-			local enabled, glyphType, glyphSpell, icon = GetGlyphSocketInfo(index);
-			self.state["Glyphs"][index]="";
-
-			if(enabled == 1 and glyphSpell) then
-				self:ScanGlyphInit(index);
-				local structGlyph=self.db["Glyphs"];
-				local name = GetSpellInfo(glyphSpell);
-				structGlyph[index]["Name"] = name;
-				structGlyph[index]["Type"] = glyphType;
-				structGlyph[index]["Icon"] = rpgo.scanIcon(icon);
-
-				self.state["Glyphs"][index]=name;
-
-				self.tooltip:SetGlyph(index);
-				structGlyph[index]["Tooltip"] = self:ScanTooltip();
-			end
-		end
-		self.db["timestamp"]["Glyphs"]=time();
-	elseif(self.db) then
-		self.db["Glyphs"] = nil;
-		self.state["Glyphs"]={};
 	end
 end
 
@@ -2308,19 +2397,20 @@ function RPGOCP:GetPetSpellBook()
 					self.db["Pets"][petName]["SpellBook"]={};
 				end
 				local structPetSpell=self.db["Pets"][petName]["SpellBook"];
-				for petSpellId=1,numSpells do
-					local spellName,spellRank=GetSpellName(petSpellId,BOOKTYPE_PET);
-					local spellTexture=GetSpellTexture(petSpellId,BOOKTYPE_PET);
-					if (spellName==nil) then break; end
-					if (not structPetSpell["Spells"]) then
-						structPetSpell["Spells"]={};
-					end
-					structPetSpell["Spells"][spellName]={};
-					structPetSpell["Spells"][spellName]["Rank"]=spellRank;
-					structPetSpell["Spells"][spellName]["Icon"]=rpgo.scanIcon(spellTexture);
-					structPetSpell["Count"]=petSpellId;
+				if (not structPetSpell["Spells"]) then
+					structPetSpell["Spells"]={};
 				end
-				self.state["PetSpell"][petName]=numSpells;
+
+				local cnt=0;
+				for petSpellId=1,numSpells do
+					local spellName=GetSpellName(petSpellId,BOOKTYPE_PET);
+					if ( spellName ) then
+						structPetSpell["Spells"][spellName] = self:ScanSpellInfo(petSpellId,BOOKTYPE_PET);
+						cnt=cnt+1;
+					end
+				end
+				structPetSpell["Count"]=cnt;
+				self.state["PetSpell"][petName]=cnt;
 			end
 		end
 	end
@@ -2373,8 +2463,27 @@ function RPGOCP:GetProfileDate(server,char)
 	return "";
 end
 
---[[## general rpgo functions: item
+--[[## general rpgo functions
 --######################################################--]]
+--[function] idx,bookType
+function RPGOCP:ScanSpellInfo(idx,bookType)
+	if(not idx or not bookType ) then return end
+	
+	local spellName,spellRank=GetSpellName(idx,bookType);
+	local spellTexture=GetSpellTexture(idx,bookType);
+	self.tooltip:SetSpell(idx,bookType);
+	if( spellRank and spellRank == "" ) then
+		spellRank = nil;
+	end
+	local structSpellInfo={
+		SpellId	= rpgo.GetSpellID( GetSpellLink( spellName,spellRank ) ),
+		Icon	= rpgo.scanIcon(spellTexture),
+		Rank	= spellRank,
+		Tooltip	= self:ScanTooltip()
+	};
+	return structSpellInfo;
+end
+
 --[function] itemlink,itemtexture,itemcount
 function RPGOCP:ScanItemInfo(itemstr,itemtexture,itemcount)
 	local function numNil(num)
@@ -2388,12 +2497,12 @@ function RPGOCP:ScanItemInfo(itemstr,itemtexture,itemcount)
 			itemName,itemColor=rpgo.GetItemInfoTT(self.tooltip);
 		end
 		local itemBlock={
-			Name	= itemName;
-			Item	= itemID;
-			Color	= rpgo.scanColor(itemColor);
-			Quantity= numNil(itemcount);
-			Icon	= rpgo.scanIcon(itemtexture or itemTexture);
-			Tooltip	= self:ScanTooltip();
+			Name	= itemName,
+			Item	= itemID,
+			Color	= rpgo.scanColor(itemColor),
+			Quantity= numNil(itemcount),
+			Icon	= rpgo.scanIcon(itemtexture or itemTexture),
+			Tooltip	= self:ScanTooltip(),
 			};
 		if( rpgo.ItemHasGem(itemLink) ) then
 			itemBlock["Gem"] = {};

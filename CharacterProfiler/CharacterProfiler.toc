@@ -1,9 +1,9 @@
 ## Interface: 30000
 ## Title: rpgo-CharacterProfiler
 ## Notes: Export Character Profiles for use out-of-game
-## Version: 2.9.9
-## Author: calvinn
-## X-Date: March 25, 2008
+## Version: 3.0.0
+## Author: calvin
+## X-Date: October 08, 2008
 ## X-Email: calvin@rpgoutfitter.com
 ## X-Publisher: RPG Outfitter
 ## X-Website: http://www.rpgoutfitter.com/CharacterProfiler/
