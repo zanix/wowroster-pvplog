@@ -2,7 +2,7 @@
 ## Title: rpgo-CharacterProfiler
 ## Notes: Export Character Profiles for use out-of-game
 ## Version: 2.9.9
-## Author: calvin
+## Author: calvinn
 ## X-Date: March 25, 2008
 ## X-Email: calvin@rpgoutfitter.com
 ## X-Publisher: RPG Outfitter
