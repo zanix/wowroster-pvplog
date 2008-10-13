@@ -143,9 +143,14 @@ RPGOCP.event2={
 			RPGOCP:GetEquipment();
 		end,
 	TRADE_SKILL_SHOW =
-		function()
+		function(a1)
+			if(strsub(a1,1,5) ~= "trade") then
+				RPGOCP:PrintDebug( strsub(a1,1,5),	
+						strsub(a1,1,5) ~= "trade",
+						a1 );
 			RPGOCP:GetSkills();
 			RPGOCP.GetTradeSkill('trade');
+			end
 		end,
 	CRAFT_SHOW =
 		function()
@@ -1290,6 +1295,7 @@ function RPGOCP:GetTalents(unit)
 	end
 
 	if( (self:State(state)~=numTabs+numPts) ) then
+self:PrintDebug('talent', unit, numTabs);
 		local tabName,iconTexture,pointsSpent,background;
 		local nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq;
 		for tabIndex=1,numTabs do
@@ -1301,9 +1307,9 @@ function RPGOCP:GetTalents(unit)
 				PointsSpent=pointsSpent,
 				Order=tabIndex
 				};
-			for talentIndex=1,GetNumTalents(tabIndex) do
-				nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq = GetTalentInfo(tabIndex,talentIndex);
-				if(currentRank > 0 or self.prefs["talentsfull"]) then
+			for talentIndex=1,GetNumTalents(tabIndex,nil,unit=="pet") do
+				nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq = GetTalentInfo(tabIndex,talentIndex,nil,unit=="pet");
+				if(nameTalent and (currentRank > 0 or self.prefs["talentsfull"]) ) then
 					self.tooltip:SetTalent(tabIndex,talentIndex)
 					structTalent[tabName][nameTalent]={
 						TalentId= rpgo.GetTalentID( GetTalentLink(tabIndex,talentIndex) ),
@@ -2136,6 +2142,7 @@ function RPGOCP.GetTradeSkill(tradeskill,idxStart,idxHeader,txtHeader)
 	end
 
 	local skillLineName,skillLineRank,skillLineMaxRank=getTradeSkillLine();
+RPGOCP:PrintDebug('tradeskill', skillLineName);
 	if(not skillLineName or skillLineName=="" or skillLineName==UNKNOWN) then
 		return;
 	end
