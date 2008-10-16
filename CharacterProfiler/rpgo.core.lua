@@ -28,7 +28,9 @@ end
 --[PrefInit]
 rpgo.PrefInit=function(self)
 	if( self.prefs and self.PREFS ) then
-		return rpgo.PrefInitSub(self.prefs,self.PREFS);
+		rpgo.PrefInitSub(self.prefs,self.PREFS);
+		self.prefs.ver = self.PREFS.ver;
+		return 
 	end
 end
 --[PrefTidy]
