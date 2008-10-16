@@ -1,0 +1,14 @@
+## Interface: 20400
+## Title: rpgo-GuildProfiler
+## Notes: Export Guild Roster for use out-of-game
+## Version: 2.4.0
+## Author: calvin
+## X-Date: March 25, 2008
+## X-Email: calvin@rpgoutfitter.com
+## X-Publisher: RPG Outfitter
+## X-Website: http://www.rpgoutfitter.com/GuildProfiler/
+## SavedVariables: rpgoGPpref
+## RequiredDeps: CharacterProfiler
+## License: http://rpgoutfitter.com/addons/license.cfm
+localization.lua
+GuildProfiler.lua
