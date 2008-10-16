@@ -1093,19 +1093,32 @@ function RPGOCP:GetReputation()
 		end
 	end
 
-	local thisHeader,numFactions,structRep = NONE,GetNumFactions(),self.db["Reputation"];
+	local thisHeader,thisSubHeader,numFactions,structRep = NONE,NONE,GetNumFactions(),self.db["Reputation"];
 	structRep["Count"]=numFactions;
 	for idx=1,numFactions do
-		local name,description,standingId,bottomValue,topValue,earnedValue,atWarWith,canToggleAtWar,isHeader,isCollapsed,isWatched,isSubGroup = GetFactionInfo(idx);
-		if(isHeader) then
+		local name,description,standingId,bottomValue,topValue,earnedValue,atWarWith,canToggleAtWar,isHeader,isCollapsed,hasRep,isWatched,isChild = GetFactionInfo(idx);
+		local item;
+		if(isHeader and (not isChild)) then --Super category, like 'Classic' or 'The Burning Crusade'
 			thisHeader=name;
+			thisSubHeader=NONE;
 			structRep[thisHeader]={};
-		elseif(standingId) then
-			structRep[thisHeader][name]={
-				Standing = getglobal("FACTION_STANDING_LABEL"..standingId),
-				AtWar = atWarWith or 0,
-				Value = earnedValue-bottomValue..":"..topValue-bottomValue};
+			item=structRep[thisHeader];
+		elseif((not isHeader) and (not isChild)) then --Supercategory member, like 'Darkmoon Faire' or 'Thrallmar'
+			structRep[thisHeader][name]={};
+			item=structRep[thisHeader][name];
+		elseif(isHeader and isChild) then --Subcategory, like 'Horde Forces' or 'Shattrath City'
+			thisSubHeader=name;
+			structRep[thisHeader][thisSubHeader]={};
+			item=structRep[thisHeader][thisSubHeader];
+		elseif((not isHeader) and isChild) then --Subcategory member, like 'Orgrimmar' or 'Lower City'
+			structRep[thisHeader][thisSubHeader][name]={};
+			item=structRep[thisHeader][thisSubHeader][name];
 		end
+
+		item["Description"] = description;
+		item["Standing"] = getglobal("FACTION_STANDING_LABEL"..standingId);
+		item["AtWar"] = atWarWith or 0;
+		item["Value"] = earnedValue-bottomValue..":"..topValue-bottomValue;
 		self:State("Reputation",'++');
 	end
 
