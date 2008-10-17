@@ -1,10 +1,23 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          3.0.0
-Last Modified:    2008-05-19
+Version:          3.0.4
+Last Modified:    2008-10-16
 
 CHANGES
+
+2008-10-16  * 3.0.4
+    * Changed TOC to 30000.
+    * Fixed missing fonts and adjusted positioning in the config frame.
+
+2008-08-16  * 3.0.3
+    * Added locale to PvPLogData (so I don't have to ask).
+
+2008-07-25  * 3.0.2
+    * Added "/pl chat kill|death|self" or "/pl chat <channel>" for debugging purposes.
+
+2008-07-05  * 3.0.1
+    * Fixed combat log event PARTY_KILL removal (it was falling through on an elseif).
 
 2008-05-19  * 3.0.0
     * Updated TOC
