@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          3.0.0
-    Last Modified:    2008-03-29
+    Version:          3.0.4
+    Last Modified:    2008-10-16
 ]]
 
 local realm = "";

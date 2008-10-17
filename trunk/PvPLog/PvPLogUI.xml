@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          3.0.0
-    Last Modified:    2008-03-29
+    Version:          3.0.4
+    Last Modified:    2008-10-16
 -->
 
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
@@ -15,7 +15,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 -->
     <Frame name="PvPLogConfigFrame" parent="UIParent" enableMouse="true" movable="true" frameStrata="DIALOG" hidden="true" toplevel="true">
         <Size>
-            <AbsDimension x="320" y="420"/>
+            <AbsDimension x="380" y="420"/>
         </Size>
         <Anchors>
             <Anchor point="CENTER"/>
@@ -60,7 +60,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="10" y="-178"/>
+                                <AbsDimension x="30" y="-180"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -69,7 +69,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT" relativeTo="txtPvPLogConfig_NotifyKillsToggle_Header">
                             <Offset>
-                                <AbsDimension x="140" y="0"/>
+                                <AbsDimension x="180" y="0"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -102,7 +102,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 <Anchors>
                     <Anchor point="TOPLEFT">
                         <Offset>
-                            <AbsDimension x="100" y="-30"/>
+                            <AbsDimension x="130" y="-30"/>
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -122,7 +122,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_EnableToggle">
                         <Offset>
-                            <AbsDimension x="-85" y="-30"/>
+                            <AbsDimension x="-110" y="-30"/>
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -148,7 +148,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_DingToggle">
                         <Offset>
-                            <AbsDimension x="150" y="0"/>
+                            <AbsDimension x="180" y="0"/>
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -188,7 +188,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_MiniMapButtonToggle">
                         <Offset>
-                            <AbsDimension x="150" y="0"/>
+                            <AbsDimension x="180" y="0"/>
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -228,7 +228,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_RecordBGToggle">
                         <Offset>
-                            <AbsDimension x="150" y="0"/>
+                            <AbsDimension x="180" y="0"/>
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -268,7 +268,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_NotifyBGToggle">
                         <Offset>
-                            <AbsDimension x="150" y="0"/>
+                            <AbsDimension x="180" y="0"/>
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -362,7 +362,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     </OnClick>
                 </Scripts>
             </CheckButton>
-	    <CheckButton name="cbxPvPLogConfig_NotifyKillsSay" inherits="OptionsCheckButtonTemplate">
+        <CheckButton name="cbxPvPLogConfig_NotifyKillsSay" inherits="OptionsCheckButtonTemplate">
                 <Size>
                     <AbsDimension x="24" y="24"/>
                 </Size>
@@ -482,7 +482,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     </OnClick>
                 </Scripts>
             </CheckButton>
-	    <CheckButton name="cbxPvPLogConfig_NotifyDeathsSay" inherits="OptionsCheckButtonTemplate">
+        <CheckButton name="cbxPvPLogConfig_NotifyDeathsSay" inherits="OptionsCheckButtonTemplate">
                 <Size>
                     <AbsDimension x="24" y="24"/>
                 </Size>
@@ -746,7 +746,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </Texture>
-                <FontString name="txtPvPLogStatsFrame_HeaderText" inherits="SystemFont" fontsize = "11">
+                <FontString name="txtPvPLogStatsFrame_HeaderText" inherits="GameFontNormal" fontsize = "11">
                     <Anchors>
                         <Anchor point="TOP">
                             <Offset>
@@ -755,7 +755,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <FontString name="txtPvPLogStats_PlayersHeader" inherits="SystemFont">
+                <FontString name="txtPvPLogStats_PlayersHeader" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
@@ -764,7 +764,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <FontString name="txtPvPLogStats_RaceHeader" inherits="SystemFont">
+                <FontString name="txtPvPLogStats_RaceHeader" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
@@ -773,7 +773,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <FontString name="txtPvPLogStats_ClassHeader" inherits="SystemFont">
+                <FontString name="txtPvPLogStats_ClassHeader" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
@@ -782,7 +782,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <FontString name="txtPvPLogStats_LevelHeader" inherits="SystemFont">
+                <FontString name="txtPvPLogStats_LevelHeader" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
@@ -791,7 +791,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <FontString name="txtPvPLogStats_GuildsHeader" inherits="SystemFont">
+                <FontString name="txtPvPLogStats_GuildsHeader" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
@@ -800,7 +800,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <FontString name="txtPvPLogStats_RealmsHeader" inherits="SystemFont">
+                <FontString name="txtPvPLogStats_RealmsHeader" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
@@ -809,7 +809,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <FontString name="txtPvPLogStats_WinsHeader" inherits="SystemFont">
+                <FontString name="txtPvPLogStats_WinsHeader" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
@@ -818,7 +818,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <FontString name="txtPvPLogStats_LossesHeader" inherits="SystemFont">
+                <FontString name="txtPvPLogStats_LossesHeader" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
@@ -827,7 +827,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         </Anchor>
                     </Anchors>
                 </FontString>
-                <FontString name="txtPvPLogStats_NotesHeader" inherits="SystemFont">
+                <FontString name="txtPvPLogStats_NotesHeader" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
