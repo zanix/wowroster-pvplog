@@ -1,8 +1,8 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          3.0.0
-Last Modified:    2008-05-19
+Version:          3.0.2
+Last Modified:    2008-07-25
 
 README
 
@@ -102,61 +102,67 @@ Use:
     Use of these commands could cause the permanent loss of accumulated
     data. Use at your own risk. These commands are english only.
     
-    	/pvplog debug [on|off]
-    	    Turns debugging messages on or off. When debugging messages
-    	    are on, they are sent to chat and to a per character array
-    	    along with combat log messages.
+        /pvplog debug [on|off]
+            Turns debugging messages on or off. When debugging messages
+            are on, they are sent to chat and to a per character array
+            along with combat log messages.
 
-    	/pvplog debug save
-	    Copies the array of debug/combat messages into another array.
+        /pvplog debug save
+        Copies the array of debug/combat messages into another array.
 
-    	/pvplog debug clear
-	    Clears the array of debug/combat messages.
+        /pvplog debug clear
+        Clears the array of debug/combat messages.
 
-    	/pvplog vars
-    	    Send some internal variables to chat.
+        /pvplog vars
+            Send some internal variables to chat.
 
-	/pvplog ignore [on|off]
-	    Turns the recording of targets to ignore on or off. Ignored
-	    targets provide a performance optimization and should be 
-	    left on (off provides some debugging with mobs).
+    /pvplog ignore [on|off]
+        Turns the recording of targets to ignore on or off. Ignored
+        targets provide a performance optimization and should be 
+        left on (off provides some debugging with mobs).
 
-    	/pvplog pve [on|off]
-	    Turns debugging with hostile NPCs (mobs) on or off.
-	    (/pvplog ignore off required).
+        /pvplog pve [on|off]
+        Turns debugging with hostile NPCs (mobs) on or off.
+        (/pvplog ignore off required).
 
-	/pvplog ignore clear
-	    Clears the ignore variables.
+    /pvplog ignore clear
+        Clears the ignore variables.
 
-	/pvplog target clear
-	    Clears the target variables.
+    /pvplog target clear
+        Clears the target variables.
 
-    	/pvplog event1 [on|off]
-	    Turns event to chat debugging messages on or off.
+        /pvplog event1 [on|off]
+        Turns event to chat debugging messages on or off.
 
-    	/pvplog event2 [on|off]
-	    Turns event to array debugging messages on or off.
+        /pvplog event2 [on|off]
+        Turns event to array debugging messages on or off.
 
-    	/pvplog combat [on|off]
-	    Turns combat to chat debugging messages on or off.
+        /pvplog combat [on|off]
+        Turns combat to chat debugging messages on or off.
 
-    	/pvplog ui [on|off]
-	    Turns ui to chat debugging messages on or off.
+        /pvplog ui [on|off]
+        Turns ui to chat debugging messages on or off.
 
-    	/pvplog ttm [on|off]
-	    Turns tooltip to chat debugging messages on or off.
+        /pvplog ttm [on|off]
+        Turns tooltip to chat debugging messages on or off.
 
-    	/pvplog ttv [on|off]
-	    Turns tooltip parsing debugging messages on or off.
+        /pvplog ttv [on|off]
+        Turns tooltip parsing debugging messages on or off.
 
-    	/pvplog ptc [on|off]
-	    Turns the recording of targets when PLAYER_TARGET_CHANGED on or off.
+        /pvplog ptc [on|off]
+        Turns the recording of targets when PLAYER_TARGET_CHANGED on or off.
 
-    	/pvplog comm [on|off]
-	    Turns channel communication debugging messages on or off.
+        /pvplog comm [on|off]
+        Turns channel communication debugging messages on or off.
 
-    	/pvplog notify <channelname>
-	    Sends a test message to indicated channel for debugging.
+        /pvplog notify <channelname>
+        Sends a test message to indicated channel (using PvPLogSendMessageOnChannel).
+
+        /pvplog chat kill|death
+        Sends a test message to the indicated channel (using PvPLogSendChatMessage).
+
+        /pvplog chat self
+        Sends a test message to the indicated channel (using PvPLogChatMsg).
 
     Updates for PvPLog are available from these AddOn sites:
     * http://www.wowroster.net
