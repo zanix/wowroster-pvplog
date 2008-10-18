@@ -3,7 +3,7 @@
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
     Version:          3.0.0
-    Last Modified:    2008-04-14
+    Last Modified:    2008-04-18
 ]]
 
 PVPLOG = {};
@@ -239,8 +239,9 @@ if (GetLocale() == "deDE") then
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
     PVPLOG.TT_PET = "Begleiter von " --- Begleiter von Name
     PVPLOG.TT_MINION = "Diener von " --- Diener von Name
-    PVPLOG.TT_CREATION = "Creation von "
-    PVPLOG.TT_GUARDIAN = "Guardian von "
+    PVPLOG.TT_CREATION = "Kreatur von "
+    PVPLOG.TT_GUARDIAN = "W\195\164chter von "
+
     PVPLOG.TT_LEVEL2 = "Level ([%d%?]+)"
 
 elseif (GetLocale() == "frFR") then
