@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.0.1
-    Last Modified:    2008-07-05
+    Version:          3.0.3
+    Last Modified:    2008-08-16
 ]]
 
 -- Local variables
@@ -1081,6 +1081,7 @@ function PvPLogInitialize()
     end
     PvPLogData[realm][player].version = PVPLOG.VER_NUM;
     PvPLogData[realm][player].vendor = PVPLOG.VENDOR;
+    PvPLogData[realm][player].locale = GetLocale();
 
     if (PvPLogData[realm][player].notifyKillText == nil) then
         PvPLogData[realm][player].notifyKillText = PVPLOG.DEFAULT_KILL_TEXT;
@@ -1164,6 +1165,7 @@ function PvPLogInitPvP()
     PvPLogData[realm][player].battles = { };
     PvPLogData[realm][player].version = PVPLOG.VER_NUM;
     PvPLogData[realm][player].vendor = PVPLOG.VENDOR;
+    PvPLogData[realm][player].locale = GetLocale();
     PvPLogData[realm][player].enabled = true;
     PvPLogData[realm][player].display = true;
     PvPLogData[realm][player].ding = false;
@@ -1724,6 +1726,14 @@ function PvPLogSlashHandler(msg)
         end
     elseif (command == "notify") then
         PvPLogSendMessageOnChannel("PvPLog test", value);
+    elseif (command == "chat") then
+        if (value == "kill") then
+            PvPLogSendChatMessage("PvPLog test", PvPLogData[realm][player].notifyKill);
+        elseif (value == "death") then
+            PvPLogSendChatMessage("PvPLog test", PvPLogData[realm][player].notifyDeath);
+        elseif (value == "self") then
+            PvPLogChatMsg("PvPLog test");
+        end            
     elseif (command == "ignore") then
         if (value == "on") then
             debug_ignore = true;
