@@ -2392,7 +2392,7 @@ function RPGOCP:ScanPetInfo()
 				self:GetBuffs(structPet,"pet");
 				
 --WotLK
-			if( GetPetTalentPoints ) then
+			if( GetPetTalentPoints and (self.state["_class"]=="HUNTER" and UnitLevel("player")>9)) then
 				self:GetTalents("pet");
 			end
 				self:GetPetSpellBook();
