@@ -1,7 +1,7 @@
 local VERSION = 03000001
 if(not rpgo) then rpgo={}; end
 if(not rpgo.db) then rpgo.db={}; end
-rpgo.db.class = {WARRIOR=1,PALADIN=2,HUNTER=3,ROGUE=4,PRIEST=5,SHAMAN=7,MAGE=8,WARLOCK=9,DRUID=11};
+rpgo.db.class = {WARRIOR=1,PALADIN=2,HUNTER=3,ROGUE=4,PRIEST=5,DEATHKNIGHT=6,SHAMAN=7,MAGE=8,WARLOCK=9,DRUID=11};
 rpgo.db.race = {Human=1,Orc=2,Dwarf=3,NightElf=4,Scourge=5,Tauren=6,Gnome=7,Troll=8,BloodElf=10,Draenei=11};
 --[[########################################################
 --## general functions
@@ -122,7 +122,7 @@ end
 --[ItemHasGem] itemStr
 rpgo.ItemHasGem = function(itemStr)
 	local gid1,gid2,gid3;
-	if(itemStr) then _,_,gid1,gid2,gid3=string.find(itemStr,"item:%d+:[-%d]+:([-%d]+):([-%d]+):([-%d]+):[-%d]+:[-%d]+:[-%d]+|");
+	if(itemStr) then _,_,gid1,gid2,gid3=string.find(itemStr,"|Hitem:%d+:[-%d]+:([-%d]+):([-%d]+):([-%d]+):[-%d]+:[-%d]+:[-%d]+:[%d]+|h");
 		if( gid1 and gid2 and gid3 and gid1+gid2+gid3 ~= 0) then
 			return true;
 		end
@@ -135,7 +135,7 @@ rpgo.GetItemInfo = function(itemStr)
 		local itemColor,itemID;
 		local itemName,itemLink,itemRarity,itemLevel,itemMinLevel,itemType,itemSubType,itemStackCount,itemEquipLoc,invTexture = GetItemInfo(itemStr);
 		if(itemLink) then
-			_,_,itemColor,itemID=string.find(itemLink,"|c(%x+)|Hitem:([-%d:]+)|h%[.-%]|h|r");
+			_,_,itemColor,itemID=string.find(itemLink,"|c(%x+)|Hitem:([-%d:]+)|h%[.-%]|h");
 		end
 		return itemColor,itemLink,itemID,itemName,invTexture;
 	end
@@ -165,7 +165,7 @@ end
 --[GetItemID] itemStr
 rpgo.GetItemID = function(itemStr)
 	local id,rid;
-	if(itemStr) then _,_,id,rid=string.find(itemStr,"|Hitem:(%d+):[-%d]+:[-%d]+:[-%d]+:[-%d]+:[-%d]+:([-%d]+):[-%d]+|h"); end
+	if(itemStr) then _,_,id,rid=string.find(itemStr,"|Hitem:(%d+):[-%d]+:[-%d]+:[-%d]+:[-%d]+:[-%d]+:([-%d]+):[-%d]+:[%d]+|h"); end
 	return tonumber(id),tonumber(rid);
 end
 

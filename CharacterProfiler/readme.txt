@@ -1,4 +1,4 @@
-rpgo-CharacterProfiler: Character Profiler: WoW Addon 2.0
+rpgo-CharacterProfiler: Character Profiler: WoW Addon 3.0
 http://www.rpgoutfitter.com/CharacterProfiler/
 
 DESCRIPTION

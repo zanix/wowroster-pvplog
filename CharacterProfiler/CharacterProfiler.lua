@@ -25,7 +25,6 @@ RPGOCP.PREFS={
 	scan={inventory=true,currency=true,talents=true,honor=true,reputation=true,spells=true,pet=true,companions=true,equipment=true,mail=true,professions=true,skills=true,quests=true,bank=true,glyphs=true},
 };
 RPGOCP.events={"PLAYER_LEVEL_UP","TIME_PLAYED_MSG",
-	"CRAFT_SHOW","CRAFT_CLOSE","CRAFT_UPDATE",
 	"TRADE_SKILL_SHOW","TRADE_SKILL_CLOSE","TRADE_SKILL_UPDATE",
 	"GLYPH_ADDED","GLYPH_REMOVED","GLYPH_UPDATED",
 	"CHARACTER_POINTS_CHANGED","COMPANION_LEARNED","COMPANION_UPDATE",
@@ -149,13 +148,8 @@ RPGOCP.event2={
 						strsub(a1,1,5) ~= "trade",
 						a1 );
 			RPGOCP:GetSkills();
-			RPGOCP.GetTradeSkill('trade');
+			RPGOCP.GetTradeSkill();
 			end
-		end,
-	CRAFT_SHOW =
-		function()
-			RPGOCP:GetSkills();
-			RPGOCP.GetTradeSkill('craft');
 		end,
 	PLAYER_LEVEL_UP =
 		function()
@@ -1168,7 +1162,6 @@ function RPGOCP:ScanCurrency(force)
 		return;
 	end
 
-self:PrintDebug( 'currency' );
 	local toCollapse={};
 	for idx=GetCurrencyListSize(),1,-1 do
 		local _,isHeader,isExpanded=GetCurrencyListInfo(idx);
@@ -1187,7 +1180,6 @@ self:PrintDebug( 'currency' );
 		local name,isHeader,isExpanded,isUnused,isWatched,count,extraCurrencyType,icon;
 		for idx=1,GetCurrencyListSize() do
 			name,isHeader,isExpanded,isUnused,isWatched,count,extraCurrencyType,icon = GetCurrencyListInfo(idx);
-self:PrintDebug( 'currency',name );
 			if ( name and name ~= "" ) then
 				if ( isHeader ) then
 					thisHeader=name;
@@ -1308,7 +1300,6 @@ function RPGOCP:GetTalents(unit)
 	end
 
 	if( (self:State(state)~=numTabs+numPts) ) then
-self:PrintDebug('talent', unit, numTabs);
 		local tabName,iconTexture,pointsSpent,background;
 		local nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq;
 		for tabIndex=1,numTabs do
@@ -2022,11 +2013,9 @@ function RPGOCP:ScanCompanions()
 				self.db["Companions"][companionType]={};
 			end
 
-self:PrintDebug('companion scan', numCompanions, self.state["Companions"][companionType]);
 			if( self.state["Companions"][companionType] ~= numCompanions ) then
 				self.state["Companions"][companionType] = 0;
 				for companionIndex=1,numCompanions do
-self:PrintDebug('companion scan', companionType, companionIndex);
 					local creatureID,creatureName,spellID,icon,active = GetCompanionInfo(companionType,companionIndex);
 					if(creatureName and creatureName~=UNKNOWN) then
 						self.tooltip:SetHyperlink("spell:" ..spellID,BOOKTYPE_SPELL)
@@ -2067,12 +2056,10 @@ function RPGOCP:ScanGlyphs(startGlyph)
 			self.state["Glyphs"] = self.state["Glyphs"]-1;
 		end
 		
-self:PrintDebug('glyph scan', startGlyph,numGlyphs);
 		if( startGlyph==numGlyphs or self.state["Glyphs"]==0 ) then
 			local structGlyph=self.db["Glyphs"];
 			for index=startGlyph,numGlyphs do
 				local enabled, glyphType, glyphSpell, icon = GetGlyphSocketInfo(index);
-self:PrintDebug('glyph scan', index, enabled, glyphSpell);
 				if(enabled == 1 and glyphSpell) then
 					self.tooltip:SetGlyph(index);
 					structGlyph[index] = {
@@ -2094,86 +2081,30 @@ self:PrintDebug('glyph scan', index, enabled, glyphSpell);
 	end
 end
 
-function RPGOCP.GetTradeSkill(tradeskill,idxStart,idxHeader,txtHeader)
+function RPGOCP.GetTradeSkill(idxStart,idxHeader,txtHeader)
 	if(not RPGOCP.prefs["scan"]["professions"]) then
 		RPGOCP.db["Professions"]=nil;
 		return;
 	end
-
-	local getTradeSkillLine,expandTradeSkills,collapseTradeSkills,getTradeSkillSelect,setTradeSkillSelect;
-	local getNumTradeSkills,getTradeSkillInfo,getTradeSkillIcon,getTradeSkillItem,getTradeSkillCool;
-	local getTradeSkillDesc,getTradeSkillLink,tradeSkillFrameName,tradeShowMakeable,tradeNameFilter;
-	local tradeFrame_Update,tradeFrameEvent,getTradeSkillNumReagents,getTradeSkillReagentInfo,getTradeSkillReagentItem;
-	if(tradeskill=='trade') then
-		getTradeSkillLine = GetTradeSkillLine;
-		expandTradeSkills = ExpandTradeSkillSubClass;
-		collapseTradeSkills = CollapseTradeSkillSubClass;
-		getTradeSkillSelect = GetTradeSkillSelectionIndex;
-		setTradeSkillSelect = SelectTradeSkill;
-
-		getNumTradeSkills = GetNumTradeSkills;
-		getTradeSkillInfo = GetTradeSkillInfo;
-		getTradeSkillIcon = GetTradeSkillIcon;
-		getTradeSkillItem = GetTradeSkillItemLink;
-		getTradeSkillCool = GetTradeSkillCooldown;
-		getTradeSkillDesc = nil;
-		getTradeSkillLink = GetTradeSkillRecipeLink;
-		tradeSkillFrameName = "TradeSkillFrame";
-		tradeShowMakeable = TradeSkillOnlyShowMakeable;
-		tradeNameFilter = SetTradeSkillItemNameFilter;
-		tradeFrame_Update = TradeSkillFrame_Update;
-		tradeFrameEvent = "TRADE_SKILL_UPDATE";
-		getTradeSkillNumReagents = GetTradeSkillNumReagents;
-		getTradeSkillReagentInfo = GetTradeSkillReagentInfo;
-		getTradeSkillReagentItem = GetTradeSkillReagentItemLink;
-	elseif(tradeskill=='craft') then
-		getTradeSkillLine = GetCraftDisplaySkillLine;
-		expandTradeSkills = ExpandCraftSkillLine;
-		collapseTradeSkills = CollapseCraftSkillLine;
-		getTradeSkillSelect = GetCraftSelectionIndex;
-		setTradeSkillSelect = SelectCraft;
-
-		getNumTradeSkills = GetNumCrafts;
-		getTradeSkillInfo = function(idx)
-			local skillName,_,skillType,numAvailable,isExpanded=GetCraftInfo(idx)
-			return skillName,skillType,numAvailable,isExpanded end
-		getTradeSkillIcon = GetCraftIcon;
-		getTradeSkillItem = GetCraftItemLink;
-		getTradeSkillCool = nil;
-		getTradeSkillDesc = GetCraftDescription;
-		getTradeSkillLink = GetCraftRecipeLink;
-		tradeSkillFrameName = "CraftFrame";
-		tradeShowMakeable = CraftOnlyShowMakeable;
-		tradeNameFilter = SetCraftItemNameFilter;
-		tradeFrame_Update = CraftFrame_Update;
-		tradeFrameEvent = "CRAFT_UPDATE";
-		getTradeSkillNumReagents = GetCraftNumReagents;
-		getTradeSkillReagentInfo = GetCraftReagentInfo;
-		getTradeSkillReagentItem = GetCraftReagentItemLink;
-	else
-		return;
-	end
-
-	local skillLineName,skillLineRank,skillLineMaxRank=getTradeSkillLine();
-RPGOCP:PrintDebug('tradeskill', skillLineName);
+	local skillLineName,skillLineRank,skillLineMaxRank=GetTradeSkillLine();
 	if(not skillLineName or skillLineName=="" or skillLineName==UNKNOWN) then
 		return;
 	end
 
-	local setHaveMaterials = getglobal(tradeSkillFrameName .. "AvailableFilterCheckButton"):GetChecked();
-	tradeShowMakeable(nil);
-	getglobal(tradeSkillFrameName .. "EditBox"):SetText(SEARCH);
-	tradeNameFilter(nil);
-	tradeFrame_Update();
+	local setHaveMaterials = getglobal("TradeSkillFrameAvailableFilterCheckButton"):GetChecked();
+	TradeSkillOnlyShowMakeable(nil);
+	getglobal("TradeSkillFrameEditBox"):SetText(SEARCH);
+	SetTradeSkillItemNameFilter(nil);
+	TradeSkillFrame_Update();
 
 	--view
-	local selected=getTradeSkillSelect();
+	local selected=GetTradeSkillSelectionIndex();
 	local toCollapse={};
-	for idx=getNumTradeSkills(),1,-1 do
-		_,skillType,_,isExpanded=getTradeSkillInfo(idx);
+	for idx=GetNumTradeSkills(),1,-1 do
+		_,skillType,_,isExpanded=GetTradeSkillInfo(idx);
 		if( skillType=="header" and not isExpanded ) then
 			table.insert(toCollapse,idx);
-			expandTradeSkills(idx);
+			ExpandTradeSkillSubClass(idx);
 		end
 	end
 
@@ -2186,7 +2117,7 @@ RPGOCP:PrintDebug('tradeskill', skillLineName);
 
 	local structProf=RPGOCP.db["Professions"];
 	local stateProf=RPGOCP.state["Professions"];
-	local numTradeSkills = getNumTradeSkills();
+	local numTradeSkills = GetNumTradeSkills();
 
 	if(numTradeSkills>0 and (not stateProf[skillLineName] or numTradeSkills~=stateProf[skillLineName]) ) then
 		if(not structProf[skillLineName] or not stateProf[skillLineName]) then
@@ -2204,16 +2135,8 @@ RPGOCP:PrintDebug('tradeskill', skillLineName);
 		local lastHeaderIdx;
 		local db;
 
-		if(tradeskill=='craft') then
-			skillHeader=skillLineName;
-			if(not structProf[skillLineName][skillHeader] or idxStart==1) then
-				structProf[skillLineName]={};
-				structProf[skillLineName][skillHeader]={};
-			end
-			db = structProf[skillLineName][skillHeader];
-			idxStart = idxStart or 1;
-		elseif( idxStart and idxHeader and txtHeader ) then
-			skillName,skillType=getTradeSkillInfo(idxHeader);
+		if( idxStart and idxHeader and txtHeader ) then
+			skillName,skillType=GetTradeSkillInfo(idxHeader);
 			if( skillType=="header" and skillName~="" and skillName==txtHeader ) then
 				lastHeaderIdx = idxHeader;
 				skillHeader=skillName;
@@ -2227,7 +2150,7 @@ RPGOCP:PrintDebug('tradeskill', skillLineName);
 		stateProf[skillLineName] = idxStart-1;
 
 		for idx=idxStart,numTradeSkills do
-			skillName,skillType=getTradeSkillInfo(idx);
+			skillName,skillType=GetTradeSkillInfo(idx);
 			if( skillName and skillName~="" ) then
 				if( skillType=="header" ) then
 					lastHeaderIdx = idx;
@@ -2239,17 +2162,17 @@ RPGOCP:PrintDebug('tradeskill', skillLineName);
 				elseif( skillHeader ) then
 					cooldown,numMade=nil,nil;
 					reagents={};
-					itemColor,_,itemLink,_ = rpgo.GetItemInfo(getTradeSkillItem(idx));
+					itemColor,_,itemLink,_ = rpgo.GetItemInfo(GetTradeSkillItemLink(idx));
 
-					for ridx=1,getTradeSkillNumReagents(idx) do
-						reagentName,_,reagentCount,_=getTradeSkillReagentInfo(idx,ridx);
+					for ridx=1,GetTradeSkillNumReagents(idx) do
+						reagentName,_,reagentCount,_=GetTradeSkillReagentInfo(idx,ridx);
 						if(not reagentName) then
-							rpgo.qInsert(RPGOCP.queue, {tradeFrameEvent,RPGOCP.GetTradeSkill,tradeskill,idx,lastHeaderIdx,skillHeader} );
+							rpgo.qInsert(RPGOCP.queue, {"TRADE_SKILL_UPDATE",RPGOCP.GetTradeSkill,idx,lastHeaderIdx,skillHeader} );
 							return;
 						end
 
 						if(RPGOCP.prefs["reagentfull"]) then
-							itemID = rpgo.GetItemID(getTradeSkillReagentItem(idx,ridx));
+							itemID = rpgo.GetItemID(GetTradeSkillReagentItemLink(idx,ridx));
 							table.insert(reagents, {
 								Name=reagentName,
 								Count=reagentCount,
@@ -2263,27 +2186,22 @@ RPGOCP:PrintDebug('tradeskill', skillLineName);
 					if(not RPGOCP.prefs["reagentfull"]) then
 						reagents = table.concat(reagents,"<br>");
 					end
-					if(getTradeSkillDesc) then
-						tt = getTradeSkillDesc(idx)
-						if(tt) then
-							RPGOCP.tooltip:SetText(getTradeSkillDesc(idx));
-						end
-					elseif(not MarsProfessionOrganizer_SetTradeSkillItem) then
+					if(not MarsProfessionOrganizer_SetTradeSkillItem) then
 						RPGOCP.tooltip:SetTradeSkillItem(idx);
 					end
-					if(getTradeSkillCool) then
-						cooldown = getTradeSkillCool(idx);
+					if(GetTradeSkillCooldown) then
+						cooldown = GetTradeSkillCooldown(idx);
 						if(cooldown) then
 							RPGOCP.tooltip:AddLine(COOLDOWN_REMAINING.." "..SecondsToTime(cooldown));
 						end
 					end
 
-					skillIcon=getTradeSkillIcon(idx) or "";
+					skillIcon=GetTradeSkillIcon(idx) or "";
 					numMade = GetTradeSkillNumMade(idx);
 					if( numMade==1 ) then numMade=nil; end
 
 					db[skillName]={
-						RecipeID= rpgo.GetRecipeId( getTradeSkillLink(idx) ),
+						RecipeID= rpgo.GetRecipeId( GetTradeSkillRecipeLink(idx) ),
 						Icon	= rpgo.scanIcon(skillIcon),
 						Difficulty= TradeSkillCode[skillType],
 						Item	= itemLink,
@@ -2299,7 +2217,7 @@ RPGOCP:PrintDebug('tradeskill', skillLineName);
 						db[skillName]["timestamp"]=time();
 					end
 				else
-						rpgo.qInsert(RPGOCP.queue, {tradeFrameEvent,RPGOCP.GetTradeSkill,tradeskill,idx,lastHeaderIdx,skillHeader} );
+						rpgo.qInsert(RPGOCP.queue, {"TRADE_SKILL_UPDATE",RPGOCP.GetTradeSkill,idx,lastHeaderIdx,skillHeader} );
 						return;
 				end
 				stateProf[skillLineName]=stateProf[skillLineName]+1;
@@ -2314,10 +2232,10 @@ RPGOCP:PrintDebug('tradeskill', skillLineName);
 	--view
 	table.sort(toCollapse);
 	for _,idx in pairs(toCollapse) do
-		collapseTradeSkills(idx);
+		CollapseTradeSkillSubClass(idx);
 	end
-	setTradeSkillSelect(selected);
-	tradeShowMakeable(setHaveMaterials);
+	SelectTradeSkill(selected);
+	TradeSkillOnlyShowMakeable(setHaveMaterials);
 end
 
 function RPGOCP:TidyProfessions()
@@ -2343,7 +2261,7 @@ function RPGOCP:ScanPetInit(name)
 end
 
 function RPGOCP:ScanPetStable()
-	if(self.prefs["scan"]["pet"] and (self.state["_class"]=="HUNTER" and UnitLevel("player")>9)) then
+	if(self.prefs["scan"]["pet"] and (self:State("_class")=="HUNTER" and UnitLevel("player")>9)) then
 		local stablePets={};
 		for petIndex=0,GetNumStableSlots() do
 			local petIcon,petName,petLevel,petType,petLoyalty=GetStablePetInfo(petIndex);
@@ -2392,7 +2310,7 @@ function RPGOCP:ScanPetInfo()
 				self:GetBuffs(structPet,"pet");
 				
 --WotLK
-			if( GetPetTalentPoints and (self.state["_class"]=="HUNTER" and UnitLevel("player")>9)) then
+			if( GetPetTalentPoints and (self:State("_class")=="HUNTER" and UnitLevel("player")>9) ) then
 				self:GetTalents("pet");
 			end
 				self:GetPetSpellBook();
