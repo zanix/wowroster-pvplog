@@ -1,13 +1,12 @@
 ## Interface: 30000
 ## Title: rpgo-CharacterProfiler
 ## Notes: Export Character Profiles for use out-of-game
-## Version: 3.0.0
+## Version: 3.0.1
 ## Author: calvin
-## X-Date: October 08, 2008
+## X-Date: Oct 31, 2008
 ## X-Email: calvin@rpgoutfitter.com
 ## X-Publisher: RPG Outfitter
 ## X-Website: http://www.rpgoutfitter.com/CharacterProfiler/
-## OptionalDeps:
 ## SavedVariables: rpgoCPpref,myProfile
 ## License: http://rpgoutfitter.com/addons/license.cfm
 rpgo.core.lua
