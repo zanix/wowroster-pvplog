@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.0.3
-    Last Modified:    2008-08-16
+    Version:          3.0.5
+    Last Modified:    2009-01-24
 ]]
 
 -- Local variables
@@ -17,7 +17,7 @@ local queuedChannel = "";
 local realm = "";
 local player = "";
 local plevel = -1;
-local mlevel = 70; -- Maximum player level
+local mlevel = 80; -- Maximum player level
 local dlevel = 11; -- Difference causing level of -1 to be returned
 
 local softPL; -- soft PvPLog enable/disable

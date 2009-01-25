@@ -1,11 +1,14 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          3.0.4
-Last Modified:    2008-10-16
+Version:          3.0.5
+Last Modified:    2008-01-24
 
 CHANGES
 
+2009-01-24  * 3.0.5
+    * Increased maximum player level to 80.
+    
 2008-10-16  * 3.0.4
     * Changed TOC to 30000.
     * Fixed missing fonts and adjusted positioning in the config frame.
