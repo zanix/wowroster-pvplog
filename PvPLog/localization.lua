@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.0.0
-    Last Modified:    2008-04-18
+    Version:          3.0.5
+    Last Modified:    2009-01-25
 ]]
 
 PVPLOG = {};
@@ -131,12 +131,12 @@ PVPLOG = {};
 -- GERMAN
 --***********
 if (GetLocale() == "deDE") then
-    -- Translated by (): yamyam
+    -- Translated by (): yamyam, Grektar
 
     -- Startup messages
     PVPLOG.STARTUP = "PvP Logger %v von %w AddOn geladen. Tippe /pl für Optionen.";
     
-    PVPLOG.DESCRIPTION = "Zeichnet PvP Siege und Verluste auf, sowie Duelle.";
+    PVPLOG.DESCRIPTION = "Zeichnet PvP Siege und Niederlagen, sowie Duelle auf.";
 
     -- Commands (must be one word and string.lower)
     PVPLOG.RESET = "zurücksetzen";
@@ -163,7 +163,7 @@ if (GetLocale() == "deDE") then
     PVPLOG.OFF = "aus";
     PVPLOG.NONE = "keine";        
     PVPLOG.CONFIRM = "bestätigen";  
-    PVPLOG.USAGE = "Usage";      -- verwenden?
+    PVPLOG.USAGE = "Verwendung";      -- verwenden?
     
     PVPLOG.STATS = "Statistik";
     PVPLOG.RECORDS = "Aufzeichnungen";
@@ -181,7 +181,7 @@ if (GetLocale() == "deDE") then
     
 --  PVPLOG.AB = "Arathibecken";
 --  PVPLOG.AV = "Alteractal";
---  PVPLOG.WSG = "Warsongschlucht";
+--  PVPLOG.WSG = "Kriegshymnenschlucht";
 --  PVPLOG.EOS = "Auge des Sturms";
 
     PVPLOG.WIN = "sieg";
@@ -190,7 +190,7 @@ if (GetLocale() == "deDE") then
     PVPLOG.LOSSES = "niederlagen"; -- "verloren"
     
     PVPLOG.PLAYER = "Spieler";
-    PVPLOG.RECENT = "Bekannt";
+    PVPLOG.RECENT = "Letzte";
     PVPLOG.TARGET = "Ziel";
     PVPLOG.DUEL = "Duelle"; -- "Duell"
     PVPLOG.TOTAL = "Summe";
@@ -209,13 +209,13 @@ if (GetLocale() == "deDE") then
     PVPLOG.UI_CLOSE = "Schließen";
     PVPLOG.UI_NOTIFY_KILLS = "Kills anzeigen in:";
     PVPLOG.UI_NOTIFY_DEATHS = "Tode anzeigen in:";
-    PVPLOG.UI_CUSTOM = "Custom";
+    PVPLOG.UI_CUSTOM = "Andere"; --"Chosen translation means OTHER; Also posibel is Eigene OR Anpassen"
     PVPLOG.UI_ENABLE = "PvPLog einschalten";
-    PVPLOG.UI_MOUSEOVER = "Mouseover Effekte";
+    PVPLOG.UI_MOUSEOVER = "Maus\195\188ber Effekte";
     PVPLOG.UI_DING = "Audio Ding-Sound";
-    PVPLOG.UI_DISPLAY = "Floating text messages";
+    PVPLOG.UI_DISPLAY = "Schwebender Text anz.";
     PVPLOG.UI_NOTIFY_NONE = "Keine";
-    PVPLOG.UI_DING_TIP = "Wenn Du mit der Maus \195\182ber einen Gegner f\195\164hrst\n, den Du vorher bek\195\164mpft hast, dann ert\195\182nt ein Signalton.";
+    PVPLOG.UI_DING_TIP = "Wenn Du mit der Maus über einen Gegner f\195\164hrst\n, den Du vorher bek\195\164mpft hast, dann ert\195\182nt ein Signalton.";
     PVPLOG.UI_PVP = "PvP";
     PVPLOG.UI_NAME = "Name";
     PVPLOG.UI_RACE = "Rasse";
