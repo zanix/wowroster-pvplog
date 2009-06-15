@@ -5,7 +5,7 @@ if(not rpgo.colorGreen) then rpgo.colorGreen="00cc00"; end
 if(not rpgo.colorRed)   then rpgo.colorRed  ="ff0000"; end
 --if(not rpgo.func) then rpgo.func={}; end
 
-local VERSION = 03000001
+local VERSION = 03001001
 if(rpgo.ver and rpgo.ver >= VERSION) then return end
 --[[########################################################
 --## addon object functions
