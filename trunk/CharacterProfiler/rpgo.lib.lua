@@ -1,4 +1,4 @@
-local VERSION = 03000001
+local VERSION = 03001001
 if(not rpgo) then rpgo={}; end
 if(not rpgo.db) then rpgo.db={}; end
 rpgo.db.class = {WARRIOR=1,PALADIN=2,HUNTER=3,ROGUE=4,PRIEST=5,DEATHKNIGHT=6,SHAMAN=7,MAGE=8,WARLOCK=9,DRUID=11};
