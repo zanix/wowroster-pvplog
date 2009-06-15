@@ -19,7 +19,7 @@ RPGOGP = {
 	EMAIL		= GetAddOnMetadata("GuildProfiler", "X-Email");
 	URL			= GetAddOnMetadata("GuildProfiler", "X-Website");
 	DATE		= GetAddOnMetadata("GuildProfiler", "X-Date");
-	PROFILEDB	= "2.3.1";
+	PROFILEDB	= "3.0.0";
 	FRAME		= "rpgoGPframe";
 }
 RPGOGP.PREFS={enabled=true,verbose=false,compact=true,rescan=10,history=true,title=false,lite=true,button=true,debug=false};
@@ -600,8 +600,8 @@ function RPGOGP.ScanGuildBankTab(tab)
 		_, itemLink = RPGOCP.tooltip:GetItem()
 		db["Contents"][idx] = RPGOCP:ScanItemInfo(itemLink,itemIcon,itemCount);
 	end
-	rpgo.qInsert(RPGOGP.queue, {"GUILDBANKLOG_UPDATE",RPGOGP.ScanGuildBankTabLog,tab} );
-	QueryGuildBankLog(tab);
+	--rpgo.qInsert(RPGOGP.queue, {"GUILDBANKLOG_UPDATE",RPGOGP.ScanGuildBankTabLog,tab} );
+	--QueryGuildBankLog(tab);
 end
 
 function RPGOGP.ScanGuildBankTabLog(tab)
@@ -630,8 +630,8 @@ RPGOGP:PrintDebug("TabLog",numTransactions,table.getn(db));
 			};
 		end
 	else
-		rpgo.qInsert(RPGOGP.queue, {"GUILDBANKLOG_UPDATE",RPGOGP.ScanGuildBankTabLog,tab} );
-		QueryGuildBankLog(tab);
+		--rpgo.qInsert(RPGOGP.queue, {"GUILDBANKLOG_UPDATE",RPGOGP.ScanGuildBankTabLog,tab} );
+		--QueryGuildBankLog(tab);
 	end
 end
 
@@ -640,8 +640,8 @@ function RPGOGP:ScanGuildBankMoney()
 		self.db["Vault"]={};
 	end
 	self.db["Vault"]["Money"] = rpgo.Arg2Tab("Gold","Silver","Copper",rpgo.parseMoney(GetGuildBankMoney()));
-	rpgo.qInsert(RPGOGP.queue, {"GUILDBANKLOG_UPDATE",RPGOGP.ScanGuildBankMoneyLog,MAX_GUILDBANK_TABS+1} );
-	QueryGuildBankLog(MAX_GUILDBANK_TABS+1);
+	--rpgo.qInsert(RPGOGP.queue, {"GUILDBANKLOG_UPDATE",RPGOGP.ScanGuildBankMoneyLog,MAX_GUILDBANK_TABS+1} );
+	--QueryGuildBankLog(MAX_GUILDBANK_TABS+1);
 end
 
 function RPGOGP.ScanGuildBankMoneyLog()
@@ -670,8 +670,8 @@ RPGOGP:PrintDebug("MoneyLog",numTransactions,table.getn(db));
 			};
 		end
 	else
-		rpgo.qInsert(RPGOGP.queue, {"GUILDBANKLOG_UPDATE",RPGOGP.ScanGuildBankMoneyLog,MAX_GUILDBANK_TABS+1} );
-		QueryGuildBankLog(MAX_GUILDBANK_TABS+1);
+		--rpgo.qInsert(RPGOGP.queue, {"GUILDBANKLOG_UPDATE",RPGOGP.ScanGuildBankMoneyLog,MAX_GUILDBANK_TABS+1} );
+		--QueryGuildBankLog(MAX_GUILDBANK_TABS+1);
 	end
 end
 

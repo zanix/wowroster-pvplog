@@ -1,9 +1,9 @@
-## Interface: 20400
+## Interface: 30100
 ## Title: rpgo-GuildProfiler
 ## Notes: Export Guild Roster for use out-of-game
-## Version: 2.4.0
+## Version: 3.1.0
 ## Author: calvin
-## X-Date: March 25, 2008
+## X-Date: May 20, 2009
 ## X-Email: calvin@rpgoutfitter.com
 ## X-Publisher: RPG Outfitter
 ## X-Website: http://www.rpgoutfitter.com/GuildProfiler/
