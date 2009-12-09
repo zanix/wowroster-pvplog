@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.0.5
-    Last Modified:    2009-01-24
+    Version:          3.0.8
+    Last Modified:    2009-12-08
 ]]
 
 -- Local variables
@@ -617,9 +617,9 @@ function PvPLogDebugUI(msg, color)
 end
 
 function PvPLogChatMsg(msg)
-    if (DEFAULT_CHAT_FRAME) then
+--    if (DEFAULT_CHAT_FRAME) then
         DEFAULT_CHAT_FRAME:AddMessage(msg);
-    end
+--    end
 end
 
 function PvPLogPrintStats()
@@ -1706,6 +1706,8 @@ function PvPLogSlashHandler(msg)
             debug_flag = true;
         elseif (value == "off") then
             debug_flag = false;
+        elseif (value == "perm") then
+            PvPLogDebugFlags.debug = debug_flag; -- Save the current value when we logoff
         elseif (value == "save") then
             PvPLogDebugSave = { };
             for i,v in ipairs(PvPLogDebug) do
@@ -1899,9 +1901,9 @@ function PvPLogSlashHandler(msg)
     elseif (command == PVPLOG.DISABLE) then
         PvPLogSetEnabled("off");
     elseif (command == PVPLOG.VER) then
-        PvPLogChatMsgCyan("PvPLog "..VER..": " .. WHITE .. PVPLOG.VER_NUM);
+        PvPLogChatMsgCyan("PvPLog "..PVPLOG.VER..": " .. WHITE .. PVPLOG.VER_NUM);
     elseif (command == PVPLOG.VEN) then
-        PvPLogChatMsgCyan("PvPLog "..VEN..": " .. WHITE .. PVPLOG.VENDOR);
+        PvPLogChatMsgCyan("PvPLog "..PVPLOG.VEN..": " .. WHITE .. PVPLOG.VENDOR);
     elseif (command == PVPLOG.ST) then
         PvPLogPrintStats();
     elseif (command == PVPLOG.NOSPAM) then

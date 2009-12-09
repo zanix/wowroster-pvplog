@@ -1,8 +1,8 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          3.0.2
-Last Modified:    2008-07-25
+Version:          3.0.7
+Last Modified:    2009-11-29
 
 README
 
@@ -106,6 +106,9 @@ Use:
             Turns debugging messages on or off. When debugging messages
             are on, they are sent to chat and to a per character array
             along with combat log messages.
+
+        /pvplog debug perm
+        Copies the debug flag to the per character saved variable array.
 
         /pvplog debug save
         Copies the array of debug/combat messages into another array.
