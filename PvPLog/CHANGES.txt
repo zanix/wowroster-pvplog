@@ -1,10 +1,20 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          3.0.5
-Last Modified:    2008-01-25
+Version:          3.0.8
+Last Modified:    2009-12-08
 
 CHANGES
+
+2009-12-08  * 3.0.8
+    * Changed TOC to 30300.
+
+2009-11-29  * 3.0.7
+    * Changed TOC to 30200.
+    * Added "/pl debug perm" to save changes to the debug flag.
+
+2009-04-16  * 3.0.6
+    * Changed TOC to 30100.
 
 2009-01-24  * 3.0.5
     * Increased maximum player level to 80.
