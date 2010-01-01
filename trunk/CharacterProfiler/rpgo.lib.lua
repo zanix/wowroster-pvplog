@@ -234,7 +234,11 @@ rpgo.ScanTooltip = function(ttName,ttFrame,isHTML)
 			end
 			ttFontStr=getglobal(ttName.."TextRight"..idx);
 			if(ttFontStr and ttFontStr:IsShown() and ttFontStr:GetText()) then
-				tmpbuff=tmpbuff.."\t"..ttFontStr:GetText();
+				if(tmpbuff) then
+  tmpbuff=tmpbuff.."\t"..ttFontStr:GetText();
+else
+  tmpbuff=ttFontStr:GetText();
+end
 			end
 			if(tmpbuff) then table.insert(ttText,tmpbuff); end
 		end
