@@ -1,12 +1,12 @@
-## Interface: 30100
-## Title: rpgo-CharacterProfiler
+## Interface: 30300
+## Title: WOW-R-CharacterProfiler
 ## Notes: Export Character Profiles for use out-of-game
-## Version: 3.1.0
+## Version: 3.1.1
 ## Author: calvin
-## X-Date: May 20, 2009
-## X-Email: calvin@rpgoutfitter.com
-## X-Publisher: RPG Outfitter
-## X-Website: http://www.rpgoutfitter.com/CharacterProfiler/
+## X-Date: Jan-08, 2010
+## X-Email: Ulminia@gmail.com
+## X-Publisher: WoW Roster (formaly RPG Outfitter)
+## X-Website: http://www.wowroster.net/
 ## SavedVariables: rpgoCPpref,myProfile
 ## License: http://rpgoutfitter.com/addons/license.cfm
 rpgo.core.lua
