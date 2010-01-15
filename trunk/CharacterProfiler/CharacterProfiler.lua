@@ -731,6 +731,8 @@ function RPGOCP:Show()
 				else
 					msg=msg..self:State("Glyphs");
 				end
+				msg=msg .. " Glyphs DS:";
+
 			end
 				if(self:State("Mail")) then
 					msg=msg .. " Mail:" ..self:State("Mail");
@@ -1279,7 +1281,9 @@ function RPGOCP:GetTalents(unit)
 	unit = unit or "player";
 
 	local numTabs,numPts,state,petName;
+	
 	local structTalent={};
+	local structTalents={};
 	if ( unit == "pet" ) then
 		petName = UnitName("pet");
 		numPts = GetPetTalentPoints();
@@ -1292,11 +1296,18 @@ function RPGOCP:GetTalents(unit)
 		state = "PetTalents";
 	else
 		numPts = UnitCharacterPoints("player");
+		numTalentGroups = GetNumTalentGroups(false, "player");
 		numTabs=GetNumTalentTabs();
 		self.db["TalentPoints"]=numPts;
 		--self.db["Talents"]={};
 		--structTalent=self.db["Talents"];
 		state = "Talents";
+	end
+	atg = GetActiveTalentGroup(false, "player");
+	if (atg == 2) then
+		TalentGroup = 1;
+	else
+		TalentGroup = 2;
 	end
 
 	if( (self:State(state)~=numTabs+numPts) ) then
@@ -1331,6 +1342,38 @@ function RPGOCP:GetTalents(unit)
 		else
 			self.db["Talents"]=structTalent;
 		end
+	end
+	if (numTalentGroups==2) then
+	self.db["DualSpec"] = {};
+		local tabName,iconTexture,pointsSpent,background;
+		--local nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq;
+		local nameTalent, iconTexture, tier, column, currentRank, maxRank, isExceptional, meetsPrereq, previewRank, meetsPreviewPrereq;
+		for tabIndex=1,numTabs do
+			tabName,iconTexture,pointsSpent,background = GetTalentTabInfo(tabIndex,nil,unit=="pet", TalentGroup);
+			if(not self.prefs["fixicon"]) then
+				background="Interface\\TalentFrame\\"..background; end
+			structTalents[tabName]={
+				Background=background,
+				PointsSpent=pointsSpent,
+				Order=tabIndex
+				};
+			for talentIndex=1,GetNumTalents(tabIndex,nil,unit=="pet") do
+				--nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq = GetTalentInfo(tabIndex,talentIndex,nil,unit=="pet");
+				nameTalent, iconTexture, tier, column, currentRank, maxRank, isExceptional, meetsPrereq, previewRank, meetsPreviewPrereq = GetTalentInfo(tabIndex, talentIndex, nil, unit=="pet", TalentGroup);
+				if(nameTalent and (currentRank > 0 or self.prefs["talentsfull"]) ) then
+					self.tooltip:SetTalent(tabIndex,talentIndex)
+					structTalents[tabName][nameTalent]={
+						TalentId= rpgo.GetTalentID( GetTalentLink(tabIndex,talentIndex) ),
+						Rank	= strjoin(":", currentRank,maxRank),
+						Location= strjoin(":", tier,column),
+						Icon	= rpgo.scanIcon(iconTexture),
+						Tooltip	= self:ScanTooltip()
+						};
+				end
+			end
+			self:State(state,'++');
+		end
+		self.db["DualSpec"]["Talents"]=structTalents;
 	end
 end
 
