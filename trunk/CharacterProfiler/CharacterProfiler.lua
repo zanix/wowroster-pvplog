@@ -1317,10 +1317,10 @@ function RPGOCP:GetTalents(unit)
 			tabName,iconTexture,pointsSpent,background = GetTalentTabInfo(tabIndex,nil,unit=="pet");
 			if(not self.prefs["fixicon"]) then
 				background="Interface\\TalentFrame\\"..background; end
-			structTalent[tabName]={
-				Background=background,
-				PointsSpent=pointsSpent,
-				Order=tabIndex
+				structTalent[tabName]={
+					Background=background,
+					PointsSpent=pointsSpent,
+					Order=tabIndex
 				};
 			for talentIndex=1,GetNumTalents(tabIndex,nil,unit=="pet") do
 				nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq = GetTalentInfo(tabIndex,talentIndex,nil,unit=="pet");
@@ -1332,7 +1332,7 @@ function RPGOCP:GetTalents(unit)
 						Location= strjoin(":", tier,column),
 						Icon	= rpgo.scanIcon(iconTexture),
 						Tooltip	= self:ScanTooltip()
-						};
+					};
 				end
 			end
 			self:State(state,'++');
@@ -1344,7 +1344,7 @@ function RPGOCP:GetTalents(unit)
 		end
 	end
 	if (numTalentGroups==2) then
-	self.db["DualSpec"] = {};
+		self.db["DualSpec"] = {};
 		local tabName,iconTexture,pointsSpent,background;
 		--local nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq;
 		local nameTalent, iconTexture, tier, column, currentRank, maxRank, isExceptional, meetsPrereq, previewRank, meetsPreviewPrereq;
@@ -1352,10 +1352,10 @@ function RPGOCP:GetTalents(unit)
 			tabName,iconTexture,pointsSpent,background = GetTalentTabInfo(tabIndex,nil,unit=="pet", TalentGroup);
 			if(not self.prefs["fixicon"]) then
 				background="Interface\\TalentFrame\\"..background; end
-			structTalents[tabName]={
-				Background=background,
-				PointsSpent=pointsSpent,
-				Order=tabIndex
+				structTalents[tabName]={
+					Background=background,
+					PointsSpent=pointsSpent,
+					Order=tabIndex
 				};
 			for talentIndex=1,GetNumTalents(tabIndex,nil,unit=="pet") do
 				--nameTalent,iconTexture,tier,column,currentRank,maxRank,isExceptional,meetsPrereq = GetTalentInfo(tabIndex,talentIndex,nil,unit=="pet");
@@ -1368,7 +1368,7 @@ function RPGOCP:GetTalents(unit)
 						Location= strjoin(":", tier,column),
 						Icon	= rpgo.scanIcon(iconTexture),
 						Tooltip	= self:ScanTooltip()
-						};
+					};
 				end
 			end
 			self:State(state,'++');
@@ -2173,7 +2173,7 @@ function RPGOCP.GetTradeSkill(idxStart,idxHeader,txtHeader)
 		local skillIcon;
 		local itemColor,itemLink;
 		local tt;
-		local reagentName,reagentCount;
+		local reagentName,reagentIcon,reagentCount,reagentColor,reagentLink;
 		local itemID;
 		local lastHeaderIdx;
 		local db;
@@ -2208,27 +2208,31 @@ function RPGOCP.GetTradeSkill(idxStart,idxHeader,txtHeader)
 					itemColor,_,itemLink,_ = rpgo.GetItemInfo(GetTradeSkillItemLink(idx));
 
 					for ridx=1,GetTradeSkillNumReagents(idx) do
-						reagentName,_,reagentCount,_=GetTradeSkillReagentInfo(idx,ridx);
+						reagentName,reagentIcon,reagentCount,_=GetTradeSkillReagentInfo(idx,ridx);
 						if(not reagentName) then
 							rpgo.qInsert(RPGOCP.queue, {"TRADE_SKILL_UPDATE",RPGOCP.GetTradeSkill,idx,lastHeaderIdx,skillHeader} );
 							return;
 						end
 
-						if(RPGOCP.prefs["reagentfull"]) then
-							itemID = rpgo.GetItemID(GetTradeSkillReagentItemLink(idx,ridx));
+--						if(RPGOCP.prefs["reagentfull"]) then
+							reagentColor,_,reagentLink,_ = rpgo.GetItemInfo(GetTradeSkillReagentItemLink(idx,ridx));
+							RPGOCP.tooltip:SetTradeSkillItem(idx,ridx);
 							table.insert(reagents, {
 								Name=reagentName,
+								Icon=rpgo.scanIcon(reagentIcon),
+								Item=reagentLink,
 								Count=reagentCount,
-								itemID=itemID
-								});
-						else
-							table.insert(reagents, reagentName .. " x" .. reagentCount);
-						end
+								Color=rpgo.scanColor(reagentColor),
+								Tooltip=RPGOCP:ScanTooltip()
+							});
+--						else
+--							table.insert(reagents, reagentName .. " x" .. reagentCount);
+--						end
 					end
 
-					if(not RPGOCP.prefs["reagentfull"]) then
-						reagents = table.concat(reagents,"<br>");
-					end
+--					if(not RPGOCP.prefs["reagentfull"]) then
+--						reagents = table.concat(reagents,"<br>");
+--					end
 					if(not MarsProfessionOrganizer_SetTradeSkillItem) then
 						RPGOCP.tooltip:SetTradeSkillItem(idx);
 					end
@@ -2252,7 +2256,7 @@ function RPGOCP.GetTradeSkill(idxStart,idxHeader,txtHeader)
 						Color	= rpgo.scanColor(itemColor),
 						Tooltip	= RPGOCP:ScanTooltip(),
 						Reagents= reagents,
-						};
+					};
 
 					if(cooldown and cooldown ~= 0) then
 						db[skillName]["Cooldown"]=cooldown;
