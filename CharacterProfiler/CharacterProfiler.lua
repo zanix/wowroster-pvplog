@@ -2477,7 +2477,7 @@ function RPGOCP:ScanItemInfo(itemstr,itemtexture,itemcount)
 		end
 	end
 	if(itemstr) then
-		local itemColor,itemLink,itemID,itemName,itemTexture=rpgo.GetItemInfo(itemstr);
+		local itemColor,itemLink,itemID,itemName,itemTexture,itemType,itemSubType,itemLevel,itemRarity=rpgo.GetItemInfo(itemstr);
 		if(not itemName or not itemColor) then
 			itemName,itemColor=rpgo.GetItemInfoTT(self.tooltip);
 		end
@@ -2485,9 +2485,13 @@ function RPGOCP:ScanItemInfo(itemstr,itemtexture,itemcount)
 			Name	= itemName,
 			Item	= itemID,
 			Color	= rpgo.scanColor(itemColor),
+			Rarity	= itemRarity,
 			Quantity= numNil(itemcount),
 			Icon	= rpgo.scanIcon(itemtexture or itemTexture),
 			Tooltip	= self:ScanTooltip(),
+			Type	= itemType,
+			SubType	= itemSubType,
+			iLevel	= itemLevel,
 			};
 		if( rpgo.ItemHasGem(itemLink) ) then
 			itemBlock["Gem"] = {};

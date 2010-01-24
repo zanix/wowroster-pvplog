@@ -137,7 +137,7 @@ rpgo.GetItemInfo = function(itemStr)
 		if(itemLink) then
 			_,_,itemColor,itemID=string.find(itemLink,"|c(%x+)|Hitem:([-%d:]+)|h%[.-%]|h");
 		end
-		return itemColor,itemLink,itemID,itemName,invTexture;
+		return itemColor,itemLink,itemID,itemName,invTexture,itemType,itemSubType,itemLevel,itemRarity;
 	end
 	return nil;
 end
