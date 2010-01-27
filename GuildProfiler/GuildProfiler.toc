@@ -1,12 +1,12 @@
-## Interface: 30100
-## Title: rpgo-GuildProfiler
+## Interface: 30300
+## Title: WOW-R-GuildProfiler
 ## Notes: Export Guild Roster for use out-of-game
 ## Version: 3.1.0
 ## Author: calvin
 ## X-Date: May 20, 2009
 ## X-Email: calvin@rpgoutfitter.com
-## X-Publisher: RPG Outfitter
-## X-Website: http://www.rpgoutfitter.com/GuildProfiler/
+## X-Publisher: WoW Roster (formerly RPG Outfitter)
+## X-Website: http://www.wowroster.net/
 ## SavedVariables: rpgoGPpref
 ## RequiredDeps: CharacterProfiler
 ## License: http://rpgoutfitter.com/addons/license.cfm
