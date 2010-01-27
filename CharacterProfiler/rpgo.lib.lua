@@ -133,11 +133,11 @@ end
 rpgo.GetItemInfo = function(itemStr)
 	if(itemStr) then
 		local itemColor,itemID;
-		local itemName,itemLink,itemRarity,itemLevel,itemMinLevel,itemType,itemSubType,itemStackCount,itemEquipLoc,invTexture = GetItemInfo(itemStr);
+		local itemName,itemLink,itemRarity,itemLevel,itemReqLevel,itemType,itemSubType,itemStackCount,itemEquipLoc,invTexture = GetItemInfo(itemStr);
 		if(itemLink) then
 			_,_,itemColor,itemID=string.find(itemLink,"|c(%x+)|Hitem:([-%d:]+)|h%[.-%]|h");
 		end
-		return itemColor,itemLink,itemID,itemName,invTexture,itemType,itemSubType,itemLevel,itemRarity;
+		return itemColor,itemLink,itemID,itemName,invTexture,itemType,itemSubType,itemLevel,itemReqLevel,itemRarity;
 	end
 	return nil;
 end
