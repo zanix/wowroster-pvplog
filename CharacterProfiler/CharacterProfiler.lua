@@ -260,6 +260,8 @@ local UnitSlots={"Head","Neck","Shoulder","Shirt","Chest","Waist","Legs","Feet",
 local UnitStatName={"Strength","Agility","Stamina","Intellect","Spirit"};
 local UnitSchoolName={"Physical","Holy","Fire","Nature","Frost","Shadow","Arcane"};
 local UnitResistanceName={"Holy","Fire","Nature","Frost","Shadow","Arcane"};
+
+
 --[[########################################################
 --## rpgoCP Core Functions
 --######################################################--]]
@@ -2118,6 +2120,7 @@ function RPGOCP:ScanGlyphs(startGlyph)
 			end
 			self.db["timestamp"]["Glyphs"]=time();
 		end
+		
 	elseif(self.db) then
 		self.db["Glyphs"] = nil;
 		self.state["Glyphs"] = 0;
