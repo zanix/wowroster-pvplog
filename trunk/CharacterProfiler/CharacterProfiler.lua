@@ -376,6 +376,7 @@ function RPGOCP:InitState()
 		Bag={},Inventory={},Bank={},
 		Professions={}, SpellBook={},
 		Pets={}, Stable={}, PetSpell={}, PetTalent={},
+		Achievements={},
 		Companions={},
 	};
 	self.queue={};
@@ -491,6 +492,7 @@ function RPGOCP:UpdateProfile()
 	self:GetArena();
 	self:ScanPetInfo();
 	self:ScanCompanions();
+	self:GetAchievements();
 	self:UpdateZone();
 	self:UpdatePlayed();
 	self:UpdateDate();
@@ -1073,6 +1075,38 @@ function RPGOCP:GetSkills()
 		CollapseSkillHeader(idx);
 	end
 end
+--[Get Achievements()]
+
+function RPGOCP:GetAchievements()
+	self.db["Achievements"]={};
+	self:State("Achievements",0);
+	
+	local structAchi = self.db["Achievements"];
+	local categories=GetStatisticsCategoryList();
+	for idx=1,select("#",categories) do
+		local catname, parentID, catflags = GetCategoryInfo(idx);
+		
+			for i=1,GetCategoryNumAchievements(idx) do
+			
+				local id, name, points, completed, month, day, year, description, flags, icon, rewardText = GetAchievementInfo(idx, i); -- or GetAchievementInfo(id)
+				
+				structAchi[catname][name]={
+						Id			= id,
+						Name		= name,
+						Points		= points,
+						Icon		= icon,
+						completed	= completed,
+						Description	= description,
+						Rewardtext	= rewardText
+					};
+			
+			end
+	end
+	
+	self.db["Achievements"]=structAchi;
+
+end
+
 
 --[GetReputation]
 function RPGOCP:GetReputation()
