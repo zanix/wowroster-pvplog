@@ -2277,7 +2277,7 @@ function RPGOCP.GetTradeSkill(idxStart,idxHeader,txtHeader)
 						};
 					end
 
-					d[skillName]={
+					db[skillName]={
 						RecipeID  = rpgo.GetRecipeId( GetTradeSkillRecipeLink(idx) ),
 						Difficulty= TradeSkillCode[skillType],
 						Reagents  = reagents,
