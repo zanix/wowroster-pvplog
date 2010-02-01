@@ -2196,7 +2196,7 @@ function RPGOCP.GetTradeSkill(idxStart,idxHeader,txtHeader)
 		stateProf[skillLineName] = idxStart-1;
 
 		for idx=idxStart,numTradeSkills do
-			skillName,skillType=GetTradeSkillInfo(idx);
+			skillName,skillType,_,_,serviceType=GetTradeSkillInfo(idx);
 			if( skillName and skillName~="" ) then
 				if( skillType=="header" ) then
 					lastHeaderIdx = idx;
@@ -2208,8 +2208,6 @@ function RPGOCP.GetTradeSkill(idxStart,idxHeader,txtHeader)
 				elseif( skillHeader ) then
 					cooldown,numMade=nil,nil;
 					reagents={};
-					itemColor,_,itemLink,_ = rpgo.GetItemInfo(GetTradeSkillItemLink(idx));
-
 					for ridx=1,GetTradeSkillNumReagents(idx) do
 						reagentName,reagentIcon,reagentCount,_=GetTradeSkillReagentInfo(idx,ridx);
 						if(not reagentName) then
@@ -2217,25 +2215,10 @@ function RPGOCP.GetTradeSkill(idxStart,idxHeader,txtHeader)
 							return;
 						end
 
---						if(RPGOCP.prefs["reagentfull"]) then
-							reagentColor,_,reagentLink,_ = rpgo.GetItemInfo(GetTradeSkillReagentItemLink(idx,ridx));
-							RPGOCP.tooltip:SetTradeSkillItem(idx,ridx);
-							table.insert(reagents, {
-								Name=reagentName,
-								Icon=rpgo.scanIcon(reagentIcon),
-								Item=reagentLink,
-								Count=reagentCount,
-								Color=rpgo.scanColor(reagentColor),
-								Tooltip=RPGOCP:ScanTooltip()
-							});
---						else
---							table.insert(reagents, reagentName .. " x" .. reagentCount);
---						end
+						RPGOCP.tooltip:SetTradeSkillItem(idx,ridx);
+						table.insert(reagents, RPGOCP:ScanItemInfo(GetTradeSkillReagentItemLink(idx,ridx),reagentIcon,reagentCount));
 					end
 
---					if(not RPGOCP.prefs["reagentfull"]) then
---						reagents = table.concat(reagents,"<br>");
---					end
 					if(not MarsProfessionOrganizer_SetTradeSkillItem) then
 						RPGOCP.tooltip:SetTradeSkillItem(idx);
 					end
@@ -2248,17 +2231,24 @@ function RPGOCP.GetTradeSkill(idxStart,idxHeader,txtHeader)
 
 					skillIcon=GetTradeSkillIcon(idx) or "";
 					numMade = GetTradeSkillNumMade(idx);
-					if( numMade==1 ) then numMade=nil; end
+					itemLink= GetTradeSkillItemLink(idx);
 
-					db[skillName]={
-						RecipeID= rpgo.GetRecipeId( GetTradeSkillRecipeLink(idx) ),
-						Icon	= rpgo.scanIcon(skillIcon),
+					if(rpgo.GetItemID(itemLink)) then
+						result = RPGOCP:ScanItemInfo(itemLink,skillIcon,numMade);
+					else
+						result = {
+							Icon	 = rpgo.scanIcon(skillIcon),
+							Quantity = (numMade ~= 1) and numMade or nil,
+							Tooltip  = GetTradeSkillDescription(idx),
+						};
+					end
+
+					d[skillName]={
+						RecipeID  = rpgo.GetRecipeId( GetTradeSkillRecipeLink(idx) ),
 						Difficulty= TradeSkillCode[skillType],
-						Item	= itemLink,
-						Count	= numMade,
-						Color	= rpgo.scanColor(itemColor),
-						Tooltip	= RPGOCP:ScanTooltip(),
-						Reagents= reagents,
+						Reagents  = reagents,
+						Result    = result,
+						Service   = serviceType,
 					};
 
 					if(cooldown and cooldown ~= 0) then
