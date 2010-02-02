@@ -16,7 +16,7 @@ RPGOCP = {
 	EMAIL		= GetAddOnMetadata("CharacterProfiler", "X-Email");
 	URL			= GetAddOnMetadata("CharacterProfiler", "X-Website");
 	DATE		= GetAddOnMetadata("CharacterProfiler", "X-Date");
-	PROFILEDB	= "3.1.0";
+	PROFILEDB	= "3.3.2";
 	FRAME		= "rpgoCPframe";
 	TOOLTIP		= "rpgoCPtooltip";
 }
