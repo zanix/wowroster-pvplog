@@ -371,12 +371,12 @@ function RPGOCP:InitState()
 		Talents=0,TalentPts=0,
 		Reputation=0,
 		Quests=0, QuestsLog=0,
+		Achievements=0,
 		Mail=nil,
 		Honor=nil,
 		Bag={},Inventory={},Bank={},
 		Professions={}, SpellBook={},
 		Pets={}, Stable={}, PetSpell={}, PetTalent={},
-		Achievements={},
 		Companions={},
 	};
 	self.queue={};
@@ -728,6 +728,10 @@ function RPGOCP:Show()
 				msg=msg .. " Rep:" ..self:State("Reputation");
 				msg=msg .. " Quest:" ..self:State("Quests");
 --WotLK
+
+				msg=msg .. " Achievements:" ..self:State("Achievements");
+				
+				
 			if( GetNumGlyphSockets) then 
 				msg=msg .. " Glyphs:";
 				if( self.state["Glyphs"]==0 ) then
@@ -735,7 +739,6 @@ function RPGOCP:Show()
 				else
 					msg=msg..self:State("Glyphs");
 				end
-				msg=msg .. " Glyphs DS:";
 
 			end
 				if(self:State("Mail")) then
@@ -1080,27 +1083,42 @@ end
 function RPGOCP:GetAchievements()
 	self.db["Achievements"]={};
 	self:State("Achievements",0);
-	
+--[
+--
+--	local cats = GetCategoryList()
+--	local achievementID, achCompleted
+--	local prevID
+--	
+--	for _, categoryID in ipairs(cats) do
+--		for i = 1, GetCategoryNumAchievements(categoryID) do
+--			achievementID, _, _, achCompleted = GetAchievementInfo(categoryID, i);
+			
 	local structAchi = self.db["Achievements"];
-	local categories=GetStatisticsCategoryList();
-	for idx=1,select("#",categories) do
+	local categories=GetCategoryList();
+	for _, idx in ipairs(categories) do
 		local catname, parentID, catflags = GetCategoryInfo(idx);
+		structAchi[catname]={
+				id			= idx,
+				ParentId	= parentID,
+				Flages		= catflages,
+		};		
 		
 			for i=1,GetCategoryNumAchievements(idx) do
 			
 				local id, name, points, completed, month, day, year, description, flags, icon, rewardText = GetAchievementInfo(idx, i); -- or GetAchievementInfo(id)
-				
+				self:State("Achievements",'++');
 				structAchi[catname][name]={
 						Id			= id,
 						Name		= name,
 						Points		= points,
-						Icon		= icon,
+						Icon		= rpgo.scanIcon(icon),
 						completed	= completed,
 						Description	= description,
 						Rewardtext	= rewardText
 					};
 			
 			end
+
 	end
 	
 	self.db["Achievements"]=structAchi;
