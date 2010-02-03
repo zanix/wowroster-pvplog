@@ -1083,15 +1083,6 @@ end
 function RPGOCP:GetAchievements()
 	self.db["Achievements"]={};
 	self:State("Achievements",0);
---[
---
---	local cats = GetCategoryList()
---	local achievementID, achCompleted
---	local prevID
---	
---	for _, categoryID in ipairs(cats) do
---		for i = 1, GetCategoryNumAchievements(categoryID) do
---			achievementID, _, _, achCompleted = GetAchievementInfo(categoryID, i);
 			
 	local structAchi = self.db["Achievements"];
 	local categories=GetCategoryList();
@@ -1107,12 +1098,18 @@ function RPGOCP:GetAchievements()
 			
 				local id, name, points, completed, month, day, year, description, flags, icon, rewardText = GetAchievementInfo(idx, i); -- or GetAchievementInfo(id)
 				self:State("Achievements",'++');
-				structAchi[catname][name]={
+				if (completed) then
+					Datec = month.."/"..day.."/"..year;
+				else
+					Datec = nil;
+				end
+				structAchi[catname][id]={
 						Id			= id,
 						Name		= name,
 						Points		= points,
 						Icon		= rpgo.scanIcon(icon),
 						completed	= completed,
+						Dcomplete	= Datec,
 						Description	= description,
 						Rewardtext	= rewardText
 					};
