@@ -1098,8 +1098,24 @@ function RPGOCP:GetAchievements()
 			
 				local id, name, points, completed, month, day, year, description, flags, icon, rewardText = GetAchievementInfo(idx, i); -- or GetAchievementInfo(id)
 				self:State("Achievements",'++');
+				
+				-- zanix isant gona like this but he will live ..... bad bad year workaround
+				if (year == 9) then
+				
+					yearc = "2009";
+				
+				elseif (year == 8) then
+					
+					yearc = "2008";
+				
+				elseif (year == 10) then
+				
+					yearc = "2010";
+					
+				end
+				
 				if (completed) then
-					Datec = month.."/"..day.."/"..year;
+					Datec = yearc.."-"..month.."-"..day;
 				else
 					Datec = nil;
 				end
