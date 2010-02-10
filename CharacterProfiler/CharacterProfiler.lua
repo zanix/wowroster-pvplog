@@ -255,7 +255,7 @@ RPGOCP.command={
 
 --##########################################################
 local TradeSkillCode={optimal=4,medium=3,easy=2,trivial=1,header=0};
-local UnitPower={"Rage","Focus","Energy","Happiness"};UnitPower[0]="Mana";
+local UnitPower={"Rage","Focus","Energy","Happiness","Runes","RunicPower"};UnitPower[0]="Mana";
 local UnitSlots={"Head","Neck","Shoulder","Shirt","Chest","Waist","Legs","Feet","Wrist","Hands","Finger0","Finger1","Trinket0","Trinket1","Back","MainHand","SecondaryHand","Ranged","Tabard"};UnitSlots[0]="Ammo";
 local UnitStatName={"Strength","Agility","Stamina","Intellect","Spirit"};
 local UnitSchoolName={"Physical","Holy","Fire","Nature","Frost","Shadow","Arcane"};
@@ -1567,7 +1567,7 @@ end
 		if(not structStats["Attributes"]) then structStats["Attributes"]={}; end
 		structStats["Level"]=UnitLevel(unit);
 		structStats["Health"]=UnitHealthMax(unit);
-		structStats["Mana"]=UnitManaMax(unit);
+		structStats["Mana"]=UnitPowerMax(unit);
 		structStats["Power"]=UnitPower[UnitPowerType(unit)];
 		structStats["Attributes"]["Stats"]={};
 		for i=1,table.getn(UnitStatName) do
