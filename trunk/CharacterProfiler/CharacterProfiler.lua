@@ -1088,7 +1088,13 @@ function RPGOCP:GetAchievements()
 	local categories=GetCategoryList();
 	for _, idx in ipairs(categories) do
 		local catname, parentID, catflags = GetCategoryInfo(idx);
-		structAchi[catname]={
+		structAchi[parentID]={};
+	end
+	for _, idx in ipairs(categories) do
+		local catname, parentID, catflags = GetCategoryInfo(idx);
+		--structAchi[parentID]={};
+		
+		structAchi[parentID][catname]={
 				id			= idx,
 				ParentId	= parentID,
 				Flages		= catflages,
@@ -1119,7 +1125,7 @@ function RPGOCP:GetAchievements()
 				else
 					Datec = nil;
 				end
-				structAchi[catname][id]={
+				structAchi[parentID][catname][id]={
 						Id			= id,
 						Name		= name,
 						Points		= points,
