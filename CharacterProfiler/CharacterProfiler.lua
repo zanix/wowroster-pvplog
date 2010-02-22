@@ -2158,7 +2158,14 @@ end
 function RPGOCP:ScanGlyphs(startGlyph)
 --WotLK
 	if( not GetNumGlyphSockets) then return; end
-
+	numTalentGroups = GetNumTalentGroups(false, "player");
+	atg = GetActiveTalentGroup(false, "player");
+	if (atg == 2) then
+		TalentGroup = 1;
+	else
+		TalentGroup = 2;
+	end
+	
 	if(self.prefs["scan"]["glyphs"]) then
 		if(not self.db["Glyphs"]) then
 			self.db["Glyphs"]={};
@@ -2190,6 +2197,40 @@ function RPGOCP:ScanGlyphs(startGlyph)
 				end
 			end
 			self.db["timestamp"]["Glyphs"]=time();
+		end
+		
+		
+	if (numTalentGroups==2) then	
+		if( not startGlyph ) then
+			startGlyph = 1;
+			numGlyphs=GetNumGlyphSockets();
+		else
+			numGlyphs=startGlyph;
+			self.state["Glyphs"] = self.state["Glyphs"]-1;
+		end
+		
+		--if( startGlyph==numGlyphs or self.state["Glyphs"]==0 ) then
+			local structGlyphs={};
+			for index=1, GetNumGlyphSockets() do
+				local enabled, glyphType, glyphSpell, icon = GetGlyphSocketInfo(index,TalentGroup);
+				if(enabled == 1 and glyphSpell) then
+					self.tooltip:SetGlyph(index,TalentGroup);
+					structGlyphs[index] = {
+						Name	= GetSpellInfo(glyphSpell),
+						Type	= glyphType,
+						Icon	= rpgo.scanIcon(icon),
+						Tooltip	= self:ScanTooltip(),
+					};
+					self.state["Glyphs"] = self.state["Glyphs"]+1;
+				else
+					structGlyphs[index] = nil;
+				end
+			end
+			self.db["DualSpec"]["Glyphs"]=structGlyphs;
+			self.db["timestamp"]["Glyphs"]=time();
+		--end
+		
+		
 		end
 		
 	elseif(self.db) then
