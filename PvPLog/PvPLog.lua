@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.0.8
-    Last Modified:    2009-12-08
+    Version:          3.1.0
+    Last Modified:    2010-05-16
 ]]
 
 -- Local variables
@@ -26,6 +26,11 @@ local bg_status;
 local bg_mapName;
 local bg_instanceId;
 local bg_found = false;
+
+local cz_pvpType;
+local cz_isFFA;
+local cz_faction;
+local cz_found = false;
 
 local isDuel = false;
 local duelInbounds = true;
@@ -283,7 +288,8 @@ function PvPLogOnEvent()
     -- initialize when entering world
     elseif (event == "PLAYER_ENTERING_WORLD") then
         PvPLogInitialize();
-        local bg_found = false;
+        bg_found = false;
+		cz_found = false;
         local x, y = GetPlayerMapPosition("player");
         if ((x == 0) and (y == 0)) then
             SetMapToCurrentZone();
@@ -1131,6 +1137,14 @@ function PvPLogInitialize()
         PvPLogData[realm][player].notifyDuel = true;
     end
 
+    if (PvPLogData[realm][player].recordCZ == nil) then
+        PvPLogData[realm][player].recordCZ = true;
+    end
+
+    if (PvPLogData[realm][player].notifyCZ == nil) then
+        PvPLogData[realm][player].notifyCZ = true;
+    end
+
     -- output file
     if (PurgeLogData == nil) then
         PurgeLogData = { };
@@ -1174,6 +1188,8 @@ function PvPLogInitPvP()
     PvPLogData[realm][player].notifyBG = true;
     PvPLogData[realm][player].recordDuel = true;
     PvPLogData[realm][player].notifyDuel = true;
+    PvPLogData[realm][player].recordCZ = true;
+    PvPLogData[realm][player].notifyCZ = true;
     
     PvPLogData[realm][player].MiniMap = { };
     PvPLogData[realm][player].dispLocation = "overhead";
@@ -1385,7 +1401,7 @@ function PvPLogInBG()
     bg_found = false;
     for i=1, MAX_BATTLEFIELD_QUEUES do
         bg_status, bg_mapName, bg_instanceId = GetBattlefieldStatus(i);
-        if (bg_status == "active" ) then
+        if (bg_status == "active") then
             bg_found = true;
             return true;
         end
@@ -1393,18 +1409,31 @@ function PvPLogInBG()
     return false;
 end
 
+function PvPLogInCZ()
+	cz_found = false;
+    cz_pvpType, cz_isFFA, cz_faction = GetZonePVPInfo();
+--	PvPLogDebugMsg('pvpType = '..tostring(cz_pvpType)..', isFFA = '..tostring(cz_isFFA)..', faction = '..tostring(cz_faction));
+	if (cz_pvpType == "combat") then
+		cz_found = true;
+	end
+    return cz_found;
+end
+
 function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, vrealm)
     local ZoneName = GetZoneText();
     local SubZone = GetSubZoneText();
     -- Check Battlefield status
     PvPLogInBG();
-
+	PvPLogInCZ();
+	
     -- Check for conditions under which we do not record data
 --    PvPLogDebugMsg('bg_found = '..tostring(bg_found)..', recordBG = '..tostring(PvPLogData[realm][player].recordBG));
+--    PvPLogDebugMsg('cz_found = '..tostring(cz_found)..', recordCZ = '..tostring(PvPLogData[realm][player].recordCZ));
 --    PvPLogDebugMsg('venemy = '..tostring(venemy)..', recordDuel = '..tostring(PvPLogData[realm][player].recordDuel));
     if ((bg_found and not PvPLogData[realm][player].recordBG) or
-      (venemy == 0 and not PvPLogData[realm][player].recordDuel)) then
-        PvPLogDebugMsg('Do not record conditions met');
+	  	(cz_found and not PvPLogData[realm][player].recordCZ) or
+        (venemy == 0 and not PvPLogData[realm][player].recordDuel)) then
+			PvPLogDebugMsg('Do not record conditions met');
         return;
     end
 
@@ -1479,6 +1508,11 @@ function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, 
     else
         PurgeLogData[realm][player].battles[PurgeCounter].bg = 0;
     end
+    if (cz_found) then
+        PurgeLogData[realm][player].battles[PurgeCounter].cz = 1;
+    else
+        PurgeLogData[realm][player].battles[PurgeCounter].cz = 0;
+    end
     PurgeLogData[realm][player].battles[PurgeCounter].date = date();
     PurgeLogData[realm][player].battles[PurgeCounter].time = time();
     PurgeCounter = PurgeCounter + 1;
@@ -1514,11 +1548,13 @@ function PvPLogRecord(vname, vlevel, vrace, vclass, vguild, venemy, win, vrank, 
 
     -- Check for conditions under which we do not notify
 --    PvPLogDebugMsg('bg_found = '..tostring(bg_found)..', notifyBG = '..tostring(PvPLogData[realm][player].notifyBG));
+--    PvPLogDebugMsg('cz_found = '..tostring(cz_found)..', recordCZ = '..tostring(PvPLogData[realm][player].recordCZ));
 --    PvPLogDebugMsg('venemy = '..tostring(venemy)..', notifyDuel = '..tostring(PvPLogData[realm][player].notifyDuel));
     if ((bg_found and not PvPLogData[realm][player].notifyBG) or
-      (venemy == 0 and not PvPLogData[realm][player].notifyDuel)) then
-        PvPLogDebugMsg('Do not notify conditions met');
-        return;
+	  	(cz_found and not PvPLogData[realm][player].notifyCZ) or
+		(venemy == 0 and not PvPLogData[realm][player].notifyDuel)) then
+			PvPLogDebugMsg('Do not notify conditions met');
+		return;
     end
 
     notifyMsg = string.gsub( notifyMsg, "%%n", vname );
@@ -1681,6 +1717,28 @@ function PvPLogSetNotifyDuel(toggle)
     end        
 end
 
+function PvPLogSetRecordCZ(toggle)
+    toggle = string.lower(toggle);
+    if (toggle == "off") then
+        PvPLogData[realm][player].recordCZ = false;
+        PvPLogChatMsgCyan("PvPLog Record in Combat Zones " .. ORANGE .. PVPLOG.OFF);
+    else
+        PvPLogData[realm][player].recordCZ = true;
+        PvPLogChatMsgCyan("PvPLog Record in Combat Zones " .. ORANGE .. PVPLOG.ON);
+    end        
+end
+
+function PvPLogSetNotifyCZ(toggle)
+    toggle = string.lower(toggle);
+    if (toggle == "off") then
+        PvPLogData[realm][player].notifyCZ = false;
+        PvPLogChatMsgCyan("PvPLog Notify in Combat Zones " .. ORANGE .. PVPLOG.OFF);
+    else
+        PvPLogData[realm][player].notifyCZ = true;
+        PvPLogChatMsgCyan("PvPLog Notify in Combat Zones " .. ORANGE .. PVPLOG.ON);
+    end        
+end
+
 function PvPLogSlashHandler(msg)
     -- initialize if we're not for some reason
     if (not initialized) then
@@ -1716,7 +1774,7 @@ function PvPLogSlashHandler(msg)
         elseif (value == "clear") then
             PvPLogDebug = { };
         else
-            PvPLogDebugMsg("debug_flag = "..tostring(debug_flag));
+            PvPLogChatMsg("debug_flag = "..tostring(debug_flag));
         end
     elseif (command == "comm") then
         if (value == "on") then
@@ -1724,7 +1782,7 @@ function PvPLogSlashHandler(msg)
         elseif (value == "off") then
             debug_comm = false;
         else
-            PvPLogDebugMsg("debug_comm = "..tostring(debug_comm));
+            PvPLogChatMsg("debug_comm = "..tostring(debug_comm));
         end
     elseif (command == "notify") then
         PvPLogSendMessageOnChannel("PvPLog test", value);
@@ -1747,7 +1805,7 @@ function PvPLogSlashHandler(msg)
             ignoreList = { };
             ignoreRecords = { };
         else
-            PvPLogDebugMsg("debug_ignore = "..tostring(debug_ignore));
+            PvPLogChatMsg("debug_ignore = "..tostring(debug_ignore));
         end
     elseif (command == "target") then
         if (value == "clear") then
@@ -1761,7 +1819,7 @@ function PvPLogSlashHandler(msg)
         elseif (value == "off") then
             debug_event1 = false;
         else
-            PvPLogDebugMsg("debug_event1 = "..tostring(debug_event1));
+            PvPLogChatMsg("debug_event1 = "..tostring(debug_event1));
         end
     elseif (command == "event2") then
         if (value == "on") then
@@ -1769,7 +1827,7 @@ function PvPLogSlashHandler(msg)
         elseif (value == "off") then
             debug_event2 = false;
         else
-            PvPLogDebugMsg("debug_event2 = "..tostring(debug_event2));
+            PvPLogChatMsg("debug_event2 = "..tostring(debug_event2));
         end
     elseif (command == "combat") then
         if (value == "on") then
@@ -1777,7 +1835,7 @@ function PvPLogSlashHandler(msg)
         elseif (value == "off") then
             debug_combat = false;
         else
-            PvPLogDebugMsg("debug_combat = "..tostring(debug_combat));
+            PvPLogChatMsg("debug_combat = "..tostring(debug_combat));
         end
     elseif (command == "pve") then
         if (value == "on") then
@@ -1788,8 +1846,8 @@ function PvPLogSlashHandler(msg)
         elseif (value == "off") then
             debug_pve = false;
         else
-            PvPLogDebugMsg("debug_pve = "..tostring(debug_pve));
-            PvPLogDebugMsg("debug_ignore = "..tostring(debug_ignore));
+            PvPLogChatMsg("debug_pve = "..tostring(debug_pve));
+            PvPLogChatMsg("debug_ignore = "..tostring(debug_ignore));
         end
     elseif (command == "ui") then
         if (value == "on") then
@@ -1797,7 +1855,7 @@ function PvPLogSlashHandler(msg)
         elseif (value == "off") then
             debug_ui = false;
         else
-            PvPLogDebugMsg("debug_ui = "..tostring(debug_ui));
+            PvPLogChatMsg("debug_ui = "..tostring(debug_ui));
         end
     elseif (command == "ttm") then
         if (value == "on") then
@@ -1805,7 +1863,7 @@ function PvPLogSlashHandler(msg)
         elseif (value == "off") then
             debug_ttm = false;
         else
-            PvPLogDebugMsg("debug_ttm = "..tostring(debug_ttm));
+            PvPLogChatMsg("debug_ttm = "..tostring(debug_ttm));
         end
     elseif (command == "ttv") then
         if (value == "on") then
@@ -1813,7 +1871,7 @@ function PvPLogSlashHandler(msg)
         elseif (value == "off") then
             debug_ttv = false;
         else
-            PvPLogDebugMsg("debug_ttv = "..tostring(debug_ttv));
+            PvPLogChatMsg("debug_ttv = "..tostring(debug_ttv));
         end
     elseif (command == "ptc") then
         if (value == "on") then
@@ -1821,40 +1879,49 @@ function PvPLogSlashHandler(msg)
         elseif (value == "off") then
             debug_ptc = false;
         else
-            PvPLogDebugMsg("debug_ptc = "..tostring(debug_ptc));
+            PvPLogChatMsg("debug_ptc = "..tostring(debug_ptc));
         end
+    elseif (command == "zone") then
+		PvPLogChatMsg('zone = '..tostring(GetZoneText()));
+		PvPLogChatMsg('subZone = '..tostring(GetSubZoneText()));
+		PvPLogInBG();
+		PvPLogChatMsg('bg_found = '..tostring(bg_found)..
+			', status = '..tostring(bg_status)..', mapName = '..tostring(bg_mapName)..', instanceId = '..tostring(bg_instanceId));
+		PvPLogInCZ();
+		PvPLogChatMsg('cz_found = '..tostring(cz_found)..
+			', pvpType = '..tostring(cz_pvpType)..', isFFA = '..tostring(cz_isFFA)..', faction = '..tostring(cz_faction));
     elseif (command == "vars") then
         if (softPL) then
-            PvPLogDebugMsg("softPL = TRUE");
+            PvPLogChatMsg("softPL = TRUE");
         else
-            PvPLogDebugMsg("softPL = FALSE");
+            PvPLogChatMsg("softPL = FALSE");
         end
-        PvPLogDebugMsg("targetList = {"..table.concat(targetList,", ").."}");
+        PvPLogChatMsg("targetList = {"..table.concat(targetList,", ").."}");
         s = "";
         for i in pairs(targetRecords) do
             s = s..", "..i;
         end
         s = string.sub(s,3);
-        PvPLogDebugMsg("targetRecords = {"..s.."}");
+        PvPLogChatMsg("targetRecords = {"..s.."}");
         s = "";
         for i in pairs(targetPlain) do
             s = s..", "..i;
         end
         s = string.sub(s,3);
-        PvPLogDebugMsg("targetPlain = {"..s.."}");
-        PvPLogDebugMsg("ignoreList = {"..table.concat(ignoreList,", ").."}");
+        PvPLogChatMsg("targetPlain = {"..s.."}");
+        PvPLogChatMsg("ignoreList = {"..table.concat(ignoreList,", ").."}");
         s = "";
         for i in pairs(ignoreRecords) do
             s = s..", "..i;
         end
         s = string.sub(s,3);
-        PvPLogDebugMsg("ignoreRecords = {"..s.."}");
-        PvPLogDebugMsg("recentDamager = {"..table.concat(recentDamager,", ").."}");
-        PvPLogDebugMsg("recentDamaged = {"..table.concat(recentDamaged,", ").."}");
+        PvPLogChatMsg("ignoreRecords = {"..s.."}");
+        PvPLogChatMsg("recentDamager = {"..table.concat(recentDamager,", ").."}");
+        PvPLogChatMsg("recentDamaged = {"..table.concat(recentDamaged,", ").."}");
         if (isDuel) then
-            PvPLogDebugMsg("isDuel = TRUE");
+            PvPLogChatMsg("isDuel = TRUE");
         else
-            PvPLogDebugMsg("isDuel = FALSE");
+            PvPLogChatMsg("isDuel = FALSE");
         end
     elseif (command == PVPLOG.KEEP) then
             PvPLogKeepPurge(value);

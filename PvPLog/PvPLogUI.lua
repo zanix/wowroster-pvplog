@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          3.0.4
-    Last Modified:    2008-10-16
+    Version:          3.1.0
+    Last Modified:    2010-05-16
 ]]
 
 local realm = "";
@@ -59,8 +59,10 @@ function PvPLogConfig_SetValues()
     cbxPvPLogConfig_DispToggle:SetChecked(PvPLogData[realm][player].display);
     cbxPvPLogConfig_RecordBGToggle:SetChecked(PvPLogData[realm][player].recordBG);
     cbxPvPLogConfig_RecordDuelToggle:SetChecked(PvPLogData[realm][player].recordDuel);
+    cbxPvPLogConfig_RecordCZToggle:SetChecked(PvPLogData[realm][player].recordCZ);
     cbxPvPLogConfig_NotifyBGToggle:SetChecked(PvPLogData[realm][player].notifyBG);
     cbxPvPLogConfig_NotifyDuelToggle:SetChecked(PvPLogData[realm][player].notifyDuel);
+    cbxPvPLogConfig_NotifyCZToggle:SetChecked(PvPLogData[realm][player].notifyCZ);
 
     if (PvPLogData[realm][player].recordBG) then
         cbxPvPLogConfig_NotifyBGToggle:Enable();
@@ -75,6 +77,13 @@ function PvPLogConfig_SetValues()
     else
         cbxPvPLogConfig_NotifyDuelToggle:Disable();
         cbxPvPLogConfig_NotifyDuelToggleText:SetTextColor(GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b);
+    end
+    if (PvPLogData[realm][player].recordCZ) then
+        cbxPvPLogConfig_NotifyCZToggle:Enable();
+        cbxPvPLogConfig_NotifyCZToggleText:SetTextColor(NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b);
+    else
+        cbxPvPLogConfig_NotifyCZToggle:Disable();
+        cbxPvPLogConfig_NotifyCZToggleText:SetTextColor(GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b);
     end
     
     if (not PvPLogData[realm][player].notifyKill) then
@@ -257,6 +266,15 @@ function PvPLogRecordDuel_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
+function PvPLogRecordCZ_Toggle_OnClick()
+    if (PvPLogData[realm][player].recordCZ) then
+        PvPLogSetRecordCZ("off");
+    else
+        PvPLogSetRecordCZ("on");
+    end
+    PvPLogConfig_SetValues();
+end
+
 function PvPLogNotifyBG_Toggle_OnClick()
     if (PvPLogData[realm][player].notifyBG) then
         PvPLogSetNotifyBG("off");
@@ -271,6 +289,15 @@ function PvPLogNotifyDuel_Toggle_OnClick()
         PvPLogSetNotifyDuel("off");
     else
         PvPLogSetNotifyDuel("on");
+    end
+    PvPLogConfig_SetValues();
+end
+
+function PvPLogNotifyCZ_Toggle_OnClick()
+    if (PvPLogData[realm][player].notifyCZ) then
+        PvPLogSetNotifyCZ("off");
+    else
+        PvPLogSetNotifyCZ("on");
     end
     PvPLogConfig_SetValues();
 end
@@ -444,6 +471,7 @@ function PvPLogStats_SetValues(statsValue)
             table.foreach(PurgeLogData[realm][character].battles, function( counter, v2 )
                 if (v2.time and v2.time > dayago) then
                     if (((PvPLogData[realm][character].recordBG or (v2.bg and v2.bg == 0)) and v2.enemy == 1) or
+						((PvPLogData[realm][character].recordCZ or (v2.cz and v2.cz == 0)) and v2.enemy == 1) or
                         (PvPLogData[realm][character].recordDuel and v2.enemy == 0)) then
                         if (statCount >= startCount and statCount <= endCount) then
                             pvpPlayerList = pvpPlayerList..v2.name.."\n";
@@ -468,6 +496,9 @@ function PvPLogStats_SetValues(statsValue)
                             flag = " ";
                             if (v2.bg and v2.bg ~= 0) then
                                 flag = "BG";
+                            end
+                            if (v2.cz and v2.cz ~= 0) then
+                                flag = "CZ";
                             end
                             if (v2.enemy == 0) then
                                 flag = "D";
