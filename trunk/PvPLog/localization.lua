@@ -116,8 +116,10 @@ PVPLOG = {};
     PVPLOG.UI_MINIMAP_BUTTON = "Minimap Button";
     PVPLOG.UI_RECORD_BG = "Record in Battlegrounds";
     PVPLOG.UI_RECORD_DUEL = "Record Duels";
+    PVPLOG.UI_RECORD_CZ = "Record in Combat Zones";
     PVPLOG.UI_NOTIFY_BG = "Notify in Battlegrounds";
     PVPLOG.UI_NOTIFY_DUEL = "Notify Duels";
+    PVPLOG.UI_NOTIFY_CZ = "Notify in Combat Zones";
 
     PVPLOG.TT_LEVEL = "Level "
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
@@ -232,8 +234,10 @@ if (GetLocale() == "deDE") then
     PVPLOG.UI_MINIMAP_BUTTON = "Minimap Button";
     PVPLOG.UI_RECORD_BG = "Schlachtfelder\naufzeichnen";
     PVPLOG.UI_RECORD_DUEL = "Duelle aufzeichnen";
+    PVPLOG.UI_RECORD_CZ = "Record in Combat Zones";
     PVPLOG.UI_NOTIFY_BG = "BG-Benachrichtigung";
     PVPLOG.UI_NOTIFY_DUEL = "Duellbenachrichtigung";
+    PVPLOG.UI_NOTIFY_CZ = "Notify in Combat Zones";
 
     PVPLOG.TT_LEVEL = "Level "
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
@@ -351,8 +355,10 @@ elseif (GetLocale() == "frFR") then
     PVPLOG.UI_MINIMAP_BUTTON = "Bouton sur la mini-carte";
     PVPLOG.UI_RECORD_BG = "Enregistrer sur les champs de bataille";
     PVPLOG.UI_RECORD_DUEL = "Enregistrer les duels";
+    PVPLOG.UI_RECORD_CZ = "Record in Combat Zones";
     PVPLOG.UI_NOTIFY_BG = "Notifier sur les champs de bataille";
     PVPLOG.UI_NOTIFY_DUEL = "Notifier les duels";
+    PVPLOG.UI_NOTIFY_CZ = "Notify in Combat Zones";
     
     PVPLOG.TT_LEVEL = "Level "
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 
@@ -464,8 +470,10 @@ elseif (GetLocale() == "esES") then
     PVPLOG.UI_MINIMAP_BUTTON = "Bot\195\179n de Minimapa";
     PVPLOG.UI_RECORD_BG = "Historial en Campos de Batalla";
     PVPLOG.UI_RECORD_DUEL = "Historial de Duelos";
+    PVPLOG.UI_RECORD_CZ = "Record in Combat Zones";
     PVPLOG.UI_NOTIFY_BG = "Notificar en Campos de Batalla";
     PVPLOG.UI_NOTIFY_DUEL = "Notificar Duelos";
+    PVPLOG.UI_NOTIFY_CZ = "Notify in Combat Zones";
 
     PVPLOG.TT_LEVEL = "Level "
     PVPLOG.TT_PLAYER = "Level ([%d%?]+) (%w+%s*%w*) (%w+) %(Player%)" 

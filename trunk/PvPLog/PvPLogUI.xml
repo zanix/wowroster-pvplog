@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          3.0.4
-    Last Modified:    2008-10-16
+    Version:          3.1.0
+    Last Modified:    2010-05-16
 -->
 
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
@@ -15,7 +15,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 -->
     <Frame name="PvPLogConfigFrame" parent="UIParent" enableMouse="true" movable="true" frameStrata="DIALOG" hidden="true" toplevel="true">
         <Size>
-            <AbsDimension x="380" y="420"/>
+            <AbsDimension x="380" y="450"/>
         </Size>
         <Anchors>
             <Anchor point="CENTER"/>
@@ -60,7 +60,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <Anchors>
                         <Anchor point="TOPLEFT">
                             <Offset>
-                                <AbsDimension x="30" y="-180"/>
+                                <AbsDimension x="30" y="-210"/>
                             </Offset>
                         </Anchor>
                     </Anchors>
@@ -228,7 +228,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_RecordBGToggle">
                         <Offset>
-                            <AbsDimension x="180" y="0"/>
+                            <AbsDimension x="0" y="-30"/>
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -241,6 +241,26 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     </OnClick>
                 </Scripts>
             </CheckButton>
+            <CheckButton name="cbxPvPLogConfig_RecordCZToggle" inherits="OptionsCheckButtonTemplate">
+                <Size>
+                    <AbsDimension x="24" y="24"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_RecordDuelToggle">
+                        <Offset>
+                            <AbsDimension x="0" y="-30"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnLoad>
+                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_RECORD_CZ);
+                    </OnLoad>
+                    <OnClick>
+                        PvPLogRecordCZ_Toggle_OnClick();
+                    </OnClick>
+                </Scripts>
+            </CheckButton>
             <CheckButton name="cbxPvPLogConfig_NotifyBGToggle" inherits="OptionsCheckButtonTemplate">
                 <Size>
                     <AbsDimension x="24" y="24"/>
@@ -248,7 +268,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_RecordBGToggle">
                         <Offset>
-                            <AbsDimension x="0" y="-30"/>
+                            <AbsDimension x="180" y="0"/>
                         </Offset>
                     </Anchor>
                 </Anchors>
@@ -266,7 +286,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     <AbsDimension x="24" y="24"/>
                 </Size>
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_NotifyBGToggle">
+                    <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_RecordDuelToggle">
                         <Offset>
                             <AbsDimension x="180" y="0"/>
                         </Offset>
@@ -278,6 +298,26 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                     </OnLoad>
                     <OnClick>
                         PvPLogNotifyDuel_Toggle_OnClick();
+                    </OnClick>
+                </Scripts>
+            </CheckButton>
+            <CheckButton name="cbxPvPLogConfig_NotifyCZToggle" inherits="OptionsCheckButtonTemplate">
+                <Size>
+                    <AbsDimension x="24" y="24"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="cbxPvPLogConfig_RecordCZToggle">
+                        <Offset>
+                            <AbsDimension x="180" y="0"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnLoad>
+                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_NOTIFY_CZ);
+                    </OnLoad>
+                    <OnClick>
+                        PvPLogNotifyCZ_Toggle_OnClick();
                     </OnClick>
                 </Scripts>
             </CheckButton>
