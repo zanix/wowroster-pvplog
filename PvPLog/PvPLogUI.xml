@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          3.1.0
-    Last Modified:    2010-05-16
+    Version:          3.1.1
+    Last Modified:    2010-10-10
 -->
 
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
@@ -108,10 +108,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_ENABLE);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_ENABLE);
                     </OnLoad>
                     <OnClick>
-                         PvPLogEnabled_Toggle_OnClick();
+                         PvPLogEnabled_Toggle_OnClick(self, button, down);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -128,16 +128,16 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_DING);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_DING);
                     </OnLoad>
                     <OnClick>
-                        PvPLogDing_Toggle_OnClick();
+                        PvPLogDing_Toggle_OnClick(self, button, down);
                     </OnClick>
                     <OnEnter>
-                        PvPLogDing_Toggle_OnEnter(this);
+                        PvPLogDing_Toggle_OnEnter(self);
                     </OnEnter>
                     <OnLeave>
-                        PvPLogDing_Toggle_OnLeave();
+                        PvPLogDing_Toggle_OnLeave(self);
                     </OnLeave>
                 </Scripts>
             </CheckButton>
@@ -154,10 +154,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_MOUSEOVER);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_MOUSEOVER);
                     </OnLoad>
                     <OnClick>
-                         PvPLogMouseover_Toggle_OnClick();
+                         PvPLogMouseover_Toggle_OnClick(self, button, down);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -174,10 +174,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_MINIMAP_BUTTON);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_MINIMAP_BUTTON);
                     </OnLoad>
                     <OnClick>
-                        MiniMapButton_Toggle_OnClick();
+                        MiniMapButton_Toggle_OnClick(self, button, down);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -194,10 +194,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_DISPLAY);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_DISPLAY);
                     </OnLoad>
                     <OnClick>
-                        PvPLogDisp_Toggle_OnClick();
+                        PvPLogDisp_Toggle_OnClick(self, button, down);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -214,10 +214,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_RECORD_BG);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_RECORD_BG);
                     </OnLoad>
                     <OnClick>
-                        PvPLogRecordBG_Toggle_OnClick();
+                        PvPLogRecordBG_Toggle_OnClick(self, button, down);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -234,10 +234,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_RECORD_DUEL);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_RECORD_DUEL);
                     </OnLoad>
                     <OnClick>
-                        PvPLogRecordDuel_Toggle_OnClick();
+                        PvPLogRecordDuel_Toggle_OnClick(self, button, down);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -254,10 +254,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_RECORD_CZ);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_RECORD_CZ);
                     </OnLoad>
                     <OnClick>
-                        PvPLogRecordCZ_Toggle_OnClick();
+                        PvPLogRecordCZ_Toggle_OnClick(self, button, down);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -274,10 +274,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_NOTIFY_BG);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_NOTIFY_BG);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyBG_Toggle_OnClick();
+                        PvPLogNotifyBG_Toggle_OnClick(self, button, down);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -294,10 +294,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_NOTIFY_DUEL);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_NOTIFY_DUEL);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyDuel_Toggle_OnClick();
+                        PvPLogNotifyDuel_Toggle_OnClick(self, button, down);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -314,10 +314,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_NOTIFY_CZ);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_NOTIFY_CZ);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyCZ_Toggle_OnClick();
+                        PvPLogNotifyCZ_Toggle_OnClick(self, button, down);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -335,10 +335,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_NOTIFY_NONE);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_NOTIFY_NONE);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyKills_Toggle_OnClick(PVPLOG.NONE);
+                        PvPLogNotifyKills_Toggle_OnClick(self, PVPLOG.NONE);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -355,10 +355,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.SELF);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.SELF);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyKills_Toggle_OnClick(PVPLOG.SELF);
+                        PvPLogNotifyKills_Toggle_OnClick(self, PVPLOG.SELF);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -375,10 +375,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.PARTY);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.PARTY);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyKills_Toggle_OnClick(PVPLOG.PARTY);
+                        PvPLogNotifyKills_Toggle_OnClick(self, PVPLOG.PARTY);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -395,10 +395,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.GUILD);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.GUILD);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyKills_Toggle_OnClick(PVPLOG.GUILD);
+                        PvPLogNotifyKills_Toggle_OnClick(self, PVPLOG.GUILD);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -415,10 +415,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.SAY);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.SAY);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyKills_Toggle_OnClick(PVPLOG.SAY);
+                        PvPLogNotifyKills_Toggle_OnClick(self, PVPLOG.SAY);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -435,10 +435,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.RAID);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.RAID);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyKills_Toggle_OnClick(PVPLOG.RAID);
+                        PvPLogNotifyKills_Toggle_OnClick(self, PVPLOG.RAID);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -455,10 +455,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.UI_NOTIFY_NONE);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.UI_NOTIFY_NONE);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyDeaths_Toggle_OnClick(PVPLOG.NONE);
+                        PvPLogNotifyDeaths_Toggle_OnClick(self, PVPLOG.NONE);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -475,10 +475,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.SELF);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.SELF);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyDeaths_Toggle_OnClick(PVPLOG.SELF);
+                        PvPLogNotifyDeaths_Toggle_OnClick(self, PVPLOG.SELF);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -495,10 +495,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.PARTY);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.PARTY);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyDeaths_Toggle_OnClick(PVPLOG.PARTY);
+                        PvPLogNotifyDeaths_Toggle_OnClick(self, PVPLOG.PARTY);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -515,10 +515,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.GUILD);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.GUILD);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyDeaths_Toggle_OnClick(PVPLOG.GUILD);
+                        PvPLogNotifyDeaths_Toggle_OnClick(self, PVPLOG.GUILD);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -535,10 +535,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.SAY);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.SAY);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyDeaths_Toggle_OnClick(PVPLOG.SAY);
+                        PvPLogNotifyDeaths_Toggle_OnClick(self, PVPLOG.SAY);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -555,10 +555,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnLoad>
-                        getglobal(this:GetName().."Text"):SetText(PVPLOG.RAID);
+                        _G[self:GetName().."Text"]:SetText(PVPLOG.RAID);
                     </OnLoad>
                     <OnClick>
-                        PvPLogNotifyDeaths_Toggle_OnClick(PVPLOG.RAID);
+                        PvPLogNotifyDeaths_Toggle_OnClick(self, PVPLOG.RAID);
                     </OnClick>
                 </Scripts>
             </CheckButton>
@@ -572,7 +572,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnClick>
-                        PvPLogConfig_btnClose_OnClick()
+                        PvPLogConfig_btnClose_OnClick(self)
                     </OnClick>
                 </Scripts>
             </Button>
@@ -636,14 +636,14 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         PvPLogConfig_NotifyKillsCustomChannel_UpdateString();
                     </OnTextChanged>
                     <OnEditFocusLost>
-                        this:HighlightText(0, 0);
+                        self:HighlightText(0, 0);
                         PvPLogConfig_NotifyKillsCustomChannel_Message();
                     </OnEditFocusLost>
                     <OnEnterPressed>
-                        this:ClearFocus();
+                        self:ClearFocus();
                     </OnEnterPressed>
                     <OnEscapePressed>
-                        this:ClearFocus();
+                        self:ClearFocus();
                     </OnEscapePressed>
                 </Scripts>
                 <FontString inherits="ChatFontNormal"/>
@@ -708,14 +708,14 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                         PvPLogConfig_NotifyDeathsCustomChannel_UpdateString();
                     </OnTextChanged>
                     <OnEditFocusLost>
-                        this:HighlightText(0, 0);
+                        self:HighlightText(0, 0);
                         PvPLogConfig_NotifyDeathsCustomChannel_Message();
                     </OnEditFocusLost>
                     <OnEnterPressed>
-                        this:ClearFocus();
+                        self:ClearFocus();
                     </OnEnterPressed>
                     <OnEscapePressed>
-                        this:ClearFocus();
+                        self:ClearFocus();
                     </OnEscapePressed>
                 </Scripts>
                 <FontString inherits="ChatFontNormal"/>
@@ -723,19 +723,19 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
         </Frames>   
         <Scripts>   
             <OnLoad>
-                PvPLogConfig_OnLoad();
+                PvPLogConfig_OnLoad(self);
             </OnLoad>
             <OnShow>
-                PvPLogConfig_OnShow();
+                PvPLogConfig_OnShow(self);
             </OnShow>
             <OnHide>
-                PvPLogConfig_OnHide();
+                PvPLogConfig_OnHide(self);
             </OnHide>
             <OnMouseDown>
-                PvPLogConfig_OnMouseDown(arg1);
+                PvPLogConfig_OnMouseDown(self, button);
             </OnMouseDown>
             <OnMouseUp>
-                PvPLogConfig_OnMouseUp(arg1);
+                PvPLogConfig_OnMouseUp(self, button);
             </OnMouseUp>
         </Scripts>
     </Frame>
@@ -746,10 +746,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
    <Button name="PvPLogTabTemplate" inherits="CharacterFrameTabButtonTemplate" virtual="true">
       <Scripts>
             <OnLoad>
-                this:SetFrameLevel(this:GetFrameLevel() - 1);
+                self:SetFrameLevel(self:GetFrameLevel() - 1);
             </OnLoad>
          <OnClick>
-            PvPLogStats_ShowTab(this:GetText());
+            PvPLogStats_ShowTab(self:GetText());
          </OnClick>
       </Scripts>
    </Button>
@@ -1012,7 +1012,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnClick>
-                        PvPLog_btnPvPLogStats_Close_OnClick()
+                        PvPLog_btnPvPLogStats_Close_OnClick(self, button, down)
                     </OnClick>
                 </Scripts>
             </Button>
@@ -1026,7 +1026,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnClick>
-                        PvPLog_btnPvPLogStats_Previous_OnClick()
+                        PvPLog_btnPvPLogStats_Previous_OnClick(self, button, down)
                     </OnClick>
                 </Scripts>
             </Button>
@@ -1040,26 +1040,26 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
                 </Anchors>
                 <Scripts>
                     <OnClick>
-                        PvPLog_btnPvPLogStats_Next_OnClick()
+                        PvPLog_btnPvPLogStats_Next_OnClick(self, button, down)
                     </OnClick>
                 </Scripts>
             </Button>
         </Frames>
         <Scripts>   
             <OnLoad>
-                PvPLog_PvPLogStats_OnLoad();
+                PvPLog_PvPLogStats_OnLoad(self);
             </OnLoad>
             <OnShow>
-                PvPLog_PvPLogStats_OnShow();
+                PvPLog_PvPLogStats_OnShow(self);
             </OnShow>
             <OnHide>
-                PvPLog_PvPLogStats_OnHide();
+                PvPLog_PvPLogStats_OnHide(self);
             </OnHide>
             <OnMouseDown>
-                PvPLog_PvPLogStats_OnMouseDown(arg1);
+                PvPLog_PvPLogStats_OnMouseDown(self, button);
             </OnMouseDown>
             <OnMouseUp>
-                PvPLog_PvPLogStats_OnMouseUp(arg1);
+                PvPLog_PvPLogStats_OnMouseUp(self, button);
             </OnMouseUp>
         </Scripts>
     </Frame>

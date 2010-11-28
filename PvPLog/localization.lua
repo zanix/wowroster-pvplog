@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.0.5
-    Last Modified:    2009-01-25
+    Version:          3.2.0
+    Last Modified:    2010-10-15
 ]]
 
 PVPLOG = {};
@@ -38,6 +38,8 @@ PVPLOG = {};
     PVPLOG.NOTIFYDEATHTEXT = "deathtext";
     PVPLOG.UI_CONFIG = "config";
     PVPLOG.KEEP = "keep";
+	PVPLOG.RADIUS = "radius";
+	PVPLOG.POSITION = "position";
         
     -- Other needed phrases
     PVPLOG.TO = " to ";
@@ -113,6 +115,7 @@ PVPLOG = {};
     PVPLOG.UI_TOGGLE2 = "Toggles " .. PVPLOG.STATS;
     PVPLOG.UI_RIGHT_CLICK = "Right click: ";
     PVPLOG.UI_LEFT_CLICK = "Left click: ";
+	PVPLOG.UI_RIGHT_DRAG = "Right Drag: Moves "
     PVPLOG.UI_MINIMAP_BUTTON = "Minimap Button";
     PVPLOG.UI_RECORD_BG = "Record in Battlegrounds";
     PVPLOG.UI_RECORD_DUEL = "Record Duels";
@@ -158,6 +161,8 @@ if (GetLocale() == "deDE") then
     PVPLOG.NOTIFYDEATHTEXT = "todestext";
     PVPLOG.UI_CONFIG = "konfiguration";
     PVPLOG.KEEP = "behalten";
+	PVPLOG.RADIUS = "radius"; -- needs translation
+	PVPLOG.POSITION = "position"; -- needs translation
     
     -- Other needed phrases
     PVPLOG.TO = " zu ";
@@ -231,6 +236,7 @@ if (GetLocale() == "deDE") then
     PVPLOG.UI_TOGGLE2 = PVPLOG.STATS .. " anzeigen/verbergen";
     PVPLOG.UI_RIGHT_CLICK = "Rechtsklick: ";
     PVPLOG.UI_LEFT_CLICK = "Linksklick: ";
+	PVPLOG.UI_RIGHT_DRAG = "Right Drag: Moves " -- needs translation
     PVPLOG.UI_MINIMAP_BUTTON = "Minimap Button";
     PVPLOG.UI_RECORD_BG = "Schlachtfelder\naufzeichnen";
     PVPLOG.UI_RECORD_DUEL = "Duelle aufzeichnen";
@@ -274,6 +280,8 @@ elseif (GetLocale() == "frFR") then
     PVPLOG.NOTIFYDEATHTEXT = "textededefaite";
     PVPLOG.UI_CONFIG = "configuration";
     PVPLOG.KEEP = "keep";
+	PVPLOG.RADIUS = "radius"; -- needs translation
+	PVPLOG.POSITION = "position"; -- needs translation
 
     -- Other needed phrases
     PVPLOG.TO = " à ";          -- ?
@@ -352,6 +360,7 @@ elseif (GetLocale() == "frFR") then
     PVPLOG.UI_TOGGLE2 = "Montre " .. PVPLOG.STATS;
     PVPLOG.UI_RIGHT_CLICK = "Clic droit : ";
     PVPLOG.UI_LEFT_CLICK = "Clic gauche : ";
+	PVPLOG.UI_RIGHT_DRAG = "Right Drag: Moves " -- needs translation
     PVPLOG.UI_MINIMAP_BUTTON = "Bouton sur la mini-carte";
     PVPLOG.UI_RECORD_BG = "Enregistrer sur les champs de bataille";
     PVPLOG.UI_RECORD_DUEL = "Enregistrer les duels";
@@ -392,6 +401,8 @@ elseif (GetLocale() == "esES") then
     PVPLOG.NOTIFYDEATHTEXT = "texto muerte";
     PVPLOG.UI_CONFIG = "configuraci\195\179n";
     PVPLOG.KEEP = "keep";
+	PVPLOG.RADIUS = "radius"; -- needs translation
+	PVPLOG.POSITION = "position"; -- needs translation
 
     -- Other needed phrases
     PVPLOG.TO = " a ";
@@ -465,6 +476,7 @@ elseif (GetLocale() == "esES") then
     PVPLOG.UI_FLAGS = "Flags";
     PVPLOG.UI_RIGHT_CLICK = "Clic derecho: ";
     PVPLOG.UI_LEFT_CLICK = "Clic izquierdo: ";
+	PVPLOG.UI_RIGHT_DRAG = "Right Drag: Moves " -- needs translation
     PVPLOG.UI_TOGGLE = "Muestra/oculta " .. PVPLOG.UI_CONFIG;
     PVPLOG.UI_TOGGLE2 = "Muestra/oculta " .. PVPLOG.STATS;
     PVPLOG.UI_MINIMAP_BUTTON = "Bot\195\179n de Minimapa";

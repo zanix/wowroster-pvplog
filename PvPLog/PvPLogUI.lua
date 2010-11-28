@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          3.1.0
-    Last Modified:    2010-05-16
+    Version:          3.2.0
+    Last Modified:    2010-10-15
 ]]
 
 local realm = "";
@@ -189,19 +189,19 @@ function PvPLogConfig_OnHide()
     end
 end
 
-function PvPLogConfig_OnMouseDown(arg1)
+function PvPLogConfig_OnMouseDown(self, arg1)
     if (arg1 == "LeftButton") then
         PvPLogConfigFrame:StartMoving();
     end
 end
 
-function PvPLogConfig_OnMouseUp(arg1)
+function PvPLogConfig_OnMouseUp(self, arg1)
     if (arg1 == "LeftButton") then
         PvPLogConfigFrame:StopMovingOrSizing();
     end
 end
 
-function PvPLogEnabled_Toggle_OnClick()
+function PvPLogEnabled_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].enabled) then
         PvPLogSetEnabled("off");
     else
@@ -210,7 +210,7 @@ function PvPLogEnabled_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
-function PvPLogMouseover_Toggle_OnClick()
+function PvPLogMouseover_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].mouseover) then
         PvPLogSetMouseover("off");
     else
@@ -219,7 +219,7 @@ function PvPLogMouseover_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
-function PvPLogDing_Toggle_OnClick()
+function PvPLogDing_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].ding) then
         PvPLogSetDing("off");
     else
@@ -228,18 +228,18 @@ function PvPLogDing_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
-function PvPLogDing_Toggle_OnEnter(button)
-    GameTooltip:SetOwner(button, "ANCHOR_NONE");
-    GameTooltip:SetPoint("TOPLEFT", button:GetName(), "BOTTOMLEFT", -10, -4);
+function PvPLogDing_Toggle_OnEnter(self)
+    GameTooltip:SetOwner(self, "ANCHOR_NONE");
+    GameTooltip:SetPoint("TOPLEFT", self:GetName(), "BOTTOMLEFT", -10, -4);
     GameTooltip:SetText(PVPLOG.UI_DING_TIP);
     GameTooltip:Show();
 end;
 
-function PvPLogDing_Toggle_OnLeave()
+function PvPLogDing_Toggle_OnLeave(self)
     GameTooltip:Hide();
 end;
 
-function PvPLogDisp_Toggle_OnClick()
+function PvPLogDisp_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].display) then
         PvPLogSetDisplay("off");
     else
@@ -248,7 +248,7 @@ function PvPLogDisp_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
-function PvPLogRecordBG_Toggle_OnClick()
+function PvPLogRecordBG_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].recordBG) then
         PvPLogSetRecordBG("off");
     else
@@ -257,7 +257,7 @@ function PvPLogRecordBG_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
-function PvPLogRecordDuel_Toggle_OnClick()
+function PvPLogRecordDuel_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].recordDuel) then
         PvPLogSetRecordDuel("off");
     else
@@ -266,7 +266,7 @@ function PvPLogRecordDuel_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
-function PvPLogRecordCZ_Toggle_OnClick()
+function PvPLogRecordCZ_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].recordCZ) then
         PvPLogSetRecordCZ("off");
     else
@@ -275,7 +275,7 @@ function PvPLogRecordCZ_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
-function PvPLogNotifyBG_Toggle_OnClick()
+function PvPLogNotifyBG_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].notifyBG) then
         PvPLogSetNotifyBG("off");
     else
@@ -284,7 +284,7 @@ function PvPLogNotifyBG_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
-function PvPLogNotifyDuel_Toggle_OnClick()
+function PvPLogNotifyDuel_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].notifyDuel) then
         PvPLogSetNotifyDuel("off");
     else
@@ -293,7 +293,7 @@ function PvPLogNotifyDuel_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
-function PvPLogNotifyCZ_Toggle_OnClick()
+function PvPLogNotifyCZ_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].notifyCZ) then
         PvPLogSetNotifyCZ("off");
     else
@@ -302,12 +302,12 @@ function PvPLogNotifyCZ_Toggle_OnClick()
     PvPLogConfig_SetValues();
 end
 
-function PvPLogNotifyKills_Toggle_OnClick(value)
+function PvPLogNotifyKills_Toggle_OnClick(self, value)
     PvPLogSlashHandler(PVPLOG.NOTIFYKILL.." "..value);
     PvPLogConfig_SetValues();
 end
 
-function PvPLogNotifyDeaths_Toggle_OnClick(value)
+function PvPLogNotifyDeaths_Toggle_OnClick(self, value)
     PvPLogSlashHandler(PVPLOG.NOTIFYDEATH.." "..value);
     PvPLogConfig_SetValues();
 end
@@ -328,7 +328,7 @@ function PvPLogConfigHide()
     PvPLogConfigFrame:Hide();
 end
 
-function PvPLogConfig_btnClose_OnClick()
+function PvPLogConfig_btnClose_OnClick(self, button, down)
     PvPLogConfigHide();
 end
 
@@ -665,57 +665,55 @@ function PvPLog_PvPLogStats_OnHide()
     end
 end
 
-function PvPLog_PvPLogStats_OnMouseDown(arg1)
+function PvPLog_PvPLogStats_OnMouseDown(self, arg1)
     if (arg1 == "LeftButton") then
         PvPLogStatsFrame:StartMoving();
     end
 end
 
-function PvPLog_PvPLogStats_OnMouseUp(arg1)
+function PvPLog_PvPLogStats_OnMouseUp(self, arg1)
     if (arg1 == "LeftButton") then
         PvPLogStatsFrame:StopMovingOrSizing();
     end
 end
 
-function PvPLog_btnPvPLogStats_Close_OnClick()
+function PvPLog_btnPvPLogStats_Close_OnClick(self, button, down)
     PvPLogStatsHide();
 end
 
-function PvPLog_btnPvPLogStats_Previous_OnClick()
+function PvPLog_btnPvPLogStats_Previous_OnClick(self, button, down)
     if (statsValue > 1) then
         statsValue = statsValue - 1;
     end
     PvPLogStats_SetValues(statsValue);
 end
 
-function PvPLog_btnPvPLogStats_Next_OnClick()
+function PvPLog_btnPvPLogStats_Next_OnClick(self, button, down)
     if (statsValue < (statsTotal/5)) then
         statsValue = statsValue + 1;
     end
     PvPLogStats_SetValues(statsValue);
 end
 
-function MiniMapButton_Toggle_OnClick()
+function MiniMapButton_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].MiniMap.enabled == 1) then
-        MyMinimapButton:SetEnable("PvPLog", 0)
+		PvPLogButtonFrame:Show();
     elseif (PvPLogData[realm][player].MiniMap.enabled == 0) then
-        MyMinimapButton:SetEnable("PvPLog", 1)
+		PvPLogButtonFrame:Hide();
     else
-        PvPLogData[realm][player].MiniMap = PvPLogMinimapButtonInit();
-        PvPLogCreateMinimapButton();
-        MyMinimapButton:SetEnable("PvPLog", 1)
+        PvPLogData[realm][player].MiniMap = PvPLogMinimapInit();
+		PvPLogButtonFrame:Show();
     end
 end
 
-function PvPLog_OnMouseDown(arg1)
+function PvPLog_OnMouseDown(self, arg1)
     if (arg1 == "LeftButton") then
         PvPLogTargetFrame:StartMoving();
     end
 end
 
-function PvPLog_OnMouseUp(arg1)
+function PvPLog_OnMouseUp(self, arg1)
     if (arg1 == "LeftButton") then
         PvPLogTargetFrame:StopMovingOrSizing();
     end
 end
-

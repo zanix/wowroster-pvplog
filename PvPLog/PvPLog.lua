@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.1.0
-    Last Modified:    2010-05-16
+    Version:          3.2.0
+    Last Modified:    2010-10-15
 ]]
 
 -- Local variables
@@ -81,7 +81,7 @@ PVPLOG.VENDOR = "wowroster.net";
 PVPLOG.URL = "http://www."..PVPLOG.VENDOR;
 
 -- Called OnLoad of the add on
-function PvPLogOnLoad()
+function PvPLogOnLoad(self)
     
     if (PVPLOG.VER_NUM) then
         PVPLOG.STARTUP = string.gsub( PVPLOG.STARTUP, "%%v", PVPLOG.VER_NUM );
@@ -92,36 +92,36 @@ function PvPLogOnLoad()
     PvPLogChatMsgCyan(PVPLOG.STARTUP);
 
     -- respond to saved variable load
-    this:RegisterEvent("VARIABLES_LOADED");
+    self:RegisterEvent("VARIABLES_LOADED");
 
     -- respond to player entering the world
-    this:RegisterEvent("PLAYER_ENTERING_WORLD");
+    self:RegisterEvent("PLAYER_ENTERING_WORLD");
 
     -- channel stuff
-    this:RegisterEvent("CHAT_MSG_CHANNEL_NOTICE");
+    self:RegisterEvent("CHAT_MSG_CHANNEL_NOTICE");
 
     -- respond to player name update
-    this:RegisterEvent("UNIT_NAME_UPDATE");
+    self:RegisterEvent("UNIT_NAME_UPDATE");
 
     -- respond when player dies
-    this:RegisterEvent("PLAYER_DEAD"); 
+    self:RegisterEvent("PLAYER_DEAD"); 
 
     -- respond when our target changes
-    this:RegisterEvent("PLAYER_TARGET_CHANGED");
+    self:RegisterEvent("PLAYER_TARGET_CHANGED");
 
     -- respond to when you change mouseovers
-    this:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
+    self:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
 
     -- keep track of players level
-    this:RegisterEvent("PLAYER_LEVEL_UP");
+    self:RegisterEvent("PLAYER_LEVEL_UP");
 
     -- enters/leaves combat (for DPS)
-    this:RegisterEvent("PLAYER_REGEN_ENABLED");
-    this:RegisterEvent("PLAYER_REGEN_DISABLED");
+    self:RegisterEvent("PLAYER_REGEN_ENABLED");
+    self:RegisterEvent("PLAYER_REGEN_DISABLED");
 
-    this:RegisterEvent("UNIT_HEALTH");
+    self:RegisterEvent("UNIT_HEALTH");
 
-    this:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
+    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
 end
 
 function PvPLog_MiniMap_LeftClick()
@@ -205,12 +205,10 @@ function PvPLog_RegisterWithAddonManagers()
     end
 end  -- PvPLog_RegisterWithAddonManagers()
 
-function PvPLogMinimapButtonInit()
+function PvPLogMinimapInit()
     local info = { };
     info.radius = 80; -- default only. after first use, SavedVariables used
     info.position = -45; -- default only. after first use, SavedVariables used
-    info.drag = "CIRCLE"; -- default only. after first use, SavedVariables used
-    info.tooltip = PVPLOG.UI_RIGHT_CLICK .. PVPLOG.UI_TOGGLE .."\n".. PVPLOG.UI_LEFT_CLICK .. PVPLOG.UI_TOGGLE2;
     info.enabled = 1; -- default only. after first use, SavedVariables used
     info.config = 0;
     info.stats = 0;
@@ -218,14 +216,7 @@ function PvPLogMinimapButtonInit()
     return info;
 end
 
-function PvPLogCreateMinimapButton()
-    local info = PvPLogMinimapButtonInit();
-    MyMinimapButton:Create("PvPLog", PvPLogData[realm][player].MiniMap, info);
-    MyMinimapButton:SetRightClick("PvPLog", PvPLog_MiniMap_RightClick);
-    MyMinimapButton:SetLeftClick("PvPLog", PvPLog_MiniMap_LeftClick);
-end
-
-function PvPLogOnEvent()   
+function PvPLogOnEvent(self, event, ...)   
     if (debug_event1) then 
         PvPLogDebugMsg("Event: "..event, GREEN);
     end
@@ -306,7 +297,6 @@ function PvPLogOnEvent()
         else
             softPL = true;
         end
-        PvPLogCreateMinimapButton();
 
     -- keep track of name changes
     elseif (event == "UNIT_NAME_UPDATE") then
@@ -414,7 +404,7 @@ function PvPLogOnEvent()
 
     -- Keep track of those we've targeted
     elseif (event == "PLAYER_TARGET_CHANGED") then
-        local field = getglobal("PvPLogTargetText");
+        local field = _G["PvPLogTargetText"];
         field:Hide();
         field:SetText("");
 
@@ -780,9 +770,9 @@ function PvPLogGetTooltipText(table, name, guid)
     end
     for n = 1, m do
         if (guid) then
-            text[n] = getglobal('PvPLogTooltipTextLeft'..n):GetText();
+            text[n] = _G['PvPLogTooltipTextLeft'..n]:GetText();
         else
-            text[n] = getglobal('GameTooltipTextLeft'..n):GetText();
+            text[n] = _G['GameTooltipTextLeft'..n]:GetText();
         end
         if (debug_ttv) then
             PvPLogDebugMsg("text["..n.."] = "..tostring(text[n]));
@@ -1030,7 +1020,7 @@ function PvPLogUpdateTarget(dueling)
             guildTotal.loss;
             show = true;
         end
-        local field = getglobal("PvPLogTargetText");
+        local field = _G["PvPLogTargetText"];
         if (show and PvPLogData[realm][player].display) then
             field:SetText(msg);
             field:Show();
@@ -1923,6 +1913,10 @@ function PvPLogSlashHandler(msg)
         else
             PvPLogChatMsg("isDuel = FALSE");
         end
+    elseif (command == PVPLOG.RADIUS) then
+            PvPLogButton_Radius(value);
+    elseif (command == PVPLOG.POSITION) then
+            PvPLogButton_Position(value);
     elseif (command == PVPLOG.KEEP) then
             PvPLogKeepPurge(value);
     elseif (command == PVPLOG.RESET) then
@@ -2116,6 +2110,8 @@ function PvPLogDisplayUsage()
     PvPLogChatMsgPl(string.lower(PVPLOG.DUEL));
     PvPLogChatMsgPl(PVPLOG.UI_CONFIG);
     PvPLogChatMsgPl(PVPLOG.KEEP);
+	PvPLogChatMsgPl(PVPLOG.RADIUS);
+	
 end
 
 function PvPLogChatMsgPl(msg)
@@ -2132,13 +2128,18 @@ end
 --    "/pvplog comm on" and "/pvplog comm off" commands.
 --
 function PvPLogSendChatMessage(message, channel)
-    if (chan == PVPLOG.PARTY) then chan = "PARTY"; end
-    if (chan == PVPLOG.GUILD) then chan = "GUILD"; end
-    if (chan == PVPLOG.RAID) then chan = "RAID"; end
-    if (chan == PVPLOG.SAY) then chan = "SAY"; end
-    if (chan == PVPLOG.BG) then chan = "BATTLEGROUND"; end
     PvPLogDebugComm('PvPLogSendChatMessage("' .. message .. '", "' .. channel .. '")');
-    SendChatMessage(message, channel);
+    if (channel == PVPLOG.PARTY) then channel = "PARTY"; end
+    if (channel == PVPLOG.GUILD) then channel = "GUILD"; end
+    if (channel == PVPLOG.RAID) then channel = "RAID"; end
+    if (channel == PVPLOG.SAY) then channel = "SAY"; end
+    if (channel == PVPLOG.BG) then channel = "BATTLEGROUND"; end
+    if (channel == PVPLOG.SELF) then 
+		PvPLogChatMsg(message);
+	elseif (channel ~= PVPLOG.NONE) then
+		PvPLogDebugComm('PvPLogSendChatMessage("' .. message .. '", "' .. channel .. '")');
+		SendChatMessage(message, channel);
+	end
 end
 
 function PvPLogSendMessageOnChannel(message, channel)

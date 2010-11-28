@@ -1,7 +1,7 @@
-## Interface: 30300
+## Interface: 40000
 ## Title: PvPLog
 ## Author: Brad Morgan
-## Version: 3.1.0
+## Version: 3.2.0
 ## Notes: Keeps track of your PvP kills and the people who kill you.
 ## Notes-deDE: Zeichnet PvP Siege und Verluste auf, sowie Duelle.
 ## Notes-frFR: Enregistre les victoires et les défaites JcJ.
@@ -9,6 +9,6 @@
 ## SavedVariables: PvPLogData, PurgeLogData, targetList, targetRecords, targetPlain
 ## Previous Authors: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
 ## URL: http://www.wowroster.net
-MyMinimapButton.lua
+PvPLogButton.xml
 PvPLog.xml
 PvPLogUI.xml
