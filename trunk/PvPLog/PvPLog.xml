@@ -2,8 +2,8 @@
     PvPLog
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.0.0
-    Last Modified:    2008-02-15
+    Version:          3.2.0
+    Last Modified:    2010-10-15
 -->
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -13,10 +13,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
     <Frame name="PvPLogFrame">
         <Scripts>
             <OnLoad>
-                PvPLogOnLoad();
+                PvPLogOnLoad(self);
             </OnLoad>
             <OnEvent>
-                PvPLogOnEvent();
+                PvPLogOnEvent(self, event, ...);
             </OnEvent>
         </Scripts>
     </Frame>
@@ -44,10 +44,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
         </Layers>
         <Scripts>
         <OnMouseUp>
-                PvPLog_OnMouseUp(arg1);
+                PvPLog_OnMouseUp(self, button);
             </OnMouseUp>
             <OnMouseDown>
-                PvPLog_OnMouseDown(arg1);
+                PvPLog_OnMouseDown(self, button);
             </OnMouseDown>
         </Scripts>
     </Frame>
@@ -55,7 +55,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
     <GameTooltip name="PvPLogTooltip" inherits="GameTooltipTemplate">
         <Scripts>
           <Onload>
-            this:SetOwner(UIParent, "ANCHOR_NONE");
+            self:SetOwner(UIParent, "ANCHOR_NONE");
           </Onload>
         </Scripts>
     </GameTooltip>
