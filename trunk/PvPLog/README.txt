@@ -1,8 +1,8 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          3.0.7
-Last Modified:    2009-11-29
+Version:          3.2.1
+Last Modified:    2010-12-21
 
 README
 
@@ -16,16 +16,18 @@ Installation:
         PvPLog/PvPLog.toc       
         PvPLog/PvPLog.xml    
         PvPLog/PvPLog.lua       
+        PvPLog/PvPLogButton.xml    
+        PvPLog/PvPLogButton.lua       
         PvPLog/PvPLogUI.xml
         PvPLog/PvPLogUI.lua
         PvPLog/localization.lua
         PvPLog/MyMinimapButton.lua
         PvPLog/nopatch
         PvPLog2/PvPLog2.toc
-
+        PvPLog2/nopatch
 
     Place the entire zip contents into your 
-    WoW/Interface/AddOns directory.
+    <WoW>/Interface/AddOns directory.
 
     
 Use:
@@ -96,6 +98,15 @@ Use:
     You may reset your PvPLog settings using:
         /pvplog reset confirm
     Be careful as this will erase all your records!
+	
+	The minimap button radius can be viewed with:
+		/pl radius 
+	The minimap button radius can be changed with:
+		/pl radius <value>
+	The minimap button position can be viewed with:
+		/pl position
+	The minimap button position can be changed with:
+		/pl position <value>
 
     Debugging commands:
     
