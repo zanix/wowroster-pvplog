@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.2.0
-    Last Modified:    2010-10-15
+    Version:          3.2.1
+    Last Modified:    2010-12-10
 ]]
 
 -- Local variables
@@ -17,7 +17,7 @@ local queuedChannel = "";
 local realm = "";
 local player = "";
 local plevel = -1;
-local mlevel = 80; -- Maximum player level
+local mlevel = 85; -- Maximum player level
 local dlevel = 11; -- Difference causing level of -1 to be returned
 
 local softPL; -- soft PvPLog enable/disable
@@ -275,7 +275,7 @@ function PvPLogOnEvent(self, event, ...)
             debug_ptc = PvPLogDebugFlags.ptc; -- Manually set to false if you want not use PLAYER_TARGET_CHANGED (for debugging).
         end
         PvPLog_RegisterWithAddonManagers();
-        
+
     -- initialize when entering world
     elseif (event == "PLAYER_ENTERING_WORLD") then
         PvPLogInitialize();
@@ -1155,6 +1155,13 @@ function PvPLogInitialize()
 
     local stats = PvPLogGetStats();
     local allRecords = stats.totalWins + stats.totalLoss;
+
+	if (PvPLogData[realm][player].MiniMap == nil) then
+		PvPLogData[realm][player].MiniMap = PvPLogMinimapInit();
+	end
+	PvPLogButton_Init();
+	PvPLogButton_UpdatePosition();
+	PvPLogButtonFrame:Show();
 
     initialized = true;
 
