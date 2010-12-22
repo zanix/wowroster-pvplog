@@ -2,8 +2,8 @@
     PvPLogUI
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Atolicus, Matthew Musgrove
-    Version:          3.2.0
-    Last Modified:    2010-10-15
+    Version:          3.2.1
+    Last Modified:    2010-12-10
 ]]
 
 local realm = "";
@@ -698,11 +698,8 @@ end
 function MiniMapButton_Toggle_OnClick(self, button, down)
     if (PvPLogData[realm][player].MiniMap.enabled == 1) then
 		PvPLogButtonFrame:Show();
-    elseif (PvPLogData[realm][player].MiniMap.enabled == 0) then
-		PvPLogButtonFrame:Hide();
     else
-        PvPLogData[realm][player].MiniMap = PvPLogMinimapInit();
-		PvPLogButtonFrame:Show();
+		PvPLogButtonFrame:Hide();
     end
 end
 
