@@ -2,8 +2,8 @@
     PvPLogButton
     Author:           Brad Morgan
     Based on Work by: Dan Gilbert
-    Version:          3.2.0
-    Last Modified:    2010-10-15
+    Version:          3.2.2
+    Last Modified:    2010-12-23
 --]]
 
 function PvPLogButton_OnClick(self, button, down)
@@ -46,13 +46,16 @@ function PvPLogButton_Position(value)
 end
 
 function PvPLogButton_UpdatePosition()
-	PvPLogButtonFrame:SetPoint(
-		"TOPLEFT",
-		"Minimap",
-		"TOPLEFT",
-		54 - (PvPLogData[realm][player].MiniMap.radius * cos(PvPLogData[realm][player].MiniMap.position)),
-		(PvPLogData[realm][player].MiniMap.radius * sin(PvPLogData[realm][player].MiniMap.position)) - 55
-	);
+    local radius = PvPLogData[realm][player].MiniMap.radius;
+	local position = PvPLogData[realm][player].MiniMap.position;
+	-- PvPLogDebugMsg('PvPLogButton_UpdatePosition() radius= '..tostring(radius)..', position= '..tostring(position));
+	if (radius ~= nil and position ~= nil) then
+		PvPLogButtonFrame:SetPoint(
+			"TOPLEFT",
+			"Minimap",
+			"TOPLEFT",
+			54 - (radius * cos(position)), (radius * sin(position)) - 55);
+	end
 end
 
 -- Thanks to Yatlas for this code

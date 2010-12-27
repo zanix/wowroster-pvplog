@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.2.1
-    Last Modified:    2010-12-10
+    Version:          3.2.2
+    Last Modified:    2010-12-26
 ]]
 
 -- Local variables
@@ -213,6 +213,7 @@ function PvPLogMinimapInit()
     info.config = 0;
     info.stats = 0;
     info.icon = PvPLogGetFactionIcon();
+    PvPLogDebugMsg('PvPLogMinimapInit()');
     return info;
 end
 
@@ -490,7 +491,7 @@ function PvPLogOnEvent(self, event, ...)
                     end
                 end
             end
-        elseif (srcName == player) then
+        elseif (srcName == player and dstName) then
             if (debug_combat) then
                 PvPLogDebugMsg(message, GREEN);
             else
@@ -503,7 +504,7 @@ function PvPLogOnEvent(self, event, ...)
                         PvPLogMyDamage(dstName, dstGUID);
                     elseif (debug_ignore) then
                         if (not ignoreRecords[dstName]) then
-                            PvPLogDebugMsg('Ignore added (damaged): ' .. dstName);
+                            PvPLogDebugMsg('Ignore added (damaged): ' .. tostring(dstName));
                             PvPLogAddIgnore(dstName)
                         end
                         if (targetRecords[dstName]) then
@@ -513,7 +514,7 @@ function PvPLogOnEvent(self, event, ...)
                     end
                 end
             end
-        elseif (dstName == player) then
+        elseif (dstName == player and srcName) then
             if (debug_combat) then
                 PvPLogDebugMsg(message, YELLOW);
             else
@@ -524,7 +525,7 @@ function PvPLogOnEvent(self, event, ...)
                     PvPLogDamageMe(srcName, srcGUID);
                 elseif (debug_ignore) then
                     if (not ignoreRecords[srcName]) then
-                        PvPLogDebugMsg('Ignore added (damager): ' .. srcName);
+                        PvPLogDebugMsg('Ignore added (damager): ' .. tostring(srcName));
                         PvPLogAddIgnore(srcName)
                     end
                     if (targetRecords[srcName]) then
@@ -536,6 +537,8 @@ function PvPLogOnEvent(self, event, ...)
         else
             if (debug_combat) then
                 PvPLogDebugMsg(message, WHITE);
+            else
+                PvPLogDebugAdd(message);
             end
         end
     
@@ -569,7 +572,7 @@ function PvPLogOnEvent(self, event, ...)
 end
 
 function PvPLogDebugFlag()
-    return debug_flag;
+    return debug_flag; -- debug_flag is local so pass it out if asked.
 end
 
 function PvPLogDebugMsg(msg, color)
@@ -846,13 +849,15 @@ end
 
 -- Add to ignoreRecords and ignoreList.
 function PvPLogAddIgnore(name)
-    ignoreRecords[name] = true;
-    table.insert(ignoreList, name);
-    if (table.getn(ignoreList) > NUMTARGETS) then
-        PvPLogDebugMsg('Ignore removed: ' .. ignoreList[1]);
-        ignoreRecords[ignoreList[1]] = nil;
-        table.remove(ignoreList,1);
-    end
+	if (name) then
+		ignoreRecords[name] = true;
+		table.insert(ignoreList, name);
+		if (table.getn(ignoreList) > NUMTARGETS) then
+			PvPLogDebugMsg('Ignore removed: ' .. ignoreList[1]);
+			ignoreRecords[ignoreList[1]] = nil;
+			table.remove(ignoreList,1);
+		end
+	end
 end
 
 -- Add to targetRecords, targetList, targetPlain.
@@ -894,7 +899,7 @@ function PvPLogRemTarget(name)
             targetPlain[plain] = nil;
         end
     else
-        PvPLogDebugMsg('TargetRecord not found in TargetList for: '..name);
+        PvPLogDebugMsg('TargetRecord not found in TargetList for: '..tostring(name));
     end
 end
 
@@ -1762,8 +1767,17 @@ function PvPLogSlashHandler(msg)
         elseif (value == "off") then
             debug_flag = false;
         elseif (value == "perm") then
-            PvPLogDebugFlags.debug = debug_flag; -- Save the current value when we logoff
-        elseif (value == "save") then
+             -- Save the current values when we logoff
+			PvPLogDebugFlags.debug = debug_flag;
+            PvPLogDebugFlags.comm = debug_comm;
+			PvPLogDebugFlags.ignore = debug_ignore;
+			PvPLogDebugFlags.event1 = debug_event1;
+			PvPLogDebugFlags.event2 = debug_event2;
+			PvPLogDebugFlags.combat = debug_combat;
+			PvPLogDebugFlags.ui = debug_ui;
+			PvPLogDebugFlags.ptc = debug_ptc;
+			PvPLogDebugFlags.pve = debug_pve;
+		elseif (value == "save") then
             PvPLogDebugSave = { };
             for i,v in ipairs(PvPLogDebug) do
                 table.insert(PvPLogDebugSave,v);
