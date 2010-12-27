@@ -1,10 +1,15 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          3.2.1
-Last Modified:    2010-12-10
+Version:          3.2.2
+Last Modified:    2010-12-26
 
 CHANGES
+
+2010-12-26  * 3.2.2
+    * Added the rest of the debug flags to the "/pl debug perm".
+	* Added some checks to the minimap button position code.
+	* Added additional nil checks in the combat log decode.
 
 2010-12-10  * 3.2.1
     * Rearranged the intialization of the minimap button.
