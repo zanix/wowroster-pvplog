@@ -1,10 +1,17 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          3.2.2
-Last Modified:    2010-12-26
+Version:          3.2.4
+Last Modified:    2011-04-09
 
 CHANGES
+
+2011-04-26  * 3.2.4
+    * Added new parameter to combat log.
+
+2011-04-03  * 3.2.3
+    * Moved PLAYER_DIED event processing to UNIT_DIED combat log event.
+	* Removed addon manager code believed to be obsolete.
 
 2010-12-26  * 3.2.2
     * Added the rest of the debug flags to the "/pl debug perm".

@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.2.2
-    Last Modified:    2010-12-26
+    Version:          3.2.4
+    Last Modified:    2011-04-26
 ]]
 
 -- Local variables
@@ -59,7 +59,7 @@ local foundDamaged = false;
 local ignoreList = { };
 local ignoreRecords = { };
 
-local MAXDEBUG = 3000;
+local MAXDEBUG = 4000;
 
 local lastDing = -1;        -- This will contain the GetTime() of the last ding and overhead message.
 local lastRecent = -1;      -- This will contain the GetTime() of the last removal of a recentDamaged.
@@ -103,9 +103,6 @@ function PvPLogOnLoad(self)
     -- respond to player name update
     self:RegisterEvent("UNIT_NAME_UPDATE");
 
-    -- respond when player dies
-    self:RegisterEvent("PLAYER_DEAD"); 
-
     -- respond when our target changes
     self:RegisterEvent("PLAYER_TARGET_CHANGED");
 
@@ -139,71 +136,6 @@ function PvPLog_MiniMap_RightClick()
         PvPLogConfigShow();
     end
 end
-
-
-function PvPLog_RegisterWithAddonManagers()
-    -- Based on MobInfo2's MI_RegisterWithAddonManagers
-    -- register with myAddons manager
-    if ( myAddOnsFrame_Register ) then
-        local PvPLogDetails = {
-            name = "PvPLog",
-            version = PVPLOG.VER_NUM,
-            author = "Andrzej Gorski",
-            website = PVPLOG.URL,
-            category = MYADDONS_CATEGORY_OTHERS,
-            optionsframe = "PvPLogConfigFrame"
-        };
-        myAddOnsFrame_Register( PvPLogDetails );
-    end
-
-    -- register with EARTH manager (mainly for Cosmos support)
-    if EarthFeature_AddButton then
-        EarthFeature_AddButton(
-            {
-                id = "PvPLog",
-                name = "PvPLog",
-                subtext = "v"..PVPLOG.VER_NUM,
-                tooltip = PVPLOG.DESCRIPTION,
-                icon = PvPLogGetFactionIcon(),
-                callback = function(state) PvPLog_MiniMap_RightClick() end,
-                test = nil
-            }
-        )
-    
-    -- register with KHAOS (only if EARTH not found)
-    elseif Khaos then
-        Khaos.registerOptionSet(
-            "other",
-            {
-                id = "PvPLogOptionSet",
-                text = "PvPLog",
-                helptext = PVPLOG.DESCRIPTION,
-                difficulty = 1,
-                callback = function(state) end,
-                default = true,
-                options = {
-                    {
-                        id = "PvPLogOptionsHeader",
-                        type = K_HEADER,
-                        difficulty = 1,
-                        text = "PvPLog v"..PVPLOG.VER_NUM,
-                        helptext = PVPLOG.DESCRIPTION
-                    },
-                    {
-                        id = "MobInfo2OptionsButton",
-                        type = K_BUTTON,
-                        difficulty = 1,
-                        text = "PvPLog "..PVPLOG.UI_CONFIG,
-                        helptext = "",
-                        callback = function(state) PvPLog_MiniMap_RightClick() end,
-                        feedback = function(state) end,
-                        setup = { buttonText = PVPLOG.UI_OPEN }
-                    }
-                }
-            }
-        )
-    end
-end  -- PvPLog_RegisterWithAddonManagers()
 
 function PvPLogMinimapInit()
     local info = { };
@@ -275,7 +207,6 @@ function PvPLogOnEvent(self, event, ...)
         else
             debug_ptc = PvPLogDebugFlags.ptc; -- Manually set to false if you want not use PLAYER_TARGET_CHANGED (for debugging).
         end
-        PvPLog_RegisterWithAddonManagers();
 
     -- initialize when entering world
     elseif (event == "PLAYER_ENTERING_WORLD") then
@@ -325,8 +256,9 @@ function PvPLogOnEvent(self, event, ...)
         if (PvPLogData[realm][player].mouseover) then
 
             if (UnitExists("mouseover")) then
---***
+--
 -- Code for debugging the tooltip stuff
+--
                 if (debug_ttm) then
                     local v2 = { };
                     PvPLogGetTooltipText(v2, PvPLogUnitName("mouseover"), nil);
@@ -336,7 +268,7 @@ function PvPLogOnEvent(self, event, ...)
                     PvPLogChatMsg('    Guild = '..tostring(v2.guild)..', Realm = '..tostring(v2.realm));
                     PvPLogChatMsg('    GUID = '..tostring(v2.guid)..', Owner = '..tostring(v2.owner));
                 end
---***
+				
                 local total = PvPLogGetPvPTotals(PvPLogUnitName("mouseover"));
                 local guildTotal = PvPLogGetGuildTotals(GetGuildInfo("mouseover"));
 
@@ -414,82 +346,74 @@ function PvPLogOnEvent(self, event, ...)
             PvPLogUpdateTarget(isDuel);
         end
 
-    elseif (event == "PLAYER_DEAD") then
-        -- make sure we have a last damager
-        -- and are enabled
-        if (lastDamagerToMe == "" or
-          not PvPLogData[realm][player].enabled or 
-          not softPL) then
-            return;
-        end
-        if (targetRecords[lastDamagerToMe]) then
-            if (targetRecords[lastDamagerToMe].level) then
-                v = targetRecords[lastDamagerToMe];
-                if (v.owner) then
-                    -- lastDamagerToMe is a pet.
-                    local owner = v.owner;
-                    if (targetPlain[owner]) then
-                    -- real owner has a realm
-                        owner = targetPlain[owner];
-                    end
-                    if (targetRecords[owner] and targetRecords[owner].level) then
-                        PvPLogDebugMsg("Switching from "..lastDamagerToMe.." to "..owner);
-                        v = targetRecords[owner];
-                        lastDamagerToMe = owner;
-                    end
-                end
-                PvPLogChatMsgCyan("PvP "..PVPLOG.DLKB..RED..lastDamagerToMe);
-                PvPLogRecord(lastDamagerToMe, v.level, v.race, v.class, v.guild, 1, 0, v.rank, v.realm);
-            else
-                PvPLogDebugMsg("Empty targetRecords for: "..lastDamagerToMe, RED);
-            end
-        else
-            PvPLogDebugMsg("No targetRecords for: "..lastDamagerToMe, RED);
-        end
-        -- we are dead, clear the variables
-        PvPLogDebugMsg('Recents cleared (dead).');
-        -- recentDamaged = { }; -- Deferred because some of them may still die.
-        recentDamager = { };
-        lastDamagerToMe = "";
-
-    -- Combat Events now all come here
+-- Combat Events now all come here
     elseif ( event == "COMBAT_LOG_EVENT_UNFILTERED") then
 
         CombatLogSetCurrentEntry(-1,true);
-        local timestamp, type, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, u1, u2, u3, u4, u5, u6, u7, u8 = CombatLogGetCurrentEntry(); 
+        local timestamp, etype, hideCaster, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, u1, u2, u3, u4, u5, u6, u7, u8 = CombatLogGetCurrentEntry(); 
 
         local message = "";
         if (debug_flag) then
-            message = string.format("%s, %s, %s, 0x%x, %s, %s, 0x%x; %s, %s, %s, %s, %s, %s, %s, %s",
-                tostring(type),
-                tostring(srcGUID), srcName or "nil", srcFlags or 0,
-                tostring(dstGUID), dstName or "nil", dstFlags or 0,
-                tostring(u1), tostring(u2), tostring(u3), tostring(u4),
-                tostring(u5), tostring(u6), tostring(u7), tostring(u8));
+			message = string.format("%s, %s, %s, %s, 0x%x, %s, %s, 0x%x; %s, %s, %s, %s, %s, %s, %s, %s",
+				tostring(etype),
+				tostring(hideCaster),
+				tostring(srcGUID), srcName or "nil", srcFlags or 0,
+				tostring(dstGUID), dstName or "nil", dstFlags or 0,
+				tostring(u1), tostring(u2), tostring(u3), tostring(u4),
+				tostring(u5), tostring(u6), tostring(u7), tostring(u8));
         end
 --
 -- This is where the fun begins. 
 -- Decoding the combat events (type) into what damaged me and what I damaged.
 --
-        if (type == "PARTY_KILL") then -- It appears that all PARTY_KILL events also have a UNIT_DIED event.
+        if (etype == "PARTY_KILL") then -- It appears that all PARTY_KILL events also have a UNIT_DIED event.
             if (debug_combat) then
                 PvPLogDebugMsg(message, RED);
             else
                 PvPLogDebugAdd(message);
             end
-        elseif (type == "UNIT_DIED") then
+        elseif (etype == "UNIT_DIED") then
+			if (debug_combat) then
+				PvPLogDebugMsg(message, ORANGE);
+			else
+				PvPLogDebugAdd(message);
+			end
             if (dstName ~= player) then
-                -- The death of the player will be handled by the PLAYER_DEAD event.
-                if (debug_combat) then
-                    PvPLogDebugMsg(message, ORANGE);
-                else
-                    PvPLogDebugAdd(message);
-                end
                 if (bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0) then
                     if (debug_pve or bit.band(dstFlags, COMBATLOG_OBJECT_TYPE_PLAYER) ~= 0) then
                         PvPLogPlayerDeath(dstName);
                     end
                 end
+			else
+				if (targetRecords[lastDamagerToMe]) then
+					if (targetRecords[lastDamagerToMe].level) then
+						v = targetRecords[lastDamagerToMe];
+						if (v.owner) then
+							-- lastDamagerToMe is a pet.
+							local owner = v.owner;
+							if (targetPlain[owner]) then
+							-- real owner has a realm
+								owner = targetPlain[owner];
+							end
+							if (targetRecords[owner] and targetRecords[owner].level) then
+								PvPLogDebugMsg("Switching from "..lastDamagerToMe.." to "..owner);
+								v = targetRecords[owner];
+								lastDamagerToMe = owner;
+							end
+						end
+						PvPLogChatMsgCyan("PvP "..PVPLOG.DLKB..RED..lastDamagerToMe);
+						PvPLogRecord(lastDamagerToMe, v.level, v.race, v.class, v.guild, 1, 0, v.rank, v.realm);
+					else
+						PvPLogDebugMsg("Empty targetRecords for: "..lastDamagerToMe, RED);
+					end
+				else
+					PvPLogDebugMsg("No targetRecords for: "..lastDamagerToMe, RED);
+				end
+				-- we are dead, clear the variables
+				PvPLogDebugMsg('Recents cleared (dead).');
+				-- recentDamaged = { }; -- Deferred because some of them may still die.
+				recentDamager = { };
+				lastDamagerToMe = "";
             end
         elseif (srcName == player and dstName) then
             if (debug_combat) then
