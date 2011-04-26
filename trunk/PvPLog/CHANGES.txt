@@ -1,10 +1,14 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          3.2.4
+Version:          3.2.5
 Last Modified:    2011-04-26
 
 CHANGES
+
+2011-04-26  * 3.2.5
+    * Changed TOC to 40100.
+	* Fixed minimap button enable/disable.
 
 2011-04-26  * 3.2.4
     * Added new (4.1) parameter to combat log code.
