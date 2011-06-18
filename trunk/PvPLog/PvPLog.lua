@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.2.4
-    Last Modified:    2011-04-26
+    Version:          3.2.6
+    Last Modified:    2011-06-21
 ]]
 
 -- Local variables
@@ -350,15 +350,15 @@ function PvPLogOnEvent(self, event, ...)
     elseif ( event == "COMBAT_LOG_EVENT_UNFILTERED") then
 
         CombatLogSetCurrentEntry(-1,true);
-        local timestamp, etype, hideCaster, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, u1, u2, u3, u4, u5, u6, u7, u8 = CombatLogGetCurrentEntry(); 
+        local timestamp, etype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, u1, u2, u3, u4, u5, u6, u7, u8 = CombatLogGetCurrentEntry(); 
 
         local message = "";
         if (debug_flag) then
-			message = string.format("%s, %s, %s, %s, 0x%x, %s, %s, 0x%x; %s, %s, %s, %s, %s, %s, %s, %s",
+			message = string.format("%s, %s, %s, %s, 0x%x, 0x%x, %s, %s, 0x%x, 0x%x; %s, %s, %s, %s, %s, %s, %s, %s",
 				tostring(etype),
 				tostring(hideCaster),
-				tostring(srcGUID), srcName or "nil", srcFlags or 0,
-				tostring(dstGUID), dstName or "nil", dstFlags or 0,
+				tostring(srcGUID), srcName or "nil", srcFlags or 0, srcRaidFlags or 0,
+				tostring(dstGUID), dstName or "nil", dstFlags or 0, dstRaidFlags or 0,
 				tostring(u1), tostring(u2), tostring(u3), tostring(u4),
 				tostring(u5), tostring(u6), tostring(u7), tostring(u8));
         end
@@ -2056,6 +2056,7 @@ function PvPLogDisplayUsage()
     PvPLogChatMsgPl(PVPLOG.UI_CONFIG);
     PvPLogChatMsgPl(PVPLOG.KEEP);
 	PvPLogChatMsgPl(PVPLOG.RADIUS);
+	PvPLogChatMsgPl(PVPLOG.POSITION);
 	
 end
 
