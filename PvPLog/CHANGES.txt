@@ -1,10 +1,15 @@
 PvPLog 
 Author:           Brad Morgan
 Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-Version:          3.2.5
-Last Modified:    2011-04-26
+Version:          3.2.6
+Last Modified:    2011-06-21
 
 CHANGES
+
+2011-06-21  * 3.2.6
+    * Changed TOC to 40200.
+    * Added new (4.2) parameters to combat log code.
+	* Added "/pl position" to the usage display.
 
 2011-04-26  * 3.2.5
     * Changed TOC to 40100.
