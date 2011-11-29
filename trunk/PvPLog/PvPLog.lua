@@ -2,8 +2,8 @@
     PvPLog 
     Author:           Brad Morgan
     Based on Work by: Josh Estelle, Daniel S. Reichenbach, Andrzej Gorski, Matthew Musgrove
-    Version:          3.2.6
-    Last Modified:    2011-06-21
+    Version:          3.2.7
+    Last Modified:    2011-09-28
 ]]
 
 -- Local variables
@@ -248,7 +248,7 @@ function PvPLogOnEvent(self, event, ...)
        
     -- add record to mouseover
     elseif (event == "UPDATE_MOUSEOVER_UNIT") then
-        if (not PvPLogData[realm][player].enabled or not softPL) then
+        if (not initialized or not PvPLogData[realm][player].enabled or not softPL) then
             return;
         end
 
@@ -1325,13 +1325,15 @@ end
 
 function PvPLogInBG()
     bg_found = false;
-    for i=1, MAX_BATTLEFIELD_QUEUES do
-        bg_status, bg_mapName, bg_instanceId = GetBattlefieldStatus(i);
-        if (bg_status == "active") then
-            bg_found = true;
-            return true;
-        end
-    end
+	if ( MAX_BATTLEFIELD_QUEUES ~= nil) then
+		for i=1, MAX_BATTLEFIELD_QUEUES do
+			bg_status, bg_mapName, bg_instanceId = GetBattlefieldStatus(i);
+			if (bg_status == "active") then
+				bg_found = true;
+				return true;
+			end
+		end
+	end
     return false;
 end
 
